@@ -54,41 +54,50 @@ def register():
     flash("Registration successful! Please log in.", "success")
     return redirect(url_for("auth.root"))
 
+
 @auth_bp.route("/dashboard")
 def dashboard():
-    """Unified dashboard that adapts based on the user's role."""
+    # 1. Ensure user is logged in
     if "user" not in session:
         flash("Please log in first", "warning")
         return redirect(url_for("auth.root"))
 
+    # 2. Load & sanitize user
     mongo = current_app.mongo
     user_data = mongo.db.users.find_one({"email": session["user"]})
-    if user_data and "password" in user_data:
-        del user_data["password"]
+    if not user_data:
+        flash("User not found", "danger")
+        return redirect(url_for("auth.root"))
+    user_data.pop("password", None)
 
-    # Determine the user’s role (admin, maintenance, or user)
+    # 3. Fetch issues based on role
     role = user_data.get("role", "user")
-
-    # Fetch issues based on role
     if role == "admin":
-        # Admin sees all issues
         issues = list(mongo.db.issues.find())
-        # Also fetch maintenance users so we can assign issues to them
         maintenance_users = list(mongo.db.users.find({"role": "maintenance"}))
     elif role == "maintenance":
-        # Maintenance sees only issues assigned to them
         issues = list(mongo.db.issues.find({"assigned_to": session["user"]}))
         maintenance_users = []
     else:
-        # Regular user sees only their own reports
         issues = list(mongo.db.issues.find({"reporter_email": session["user"]}))
         maintenance_users = []
 
-    # Pass issues (and maintenance_users if admin) to the dashboard
-    return render_template("dashboard.html",
-                           user=user_data,
-                           issues=issues,
-                           maintenance_users=maintenance_users)
+    # 4. Choose the correct template
+    template_map = {
+        "admin":       "admin_dashboard.html",
+        "maintenance": "maintenance_dashboard.html",
+        "user":        "user_dashboard.html"
+    }
+    template_name = template_map.get(role, "user_dashboard.html")
+
+    # 5. Render it
+    return render_template(
+        template_name,
+        user=user_data,
+        issues=issues,
+        maintenance_users=maintenance_users
+    )
+
 
 @auth_bp.route("/logout", methods=["GET", "POST"])
 def logout():

@@ -50,6 +50,7 @@ def report_issue():
         issue_data = {
             "reporter_email": session["user"],
             "description": description,
+            "city/street": city/street,
             "location": {
                 "lat": lat_f,
                 "lng": lng_f

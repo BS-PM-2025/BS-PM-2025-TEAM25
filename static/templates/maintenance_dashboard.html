@@ -1,0 +1,127 @@
+<!-- templates/maintenance_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maintenance Dashboard</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/home.png') }}">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+</head>
+<body class="bg-light">
+<div class="page-wrapper">
+
+  <!-- Navbar -->
+  <div class="nav-wrapper">
+    <div class="grad-bar"></div>
+    <nav class="navbar">
+      <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </div>
+      <ul class="nav no-search">
+        <li class="nav-item"><a href="{{ url_for('main.profile') }}">Profile</a></li>
+        <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+        <i class="bi bi-search" id="search-icon"></i>
+        <input class="search-input" type="text" placeholder="Search..">
+      </ul>
+    </nav>
+  </div>
+
+  <div class="admin-issues-container">
+    <h1 class="text-center">Welcome to the Dashboard, {{ user.name }}!</h1>
+    <h2 class="text-center">Issues Assigned to You</h2>
+
+    <!-- Flash messages -->
+    <div class="flash-messages text-center">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Maintenance Cards -->
+    <div class="row g-4">
+      {% for issue in issues %}
+        {% if issue.assigned_to == user.email %}
+        <div class="col-md-4">
+          <div class="card bg-light h-100">
+            <div class="card-body d-flex flex-column">
+              {% if issue.image_path %}
+              <div class="image-container my-3">
+                <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue Image">
+              </div>
+              {% endif %}
+              <h5 class="card-title">{{ issue.category }}</h5>
+              <p class="card-text">{{ issue.description }}</p>
+              <button class="btn btn-primary mb-2"
+                      data-bs-toggle="modal"
+                      data-bs-target="#issueModal{{ issue._id }}">
+                Details
+              </button>
+              <form action="{{ url_for('reports.update_status', issue_id=issue._id) }}" method="POST">
+                <div class="input-group">
+                  <select name="status" class="form-select">
+                    <option value="in progress" {% if issue.status=='in progress' %}selected{% endif %}>
+                      In Progress
+                    </option>
+                    <option value="resolved" {% if issue.status=='resolved' %}selected{% endif %}>
+                      Resolved
+                    </option>
+                  </select>
+                  <button class="btn btn-success">Update</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Detail Modals -->
+    {% for issue in issues %}
+    <div class="modal fade" id="issueModal{{ issue._id }}" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ issue.category }} Details</h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Description:</strong><br>{{ issue.description }}</p>
+            <p><strong>Location:</strong>
+              <a href="https://www.google.com/maps/search/?api=1&query={{ issue.location.lat }},{{ issue.location.lng }}"
+                 target="_blank">View on Google Maps</a>
+            </p>
+            {% if issue.image_path %}
+            <div class="image-container my-3">
+              <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue Image">
+            </div>
+            {% endif %}
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Bootstrap JS + helpers -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  setTimeout(() => document.querySelectorAll('.alert').forEach(a => a.remove()), 3000);
+  document.getElementById("mobile-menu")
+          .addEventListener("click", () => document.querySelector(".nav").classList.toggle("active"));
+</script>
+</body>
+</html>
