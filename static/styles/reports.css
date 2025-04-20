@@ -1,0 +1,317 @@
+/* Basic Reset & Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Lato', 'Arial', sans-serif;
+    background: #f4f4f4;
+    color: #333;
+  }
+  
+  /* Page Wrapper */
+  .page-wrapper {
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  /* Container for the "Report Issue" form */
+  .report-container,
+  .admin-issues-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .report-container h1,
+  .admin-issues-container h1 {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  /* Flash Messages */
+  .flash-messages {
+    margin-bottom: 15px;
+  }
+  .alert {
+    padding: 12px 20px;
+    border-radius: 20px;
+    color: #fff;
+    margin: 15px 0;
+    font-size: 14px;
+    display: inline-block;
+  }
+  .alert-success {
+    background-color: #28a745;
+  }
+  .alert-danger {
+    background-color: #dc3545;
+  }
+  .alert-warning {
+    background-color: #ffc107;
+    color: #000;
+  }
+  .alert-info {
+    background-color: #ff9d00;
+  }
+  
+  /* Report Form Styles */
+  .report-container form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .report-container label {
+    margin: 10px 0 5px;
+    font-weight: bold;
+  }
+  
+  .report-container input[type="text"],
+  .report-container textarea,
+  .report-container input[type="file"] {
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .report-container button[type="submit"] {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .report-container button[type="submit"]:hover {
+    background-color: #2980b9;
+  }
+  
+  /* Container to constrain width and allow horizontal scrolling if needed */
+.admin-issues-container {
+    max-width: 90%; /* or 100%, adjust as desired */
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow-x: auto; /* enables horizontal scroll on small screens */
+  }
+  
+  /* Make the table take the full container width */
+  .admin-issues-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    table-layout: auto; /* allows columns to size based on content */
+  }
+  
+  /* Header & Data Cells */
+  .admin-issues-container th,
+  .admin-issues-container td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    vertical-align: top; 
+    /* Enable text wrapping */
+    word-wrap: break-word;  
+    white-space: normal;
+  }
+  
+  /* Table Header background */
+  .admin-issues-container th {
+    background-color: #f2f2f2;
+  }
+  
+  /* ID Column can be narrower if you like */
+  .admin-issues-container td:first-child {
+    width: 150px; /* Adjust to your preference */
+    word-break: break-all;
+  }
+  
+  /* Image Styling */
+  .admin-issues-container td img {
+    max-width: 80px;  /* Ensures the image is not too large */
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 4px;
+  }
+  
+  /* Status Select & Update Button */
+  .admin-issues-container select {
+    padding: 4px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    margin-right: 5px;
+    font-size: 14px;
+  }
+  
+  .admin-issues-container button[type="submit"] {
+    background-color: #27ae60;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
+  }
+  
+  .admin-issues-container button[type="submit"]:hover {
+    background-color: #219150;
+  }
+  
+
+/* Reset & Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Lato', 'Arial', sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+    line-height: 1.6;
+  }
+  
+  /* Page Wrapper */
+  .page-wrapper {
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  /* Navigation Wrapper */
+  .nav-wrapper {
+    width: 100%;
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+   /* Gradient Bar */
+   .grad-bar {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #EE7752, #E73C7E, #bdce00, #00ff08);
+    background-size: 200% 100%;
+    animation: gradientShift 5s ease infinite;
+  }
+  
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Navbar */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    padding: 0 20px;
+  }
+  
+  /* Mobile Menu Toggle */
+  .menu-toggle {
+    display: none;
+    cursor: pointer;
+  }
+  
+  .menu-toggle .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px 0;
+    background-color: #333;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Navigation List */
+  .nav {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 20px;
+  }
+  
+  .nav-item a {
+    text-decoration: none;
+    color: #333;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+  }
+  
+  .nav-item a:hover {
+    color: #ff9500;
+  }
+  
+
+
+
+
+
+  /* ========================================
+   Custom dropdown styling for .form-select
+   ======================================== */
+.form-select {
+  /* full width, decent padding */
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  
+  /* border & rounding */
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  
+  /* remove default arrow (most browsers) */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  
+  /* custom arrow using SVG data‑URI */
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.65rem 0.4rem;
+  
+  /* smooth transition on focus */
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* hide arrow in IE10+ */
+.form-select::-ms-expand {
+  display: none;
+}
+
+/* focus state */
+.form-select:focus {
+  border-color: #66afe9;
+  box-shadow: 0 0 0 0.2rem rgba(102, 175, 233, 0.5);
+  outline: none;
+}
+
+/* optional: disabled state */
+.form-select:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.8;
+}

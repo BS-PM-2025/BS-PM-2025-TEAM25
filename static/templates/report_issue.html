@@ -1,0 +1,229 @@
+<!-- templates/report_issue.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Report a Road Issue</title>
+
+    <!-- Your custom CSS (e.g., for .report-container, .navbar, etc.) -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles/reports.css') }}"
+    />
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+      crossorigin=""
+    />
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <!-- Navigation -->
+      <div class="nav-wrapper">
+        <div class="grad-bar"></div>
+        <nav class="navbar">
+          <div class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </div>
+          <ul class="nav no-search">
+            <li class="nav-item">
+              <a href="{{ url_for('auth.dashboard') }}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ url_for('auth.logout') }}">Logout</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="report-container">
+        <h1>Report a Road Issue</h1>
+
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+
+        <!-- Report Form -->
+        <form
+          action="{{ url_for('reports.report_issue') }}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <label for="description">Description:</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="4"
+            cols="50"
+            required
+          ></textarea>
+          <label for="description">City:</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="1"
+            cols="50"
+            required
+          ></textarea>
+
+          <!-- Map Container -->
+          <div
+            id="map"
+            style="width: 100%; height: 400px; margin-bottom: 1rem;"
+          ></div>
+
+          <!-- Hidden inputs for lat/lng -->
+          <input type="hidden" id="lat" name="lat" />
+          <input type="hidden" id="lng" name="lng" />
+
+          <label for="image">Upload Image (optional):</label>
+          <input type="file" id="image" name="image" accept="image/*" />
+
+          <!-- Submit button disabled by default -->
+          <button type="submit" id="submitBtn" disabled>Submit Report</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Leaflet JS (no integrity) -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+      crossorigin=""
+    ></script>
+
+    <script>
+      // Initialize map at [0,0], zoom=2. We'll override if geolocation works.
+      let map = L.map("map").setView([0, 0], 2);
+
+      // Add OpenStreetMap tiles
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap"
+      }).addTo(map);
+
+      let marker;
+      const latInput = document.getElementById("lat");
+      const lngInput = document.getElementById("lng");
+      const submitBtn = document.getElementById("submitBtn");
+
+      // Enable the submit button once we have valid lat/lng
+      function enableSubmitIfCoordsSet() {
+        if (latInput.value && lngInput.value) {
+          submitBtn.disabled = false;
+        }
+      }
+
+      // Geolocation success callback
+      function onGeolocationSuccess(pos) {
+        const userLat = pos.coords.latitude;
+        const userLng = pos.coords.longitude;
+
+        // Center map on user's location
+        map.setView([userLat, userLng], 13);
+
+        // Create a draggable marker
+        marker = L.marker([userLat, userLng], { draggable: true }).addTo(map);
+
+        // Update hidden inputs
+        latInput.value = userLat;
+        lngInput.value = userLng;
+        enableSubmitIfCoordsSet();
+
+        // Update lat/lng if marker is dragged
+        marker.on("dragend", (e) => {
+          const { lat, lng } = e.target.getLatLng();
+          latInput.value = lat;
+          lngInput.value = lng;
+          enableSubmitIfCoordsSet();
+        });
+      }
+
+      // Fallback if geolocation fails or user denies it
+      function fallbackLocation(defaultLat, defaultLng) {
+        map.setView([defaultLat, defaultLng], 13);
+
+        marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+        latInput.value = defaultLat;
+        lngInput.value = defaultLng;
+        enableSubmitIfCoordsSet();
+
+        marker.on("dragend", (e) => {
+          const { lat, lng } = e.target.getLatLng();
+          latInput.value = lat;
+          lngInput.value = lng;
+          enableSubmitIfCoordsSet();
+        });
+      }
+
+      // Try geolocation
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          onGeolocationSuccess,
+          (error) => {
+            console.error("Geolocation error:", error);
+            // Fallback: e.g., Los Angeles
+            fallbackLocation(34.0522, -118.2437);
+          }
+        );
+      } else {
+        // Browser doesn't support geolocation
+        fallbackLocation(34.0522, -118.2437);
+      }
+
+      // Let user click on the map to place or move a marker
+      map.on("click", (e) => {
+        const { lat, lng } = e.latlng;
+
+        // If no marker yet, create one
+        if (!marker) {
+          marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+          marker.on("dragend", (ev) => {
+            const { lat, lng } = ev.target.getLatLng();
+            latInput.value = lat;
+            lngInput.value = lng;
+            enableSubmitIfCoordsSet();
+          });
+        } else {
+          // Move existing marker
+          marker.setLatLng([lat, lng]);
+        }
+
+        latInput.value = lat;
+        lngInput.value = lng;
+        enableSubmitIfCoordsSet();
+      });
+    </script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
