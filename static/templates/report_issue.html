@@ -1,11 +1,10 @@
-<!-- templates/report_issue.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Report a Road Issue</title>
 
-    <!-- Your custom CSS (e.g., for .report-container, .navbar, etc.) -->
+    <!-- Custom CSS -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='styles/reports.css') }}"
@@ -20,22 +19,17 @@
   </head>
   <body>
     <div class="page-wrapper">
-      <!-- Navigation -->
+
+      <!-- Navbar -->
       <div class="nav-wrapper">
         <div class="grad-bar"></div>
         <nav class="navbar">
           <div class="menu-toggle" id="mobile-menu">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
           </div>
           <ul class="nav no-search">
-            <li class="nav-item">
-              <a href="{{ url_for('auth.dashboard') }}">Home</a>
-            </li>
-            <li class="nav-item">
-              <a href="{{ url_for('auth.logout') }}">Logout</a>
-            </li>
+            <li class="nav-item"><a href="{{ url_for('auth.dashboard') }}">Home</a></li>
+            <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li>
           </ul>
         </nav>
       </div>
@@ -48,10 +42,8 @@
         <div class="flash-messages">
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                  {{ message }}
-                </div>
+              {% for category, msg in messages %}
+                <div class="alert alert-{{ category }}">{{ msg }}</div>
               {% endfor %}
             {% endif %}
           {% endwith %}
@@ -63,56 +55,76 @@
           method="POST"
           enctype="multipart/form-data"
         >
-          <label for="description">Description:</label>
-          <textarea
-            id="description"
-            name="description"
-            rows="4"
-            cols="50"
-            required
-          ></textarea>
-         <!-- City / Street field -->
-  <div class="mb-3">
-    <label for="city_street" class="form-label">City / Street</label>
-    <input 
-      type="text" 
-      class="form-control" 
-      id="city_street" 
-      name="city_street" 
-      placeholder="e.g." 
-      required>
-  </div>
+          <!-- 1. Description -->
+          <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            <textarea
+              id="description"
+              name="description"
+              class="form-control"
+              rows="4"
+              required
+            ></textarea>
+          </div>
 
-          <!-- Map Container -->
-          <div
-            id="map"
-            style="width: 100%; height: 400px; margin-bottom: 1rem;"
-          ></div>
+          <!-- 2. City / Street -->
+          <div class="mb-3">
+            <label for="city_street" class="form-label">City / Street:</label>
+            <input
+              type="text"
+              id="city_street"
+              name="city_street"
+              class="form-control"
+              placeholder="e.g. Tel Aviv / Dizengoff St."
+              required
+            />
+          </div>
 
-          <!-- Hidden inputs for lat/lng -->
+          <!-- 3. Category -->
+          <div class="mb-3">
+            <label for="category" class="form-label">Category:</label>
+            <select id="category" name="category" class="form-select" required>
+              <option value="">-- Select Category --</option>
+              <option value="pothole">Pothole</option>
+              <option value="signage">Missing Signage</option>
+              <option value="road_damage">Road Damage</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <!-- 4. Map Picker -->
+          <div id="map" style="width:100%;height:400px;margin-bottom:1rem;"></div>
           <input type="hidden" id="lat" name="lat" />
           <input type="hidden" id="lng" name="lng" />
 
-          <label for="image">Upload Image (optional):</label>
-          <input type="file" id="image" name="image" accept="image/*" />
+          <!-- 5. Image Upload (optional) -->
+          <div class="mb-3">
+            <label for="image" class="form-label">Upload Image (optional):</label>
+            <input
+              type="file"
+              id="image"
+              name="image"
+              class="form-control"
+              accept="image/*"
+            />
+          </div>
 
-          <!-- Submit button disabled by default -->
-          <button type="submit" id="submitBtn" disabled>Submit Report</button>
+          <!-- 6. Submit -->
+          <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+            Submit Report
+          </button>
         </form>
       </div>
     </div>
 
-    <!-- Leaflet JS (no integrity) -->
+    <!-- Leaflet JS -->
     <script
       src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
       crossorigin=""
     ></script>
-
     <script>
-      // Initialize map at [0,0], zoom=2. We'll override if geolocation works.
-      let map = L.map("map").setView([0, 0], 2);
-
-      // Add OpenStreetMap tiles
+      // Initialize
+      const map = L.map("map").setView([0, 0], 2);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "© OpenStreetMap"
@@ -123,110 +135,51 @@
       const lngInput = document.getElementById("lng");
       const submitBtn = document.getElementById("submitBtn");
 
-      // Enable the submit button once we have valid lat/lng
-      function enableSubmitIfCoordsSet() {
-        if (latInput.value && lngInput.value) {
-          submitBtn.disabled = false;
+      function enableSubmit() {
+        if (latInput.value && lngInput.value) submitBtn.disabled = false;
+      }
+
+      function setMarker(lat, lng) {
+        if (!marker) {
+          marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+          marker.on("dragend", (e) => {
+            const p = e.target.getLatLng();
+            setMarker(p.lat, p.lng);
+          });
+        } else {
+          marker.setLatLng([lat, lng]);
         }
+        latInput.value = lat;
+        lngInput.value = lng;
+        enableSubmit();
       }
 
-      // Geolocation success callback
-      function onGeolocationSuccess(pos) {
-        const userLat = pos.coords.latitude;
-        const userLng = pos.coords.longitude;
-
-        // Center map on user's location
-        map.setView([userLat, userLng], 13);
-
-        // Create a draggable marker
-        marker = L.marker([userLat, userLng], { draggable: true }).addTo(map);
-
-        // Update hidden inputs
-        latInput.value = userLat;
-        lngInput.value = userLng;
-        enableSubmitIfCoordsSet();
-
-        // Update lat/lng if marker is dragged
-        marker.on("dragend", (e) => {
-          const { lat, lng } = e.target.getLatLng();
-          latInput.value = lat;
-          lngInput.value = lng;
-          enableSubmitIfCoordsSet();
-        });
-      }
-
-      // Fallback if geolocation fails or user denies it
-      function fallbackLocation(defaultLat, defaultLng) {
-        map.setView([defaultLat, defaultLng], 13);
-
-        marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
-
-        latInput.value = defaultLat;
-        lngInput.value = defaultLng;
-        enableSubmitIfCoordsSet();
-
-        marker.on("dragend", (e) => {
-          const { lat, lng } = e.target.getLatLng();
-          latInput.value = lat;
-          lngInput.value = lng;
-          enableSubmitIfCoordsSet();
-        });
-      }
-
-      // Try geolocation
+      // Geolocation or fallback
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          onGeolocationSuccess,
-          (error) => {
-            console.error("Geolocation error:", error);
-            // Fallback: e.g., Los Angeles
-            fallbackLocation(34.0522, -118.2437);
+          (pos) => {
+            map.setView([pos.coords.latitude, pos.coords.longitude], 13);
+            setMarker(pos.coords.latitude, pos.coords.longitude);
+          },
+          () => {
+            map.setView([31.7683, 35.2137], 13);
+            setMarker(31.7683, 35.2137);
           }
         );
       } else {
-        // Browser doesn't support geolocation
-        fallbackLocation(34.0522, -118.2437);
+        map.setView([31.7683, 35.2137], 13);
+        setMarker(31.7683, 35.2137);
       }
 
-      // Let user click on the map to place or move a marker
-      map.on("click", (e) => {
-        const { lat, lng } = e.latlng;
+      // Click-to-place
+      map.on("click", (e) => setMarker(e.latlng.lat, e.latlng.lng));
 
-        // If no marker yet, create one
-        if (!marker) {
-          marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-          marker.on("dragend", (ev) => {
-            const { lat, lng } = ev.target.getLatLng();
-            latInput.value = lat;
-            lngInput.value = lng;
-            enableSubmitIfCoordsSet();
-          });
-        } else {
-          // Move existing marker
-          marker.setLatLng([lat, lng]);
-        }
-
-        latInput.value = lat;
-        lngInput.value = lng;
-        enableSubmitIfCoordsSet();
-      });
+      // Mobile toggle
+      document
+        .getElementById("mobile-menu")
+        .addEventListener("click", () =>
+          document.querySelector(".nav").classList.toggle("active")
+        );
     </script>
   </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

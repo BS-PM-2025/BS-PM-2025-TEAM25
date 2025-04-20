@@ -58,6 +58,7 @@
           <th>Image</th>
           <th>Status</th>
           <th>Action</th>
+          <th>Delete report</th>
         </tr>
       </thead>
       <tbody>
@@ -101,7 +102,15 @@
                 <option value="resolved">Resolved</option>
               </select>
               <button type="submit" class="btn btn-sm btn-primary">Update</button>
-            </form>
+            </form><td><!-- Delete button -->
+              <form
+              action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}"
+              method="POST"
+              class="mt-2"
+              onsubmit="return confirm('Are you sure you want to delete this report?');"
+            >
+              <button type="submit" class="btn btn-sm btn-primary"> Delete </button>
+            </form></td>
           </td>
         </tr>
         {% endfor %}
