@@ -25,10 +25,11 @@
       <ul class="nav no-search">
         <li class="nav-item"><a href="{{ url_for('main.profile') }}">Profile</a></li>
         <li class="nav-item"><a href="{{ url_for('reports.report_issue') }}">Report Issue</a></li>
-        <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+        <li class="nav-item"><a href="{{ url_for('user_roles.edit_user_roles') }}">Edit User Roles</a></li> 
         <i class="bi bi-search" id="search-icon"></i>
         <input class="search-input" type="text" placeholder="Search..">
       </ul>
+      <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li>
     </nav>
   </div>
 

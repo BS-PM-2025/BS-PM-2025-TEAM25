@@ -2,11 +2,17 @@ from flask import Flask
 from flask_pymongo import PyMongo
 from auth.main import auth_bp
 from main.main import main_bp
+from main.user_roles import user_roles_bp
 from reports.reports import reports_bp
 import urllib.parse
 import os
 import atexit
 from dotenv import load_dotenv
+
+
+
+
+# after other blueprints...
 
 load_dotenv()
 
@@ -28,6 +34,7 @@ mongo = PyMongo(app)
 app.mongo = mongo
 
 # Register blueprints
+app.register_blueprint(user_roles_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(main_bp)
 app.register_blueprint(reports_bp)

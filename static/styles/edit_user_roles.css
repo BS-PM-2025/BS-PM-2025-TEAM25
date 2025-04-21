@@ -1,0 +1,23 @@
+/* edit_user_roles.css */
+
+.admin-issues-container h1 {
+    margin-bottom: 20px;
+  }
+  
+  table.table-striped tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .form-select-sm, .form-control-sm {
+    width: 100%;
+  }
+  
+  .flash-messages .alert {
+    display: inline-block;
+    margin-bottom: 15px;
+  }
+  
+
+
+
+  
