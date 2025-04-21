@@ -1,0 +1,233 @@
+/* ========================================
+   Reset and Base Styles
+   ======================================== */
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Lato', 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+  }
+  
+  /* ========================================
+     Page Wrapper
+     ======================================== */
+  .page-wrapper {
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  /* ========================================
+     Navbar & Navigation
+     ======================================== */
+  .nav-wrapper {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .grad-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #EE7752, #E73C7E, #bdce00, #00ff08);
+    background-size: 200% 100%;
+    animation: gradientShift 5s ease infinite;
+  }
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    height: 60px;
+  }
+  .menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+  }
+  .menu-toggle .bar {
+    width: 25px;
+    height: 3px;
+    background: #333;
+    margin: 3px 0;
+    transition: 0.3s;
+  }
+  .nav {
+    display: flex;
+    list-style: none;
+    gap: 1rem;
+  }
+  .nav-item a {
+    text-decoration: none;
+    color: #333;
+    transition: color 0.3s;
+  }
+  .nav-item a:hover {
+    color: #ff9500;
+  }
+  
+  /* Mobile Nav */
+  @media (max-width: 768px) {
+    .menu-toggle { display: flex; }
+    .nav {
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      background: #fff;
+      display: none;
+    }
+    .nav.active { display: flex; }
+    .nav-item { text-align: center; padding: 0.5rem; }
+  }
+  
+  /* ========================================
+     Flash Messages
+     ======================================== */
+  .flash-messages {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .alert {
+    display: inline-block;
+    padding: 0.75rem 1.25rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    color: #fff;
+  }
+  .alert-success { background: #28a745; }
+  .alert-danger  { background: #dc3545; }
+  .alert-warning { background: #ffc107; color: #000; }
+  .alert-info    { background: #17a2b8; }
+  
+  /* ========================================
+     Form Container (Report + Dashboard)
+     ======================================== */
+  .report-container,
+  .admin-issues-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  /* ========================================
+     Report Form Styles
+     ======================================== */
+  .report-container h1,
+  .admin-issues-container h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .report-container form {
+    display: flex;
+    flex-direction: column;
+  }
+  .report-container .mb-3 {
+    margin-bottom: 1rem;
+  }
+  .report-container label {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+  .report-container input[type="text"],
+  .report-container textarea,
+  .report-container input[type="file"],
+  .report-container .form-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .report-container button[type="submit"] {
+    align-self: flex-start;
+    background: #3498db;
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .report-container button[type="submit"]:hover:not(:disabled) {
+    background: #2980b9;
+  }
+  
+  /* ========================================
+     Leaflet Map Overrides
+     ======================================== */
+  #map {
+    width: 100%;
+    height: 400px;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  /* ========================================
+     Admin Table Styles
+     ======================================== */
+  .admin-issues-container {
+    overflow-x: auto;
+  }
+  .admin-issues-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  .admin-issues-container th,
+  .admin-issues-container td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+    vertical-align: top;
+    word-wrap: break-word;
+    white-space: normal;
+  }
+  .admin-issues-container th {
+    background: #f2f2f2;
+  }
+  .admin-issues-container td img {
+    max-width: 80px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 4px;
+  }
+  .admin-issues-container select {
+    padding: 0.25rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 0.9rem;
+  }
+  .admin-issues-container button[type="submit"] {
+    background: #27ae60;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+  }
+  .admin-issues-container button[type="submit"]:hover {
+    background: #219150;
+  }
+  

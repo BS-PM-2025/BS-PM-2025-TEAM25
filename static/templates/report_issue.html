@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Report a Road Issue</title>
+
+    <!-- Custom CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles/reports.css') }}"
+    />
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+      crossorigin=""
+    />
+  </head>
+  <body>
+    <div class="page-wrapper">
+
+      <!-- Navbar -->
+      <div class="nav-wrapper">
+        <div class="grad-bar"></div>
+        <nav class="navbar">
+          <div class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+          </div>
+          <ul class="nav no-search">
+            <li class="nav-item"><a href="{{ url_for('auth.dashboard') }}">Home</a></li>
+            <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="report-container">
+        <h1>Report a Road Issue</h1>
+
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, msg in messages %}
+                <div class="alert alert-{{ category }}">{{ msg }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+
+        <!-- Report Form -->
+        <form
+          action="{{ url_for('reports.report_issue') }}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <!-- 1. Description -->
+          <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            <textarea
+              id="description"
+              name="description"
+              class="form-control"
+              rows="4"
+              required
+            ></textarea>
+          </div>
+
+          <!-- 2. City / Street -->
+          <div class="mb-3">
+            <label for="city_street" class="form-label">City / Street:</label>
+            <input
+              type="text"
+              id="city_street"
+              name="city_street"
+              class="form-control"
+              placeholder="e.g. Tel Aviv / Dizengoff St."
+              required
+            />
+          </div>
+
+          <!-- 3. Category -->
+          <div class="mb-3">
+            <label for="category" class="form-label">Category:</label>
+            <select id="category" name="category" class="form-select" required>
+              <option value="">-- Select Category --</option>
+              <option value="pothole">Pothole</option>
+              <option value="signage">Missing Signage</option>
+              <option value="road_damage">Road Damage</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <!-- 4. Map Picker -->
+          <div id="map" style="width:100%;height:400px;margin-bottom:1rem;"></div>
+          <input type="hidden" id="lat" name="lat" />
+          <input type="hidden" id="lng" name="lng" />
+
+          <!-- 5. Image Upload (optional) -->
+          <div class="mb-3">
+            <label for="image" class="form-label">Upload Image (optional):</label>
+            <input
+              type="file"
+              id="image"
+              name="image"
+              class="form-control"
+              accept="image/*"
+            />
+          </div>
+
+          <!-- 6. Submit -->
+          <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+            Submit Report
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+      crossorigin=""
+    ></script>
+    <script>
+      // Initialize
+      const map = L.map("map").setView([0, 0], 2);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap"
+      }).addTo(map);
+
+      let marker;
+      const latInput = document.getElementById("lat");
+      const lngInput = document.getElementById("lng");
+      const submitBtn = document.getElementById("submitBtn");
+
+      function enableSubmit() {
+        if (latInput.value && lngInput.value) submitBtn.disabled = false;
+      }
+
+      function setMarker(lat, lng) {
+        if (!marker) {
+          marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+          marker.on("dragend", (e) => {
+            const p = e.target.getLatLng();
+            setMarker(p.lat, p.lng);
+          });
+        } else {
+          marker.setLatLng([lat, lng]);
+        }
+        latInput.value = lat;
+        lngInput.value = lng;
+        enableSubmit();
+      }
+
+      // Geolocation or fallback
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            map.setView([pos.coords.latitude, pos.coords.longitude], 13);
+            setMarker(pos.coords.latitude, pos.coords.longitude);
+          },
+          () => {
+            map.setView([31.7683, 35.2137], 13);
+            setMarker(31.7683, 35.2137);
+          }
+        );
+      } else {
+        map.setView([31.7683, 35.2137], 13);
+        setMarker(31.7683, 35.2137);
+      }
+
+      // Click-to-place
+      map.on("click", (e) => setMarker(e.latlng.lat, e.latlng.lng));
+
+      // Mobile toggle
+      document
+        .getElementById("mobile-menu")
+        .addEventListener("click", () =>
+          document.querySelector(".nav").classList.toggle("active")
+        );
+    </script>
+  </body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles/profile.css') }}"
+    />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='images/profile.png') }}"
+    />
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <div class="nav-wrapper">
+        <div class="grad-bar"></div>
+        <nav class="navbar">
+          <div class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </div>
+          <ul class="nav no-search">
+            <li class="nav-item">
+              <a href="{{ url_for('auth.dashboard') }}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ url_for('auth.logout') }}">Logout</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <h1>Hi {{ user.name }} 👋</h1>
+
+      <!-- Button & SVG Effect -->
+      <div class="buttonContainer">
+        <svg class="effect" width="486" height="174" viewBox="0 0 486 174">
+          <defs>
+            <clipPath id="theClip">
+              <path
+                d="m 102,35 h 276 c 28.808,0 52,23.192 52,52 0,28.808 -23.192,52 -52,52
+                   H 102 C 73.192002,139 50,115.808 50,87 50,58.192 73.192002,35 102,35 Z"
+              />
+            </clipPath>
+          </defs>
+          <path
+            style="fill: #e2e0de"
+            d="m 102,35 h 276 c 28.808,0 52,23.192 52,52 0,28.808 -23.192,52
+               -52,52 H 102 C 73.192002,139 50,115.808 50,87 50,58.192 73.192002,35
+               102,35 Z"
+          />
+          <path
+            style="fill: #fcfdff"
+            d="m 102,45 h 276 c 23.268,0 42,18.732 42,42 0,23.268 -18.732,42
+               -42,42 H 102 C 78.732002,129 60,110.268 60,87 60,63.732 78.732002,45
+               102,45 Z"
+          />
+        </svg>
+        <!-- Edit Profile Button -->
+        <button class="button" id="editProfileBtn">Edit Profile</button>
+      </div>
+
+      <!-- Hidden Edit Panel -->
+      <div class="edit-panel hidden" id="editPanel">
+        <form action="{{ url_for('main.update_profile') }}" method="POST">
+          <h2>Edit Your Information</h2>
+          <label for="name">Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Enter new name"
+          />
+
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter new password"
+          />
+
+          <button type="submit">Save Changes</button>
+        </form>
+      </div>
+    <!-- Toggle the Edit Panel -->
+    <script>
+      const editBtn = document.getElementById('editProfileBtn');
+      const editPanel = document.getElementById('editPanel');
+
+      editBtn.addEventListener('click', () => {
+        editPanel.classList.toggle('hidden');
+      });
+    </script>
+  <!-- Flash Messages -->
+      <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+    <!-- Hide (fade out) flash messages after 3 seconds -->
+    <script>
+      setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+          alert.style.transition = 'opacity 1s ease';
+          alert.style.opacity = '0';
+          setTimeout(() => {
+            alert.remove();
+          }, 1000);
+        });
+      }, 3000);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit User Roles</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/edit_user_roles.css') }}">
+</head>
+<body class="bg-light">
+  <div class="page-wrapper">
+  <!-- Navbar -->
+  <div class="nav-wrapper">
+    <div class="grad-bar"></div>
+    <nav class="navbar">
+      <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </div>
+      <ul class="nav no-search">
+        <li class="nav-item"><a href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
+        <i class="bi bi-search" id="search-icon"></i>
+
+      </ul>
+      <li class="nav-item ms-auto"><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+    </nav>
+  </div>
+
+    <div class="admin-issues-container">
+      <h1 class="text-center">Edit User Roles & Passwords</h1>
+
+      <!-- Flash messages -->
+      <div class="flash-messages text-center">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Current Role</th>
+            <th>New Role</th>
+            <th>New Password</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.name }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.role }}</td>
+            <td>
+              <form method="POST" class="d-flex align-items-center">
+                <input type="hidden" name="user_id" value="{{ u._id }}">
+                <select name="role" class="form-select form-select-sm me-2">
+                  <option value="">– unchanged –</option>
+                  <option value="user">User</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="admin">Admin</option>
+                </select>
+            </td>
+            <td>
+                <input
+                  type="password"
+                  name="password"
+                  class="form-control form-control-sm"
+                  placeholder="••••••"
+                >
+            </td>
+            <td>
+                <button type="submit" class="btn btn-sm btn-primary">Update</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auth Page</title>
+  <!-- Link to your CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/auth.css') }}">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/auth.png') }}">
+</head>
+<body>
+
+
+  <div class="container" id="container">
+
+    <!-- Registration Form -->
+<div class="form-container sign-up-container">
+  <form action="{{ url_for('auth.register') }}" method="POST">
+    <h1>Create Account</h1>
+    <input type="text" name="name" placeholder="Name" required />
+    <input type="email" name="email" placeholder="Email" required />
+    <input type="password" name="password" placeholder="Password" required />
+    
+    <!-- Role Dropdown -->
+    <select name="role" required>
+      <option value="">Select Role</option>
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+      <option value="maintenance">Maintenance</option>
+    </select>
+    
+    <button type="submit">Sign Up</button>
+  </form>
+</div>
+
+    <!-- Login Form -->
+    <div class="form-container sign-in-container">
+      <form action="{{ url_for('auth.login') }}" method="POST">
+        <h1>Sign in</h1>
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <a href="#">Forgot your password?</a>
+        <button type="submit">Sign In</button>
+      </form>
+    </div>
+
+    <!-- Overlay for toggling forms -->
+    <div class="overlay-container">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <h1>Welcome Back!</h1>
+          <p>To keep connected with us please login with your personal info</p>
+          <button class="ghost" id="signIn">Sign In</button>
+        </div>
+        <div class="overlay-panel overlay-right">
+          <h1>Hello, Friend!</h1>
+          <p>Enter your personal details and start journey with us</p>
+          <button class="ghost" id="signUp">Sign Up</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toggle between Sign In and Sign Up -->
+  <script>
+    const signUpButton = document.getElementById('signUp');
+    const signInButton = document.getElementById('signIn');
+    const container = document.getElementById('container');
+
+    signUpButton.addEventListener('click', () => {
+      container.classList.add("right-panel-active");
+    });
+
+    signInButton.addEventListener('click', () => {
+      container.classList.remove("right-panel-active");
+    });
+  </script>
+ <!-- Flash Messages -->
+ <div class="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+  
+  <!-- Hide (fade out) flash messages after 10 seconds -->
+  <script>
+    // Wait 10 seconds (10,000 ms), then fade out messages
+    setTimeout(() => {
+      const alerts = document.querySelectorAll('.alert');
+      alerts.forEach(alert => {
+        // Optional: Fade out effect
+        alert.style.transition = 'opacity 1s ease';
+        alert.style.opacity = '0';
+        
+        // Remove the element from the DOM after the transition
+        setTimeout(() => {
+          alert.remove();
+        }, 300); // matches the 1s fade-out
+      });
+    }, 3000); // 10,000 ms = 10 seconds
+  </script>
+  
+</body>
+</html>
