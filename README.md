@@ -1,5 +1,5 @@
 # Spatial Application 
-# How to run it 
+# How to run it on Windows
 
 ```
 python -m venv venv
@@ -20,4 +20,24 @@ pip install -r requirements.txt
 ``` 
 python run.py 
 ```
+
+# How to run it on macOS
+
+```
+python3 -m venv venv
+```
+
+```
+source venv/bin/activate
+```
+
+```
+pip install -r requirements.txt
+```
+
+```
+python run.py
+```
+
+
 # BS-PM-2025-TEAM25
