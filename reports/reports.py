@@ -1,14 +1,51 @@
+from datetime import datetime
+# reports/reports.py
 from flask import (
-    Blueprint, render_template, request,
-    redirect, url_for, session, flash, current_app
+    Blueprint, render_template, request, redirect,
+    url_for, session, flash, current_app, abort      # ← أضف abort
 )
 from werkzeug.utils import secure_filename
 from bson import ObjectId
 import os, datetime
 
-reports_bp = Blueprint('reports', __name__, template_folder='../templates')
+reports_bp = Blueprint(
+    "reports",
+    __name__,
+    template_folder="../templates"      # اتركه كما هو عندك
+)
 
+# ---------- صفحة التفاصيل ----------
+@reports_bp.route("/report/<issue_id>")
+def report_detail(issue_id):
+    try:
+        _id = ObjectId(issue_id)
+    except Exception:
+        abort(404)
 
+    mongo = current_app.mongo
+    issue = mongo.db.issues.find_one({"_id": _id})
+    if not issue:
+        abort(404)
+
+    issue["_id"] = str(issue["_id"])
+    issue["timestamp"] = issue["timestamp"]
+    return render_template("report_detail.html", issue=issue)
+
+# ---------- صفحة جميع البلاغات ----------
+@reports_bp.route("/reports")
+def public_reports():
+    """صفحة عامة تعرض كل البلاغات (قائمة + خريطة)."""
+    mongo = current_app.mongo
+    issues = list(mongo.db.issues.find().sort("timestamp", -1))
+    categories = sorted({i.get("category", "") for i in issues if i.get("category")})
+    for i in issues:
+        i["_id"] = str(i["_id"])
+        i["timestamp"] = i["timestamp"]
+    return render_template(
+        "public_reports.html",
+        issues=issues,
+        categories=categories
+    )
 @reports_bp.route("/report_issue", methods=["GET", "POST"])
 def report_issue():
     if "user" not in session:
@@ -57,7 +94,8 @@ def report_issue():
             "image_path":     image_path,
             "status":         "pending",
             "assigned_to":    None,
-            "timestamp":      datetime.datetime.utcnow().isoformat()
+            "timestamp":       datetime.utcnow().isoformat()
+
         }
         mongo.db.issues.insert_one(issue_data)
         flash("Issue reported successfully!", "success")
@@ -122,13 +160,23 @@ def update_status(issue_id):
     return redirect(url_for("auth.dashboard"))
 
 
+
+
+from datetime import datetime
+
 @reports_bp.route("/api/issues")
 def get_all_issues():
     mongo = current_app.mongo
     issues = list(mongo.db.issues.find())
-    for i in issues: i["_id"]=str(i["_id"])
+    for i in issues:
+        i["_id"] = str(i["_id"])
+        ts = i.get("timestamp")
+        # حوّل دائماً لـ ISO بدون microseconds
+        if isinstance(ts, datetime):
+            i["timestamp"] = ts.isoformat(timespec="milliseconds") + "Z"
+        elif isinstance(ts, str) and "." in ts:
+            i["timestamp"] = ts.split(".")[0] + "Z"
     return {"issues": issues}, 200
-
 
 @reports_bp.route("/admin/assign_issue/<issue_id>", methods=["POST"])
 def assign_issue(issue_id):
@@ -145,3 +193,29 @@ def assign_issue(issue_id):
     )
     flash("Assigned!", "success")
     return redirect(url_for("auth.dashboard"))
+
+@reports_bp.route("/my_reports")
+def my_reports():
+    """
+    صفحة تعرض جميع البلاغات التي أبلغها المستخدم الحالي فقط.
+    URL  = /my_reports
+    endpoint = reports.my_reports
+    """
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+
+    mongo  = current_app.mongo
+    issues = list(mongo.db.issues.find({"reporter_email": session["user"]}))
+    for i in issues:                       # حوّل ObjectId لسلسلة
+        i["_id"] = str(i["_id"])
+
+    user_data = mongo.db.users.find_one({"email": session["user"]})
+    if user_data and "password" in user_data:
+        user_data.pop("password")
+
+    return render_template(
+        "user_dashboard.html",   # القالب الذي لديك
+        issues=issues,
+        user=user_data
+    )

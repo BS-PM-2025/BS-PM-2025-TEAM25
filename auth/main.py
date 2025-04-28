@@ -22,7 +22,7 @@ def login():
     if user and check_password_hash(user["password"], password):
         session["user"] = email  # Store email
         session["role"] = user.get("role", "user")  # Store role as well
-        return redirect(url_for("auth.dashboard"))
+        return redirect(url_for("main.home"))
     else:
         flash("Invalid email or password", "danger")
         return redirect(url_for("auth.root"))
