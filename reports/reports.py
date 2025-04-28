@@ -68,39 +68,65 @@ def report_issue():
 
 @reports_bp.route("/delete_issue/<issue_id>", methods=["POST"])
 def delete_issue(issue_id):
-    """Allow a user to delete their own report."""
+    """Allow a user to delete their own report—or any admin to delete any report."""
     if "user" not in session:
         flash("Please log in first", "warning")
         return redirect(url_for("auth.root"))
 
-    mongo = current_app.mongo
-    issue = mongo.db.issues.find_one({"_id": ObjectId(issue_id)})
+    mongo        = current_app.mongo
+    current_user = session["user"]
+    user_doc     = mongo.db.users.find_one({"email": current_user})
+    issue        = mongo.db.issues.find_one({"_id": ObjectId(issue_id)})
+
     if not issue:
         flash("Issue not found.", "danger")
-        return redirect(url_for("auth.dashboard"))
+        # if admin, back to admin list; otherwise to user dashboard
+        return redirect(
+            url_for("reports.admin_issues")
+            if user_doc and user_doc.get("role") == "admin"
+            else url_for("auth.dashboard")
+        )
 
-    if issue.get("reporter_email") != session["user"]:
+    # permission: must be reporter OR admin
+    is_reporter = (issue.get("reporter_email") == current_user)
+    is_admin    = (user_doc and user_doc.get("role") == "admin")
+    if not (is_reporter or is_admin):
         flash("You don't have permission to delete this report.", "danger")
-        return redirect(url_for("auth.dashboard"))
+        return redirect(
+            url_for("reports.admin_issues")
+            if is_admin
+            else url_for("auth.dashboard")
+        )
 
+    # perform deletion
     mongo.db.issues.delete_one({"_id": ObjectId(issue_id)})
     flash("Issue deleted successfully.", "success")
+
+    # redirect according to role
+    if is_admin:
+        return redirect(url_for("reports.admin_issues"))
     return redirect(url_for("auth.dashboard"))
 
 
 @reports_bp.route("/admin/issues")
 def admin_issues():
-    # … your existing admin_issues code …
-    mongo = current_app.mongo
-    user_data = mongo.db.users.find_one({"email": session["user"]})
-    if not user_data or user_data.get("role")!="admin":
+    mongo         = current_app.mongo
+    current_email = session.get("user")
+    user_data     = mongo.db.users.find_one({"email": current_email})
+    if not user_data or user_data.get("role") != "admin":
         flash("Admins only.", "danger")
         return redirect(url_for("auth.dashboard"))
-    issues = list(mongo.db.issues.find().sort("timestamp",-1))
-    maintenance_users = list(mongo.db.users.find({"role":"maintenance"}))
-    return render_template("admin_issues.html",
-                           issues=issues,
-                           maintenance_users=maintenance_users)
+
+    issues = list(mongo.db.issues.find().sort("timestamp", -1))
+    maintenance_users = list(mongo.db.users.find({"role": "maintenance"}))
+
+    return render_template(
+        "admin_dashboard.html",    # or "admin_issues.html" if that's your filename
+        user=user_data,            # <— pass the user here!
+        issues=issues,
+        maintenance_users=maintenance_users
+    )
+
 
 
 @reports_bp.route("/admin/update_status/<issue_id>", methods=["POST"])
