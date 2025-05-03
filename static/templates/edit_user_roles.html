@@ -21,7 +21,9 @@
         <i class="bi bi-search" id="search-icon"></i>
 
       </ul>
-      <li class="nav-item ms-auto"><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+      <ul class="nav no-search">
+        <li class="nav-item"><a href="{{ url_for('main.home') }}"> Home</li>
+        <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li></ul>
     </nav>
   </div>
 

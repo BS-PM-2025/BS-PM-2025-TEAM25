@@ -24,7 +24,9 @@
 
   <style>
     html, body { height:100%; margin:0; }
-    .d-flex-full { display:flex; height:100%; }
+    .d-flex-full { display:flex; height:100%; flex-direction: column; }
+    /* push main content below navbar */
+    .main-content { flex:1; display:flex; }
     .sidebar {
       width:360px;
       background:#f8f9fa;
@@ -72,75 +74,131 @@
 </head>
 <body class="d-flex-full">
 
+  <!-- Top navbar with mini icons -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid">
+      <!-- mobile toggler -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navMenu"
+        aria-controls="navMenu"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- collapsible nav items -->
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="{{ url_for('auth.dashboard') }}"
+              title="Dashboard"
+            >
+              <i class="bi bi-speedometer2">Dashboard</i>
+            </a>
+          </li></ul>
+        <!-- icon-only nav links -->
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{{ url_for('main.home') }}"
+                title="Home"
+              >
+                <i class="bi bi-house">Home</i>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{{ url_for('auth.logout') }}"
+                title="Logout"
+              >
+                <i class="bi bi-box-arrow-right">Logout</i>
+              </a>
+            </li>
+          </ul>
+      </div>
+    </div>
+  </nav>
+
   <!-- pass STATIC_URL into JS -->
   <script>
     const STATIC_URL = "{{ url_for('static', filename='') }}";
   </script>
 
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="filter-header">
-      <a href="{{ url_for('reports.report_issue') }}"
-         class="text-white text-decoration-none">
-        CLICK MAP TO REPORT A PROBLEM &rarr;
-      </a>
+  <!-- main content: sidebar + map -->
+  <div class="main-content">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="filter-header">
+        <a href="{{ url_for('reports.report_issue') }}"
+           class="text-white text-decoration-none">
+          CLICK MAP TO REPORT A PROBLEM &rarr;
+        </a>
+      </div>
+
+      <div class="p-3">
+        <form id="filterForm">
+          <div class="mb-2">
+            <label for="statusFilter" class="form-label small">Report status</label>
+            <select id="statusFilter" class="form-select form-select-sm">
+              <option value="">Everything</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="in progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label for="categoryFilter" class="form-label small">Category</label>
+            <select id="categoryFilter" class="form-select form-select-sm">
+              <option value="">Everything</option>
+              {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label for="sortBy" class="form-label small">Sort by</label>
+            <select id="sortBy" class="form-select form-select-sm">
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+            </select>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="showOlder"/>
+            <label class="form-check-label small" for="showOlder">
+              Show older reports
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 btn-sm">
+            Apply filters
+          </button>
+        </form>
+      </div>
+
+      <div class="pagination-info d-flex justify-content-between align-items-center">
+        <span id="paginationInfo">0 reports</span>
+        <a href="#" id="showOlderLink" class="small">Show older &rarr;</a>
+      </div>
+
+      <ul id="reportList" class="list-group list-group-flush report-list">
+        <!-- filled by JS -->
+      </ul>
     </div>
 
-    <div class="p-3">
-      <form id="filterForm">
-        <div class="mb-2">
-          <label for="statusFilter" class="form-label small">Report status</label>
-          <select id="statusFilter" class="form-select form-select-sm">
-            <option value="">Everything</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="in progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-          </select>
-        </div>
-        <div class="mb-2">
-          <label for="categoryFilter" class="form-label small">Category</label>
-          <select id="categoryFilter" class="form-select form-select-sm">
-            <option value="">Everything</option>
-            {% for cat in categories %}
-              <option value="{{ cat }}">{{ cat }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="mb-2">
-          <label for="sortBy" class="form-label small">Sort by</label>
-          <select id="sortBy" class="form-select form-select-sm">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-          </select>
-        </div>
-        <div class="form-check mb-2">
-          <input class="form-check-input" type="checkbox" id="showOlder"/>
-          <label class="form-check-label small" for="showOlder">
-            Show older reports
-          </label>
-        </div>
-        <button type="submit" class="btn btn-primary w-100 btn-sm">
-          Apply filters
-        </button>
-      </form>
-    </div>
-
-    <div class="pagination-info d-flex justify-content-between align-items-center">
-      <span id="paginationInfo">0 reports</span>
-      <a href="#" id="showOlderLink" class="small">Show older &rarr;</a>
-    </div>
-
-    <ul id="reportList"
-        class="list-group list-group-flush report-list">
-      <!-- filled by JS -->
-    </ul>
+    <!-- Map -->
+    <div id="publicMap"></div>
   </div>
 
-  <!-- Map -->
-  <div id="publicMap"></div>
-
-  <!-- JS -->
+  <!-- libs -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -269,4 +327,3 @@
   </script>
 </body>
 </html>
-

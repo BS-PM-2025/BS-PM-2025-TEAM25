@@ -25,13 +25,13 @@
             <span class="bar"></span>
           </div>
           <ul class="nav no-search">
-            <li class="nav-item">
-              <a href="{{ url_for('auth.dashboard') }}">Home</a>
-            </li>
-            <li class="nav-item">
-              <a href="{{ url_for('auth.logout') }}">Logout</a>
-            </li>
+            <li class="nav-item"><a href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
+            <i class="bi bi-search" id="search-icon"></i>
+    
           </ul>
+          <ul class="nav no-search">
+            <li class="nav-item"><a href="{{ url_for('main.home') }}"> Home</li>
+            <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li></ul>
         </nav>
       </div>
 

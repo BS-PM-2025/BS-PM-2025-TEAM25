@@ -29,7 +29,16 @@
         <i class="bi bi-search" id="search-icon"></i>
         <input class="search-input" type="text" placeholder="Search..">
       </ul>
-      <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+      <ul class="nav no-search">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('reports.my_reports') }}">
+              My&nbsp;reports
+              <span class="badge bg-light text-dark">{{ my_issue_count }}</span>
+            </a>
+            
+      </li>
+      <li class="nav-item"><a href="{{ url_for('main.home') }}"> Home</li>
+      <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li></ul>
     </nav>
   </div>
 
