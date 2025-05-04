@@ -75,17 +75,7 @@
     <div class="report-container">
       <h1>Report a Road Issue</h1>
 
-      <!-- Flash Messages -->
-      <div class="flash-messages">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, msg in messages %}
-              <div class="alert alert-{{ category }}">{{ msg }}</div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-      </div>
-
+     
       <form
         action="{{ url_for('reports.report_issue') }}"
         method="POST"

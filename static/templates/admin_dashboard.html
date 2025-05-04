@@ -204,15 +204,21 @@
                   </td>
 
                   <!-- DELETE -->
-                  <td>
-                    <form
-                      action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}"
-                      method="POST"
-                      onsubmit="return confirm('Delete this report?')"
-                    >
-                      <button class="btn btn-sm btn-danger">Delete</button>
-                    </form>
-                  </td>
+<td>
+  {% if user.role == 'admin' or issue.reporter_email == user.email %}
+    <form
+      action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}"
+      method="POST"
+      onsubmit="return confirm('Delete this report?')"
+    >
+      <button type="submit" class="btn btn-sm btn-danger">
+        <i class="bi bi-trash"></i> Delete
+      </button>
+    </form>
+  {% else %}
+    &mdash;
+  {% endif %}
+</td>
                 </tr>
                 {% endfor %}
               </tbody>
