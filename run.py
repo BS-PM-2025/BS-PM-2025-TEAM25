@@ -18,9 +18,12 @@ load_dotenv()
 
 app = Flask(__name__)
 
-raw_username = os.getenv("RAW_USERNAME")
-raw_password = os.getenv("RAW_PASSWORD")
 
+
+raw_username = os.getenv("raw_username")
+raw_password = os.getenv("raw_password")
+print("USERNAME VALUE:", raw_username)
+print("RAW_PASSWORD:", raw_password)
 username = urllib.parse.quote_plus(raw_username)
 password = urllib.parse.quote_plus(raw_password)
 

@@ -1,267 +1,265 @@
-/* Reset & Base Styles */
+/* Reset & Base */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    font-family: 'Lato', 'Arial', sans-serif;
-    color: #333;
-    background-color: #f8f9fa;
-    line-height: 1.6;
-  }
-  
-  /* Page Wrapper */
-  .page-wrapper {
-    width: 100%;
-    min-height: 100vh;
-  }
-  
-  /* Navigation Wrapper */
-  .nav-wrapper {
-    width: 100%;
-    position: sticky;
-    top: 0;
-    background-color: #fff;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Gradient Bar */
-  .grad-bar {
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, #EE7752, #E73C7E, #bdce00, #00ff08);
-    background-size: 200% 100%;
-    animation: gradientShift 5s ease infinite;
-  }
-  
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  
-  /* Navbar */
-  .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 60px;
-    padding: 0 20px;
-  }
-  
-  /* Mobile Menu Toggle */
-  .menu-toggle {
-    display: none;
-    cursor: pointer;
-  }
-  
-  .menu-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px 0;
-    background-color: #333;
-    transition: transform 0.3s ease;
-  }
-  
-  /* Navigation List */
-  .nav {
-    display: flex;
-    align-items: center;
-    list-style: none;
-    gap: 20px;
-  }
-  
-  .nav-item a {
-    text-decoration: none;
-    color: #333;
-    font-size: 1rem;
-    transition: color 0.3s ease;
-  }
-  
-  .nav-item a:hover {
-    color: #ff9900;
-  }
-  
-  
-  /* Profile Greeting */
-  body > h1,
-  h1 {
-    margin-top: 40px;
-    font-size: 2rem;
-    text-align: center;
-    color: #333;
-  }
-  
-  /* Responsive Styles */
-  @media (max-width: 768px) {
-    .navbar {
-      flex-wrap: wrap;
-    }
-    
-    .menu-toggle {
-      display: block;
-    }
-    
-    .nav {
-      width: 100%;
-      flex-direction: column;
-      display: none; /* Hidden by default, toggle with JavaScript */
-      background-color: #fff;
-      padding: 20px 0;
-    }
-    
-    .nav.active {
-      display: flex;
-    }
-    
-    .nav-item {
-      padding: 10px 0;
-    }
-  }
-  
-
-   body {
-    align-items: center;
-    background: linear-gradient(
-        20deg,
-        rgba(204, 112, 0, 0.5),
-        rgba(255, 0, 0, 0) 70.71%
-      ),
-      linear-gradient(150deg, rgba(255, 153, 0, 0.5), rgba(0, 255, 0, 0) 70.71%),
-      linear-gradient(330deg, rgba(255, 242, 0, 0.5), rgba(0, 0, 255, 0) 70.71%);
-    display: flex;
-    justify-content: center;
-    height: 100vh;
-    overflow: hidden;
-  } 
-  .buttonContainer {
-    /* Center horizontally via flex and auto margins */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 30px auto;         /* 30px top/bottom, auto left/right */
-    width: 486px;
-    height: 174px;
-  
-    /* Keep your transform properties */
-    transform: scale(0.7);
-    transform-origin: 50% 50%;
-    transition: transform 60ms;
-  
-    /* position: relative if you want .effect absolutely positioned within */
-    position: relative;
-  }
-  
-  .buttonContainer:active {
-    transform: scale(0.65);
-  }
-  
-  .button {
-    /* Removed fixed left/top to allow flex centering */
-    position: relative;
-    background-color: transparent;
-    border-radius: 50px;
-    border: 0;
-    box-shadow: 0px 2.4px 2.2px rgba(0, 0, 0, 0.042),
-                0px 5.1px 5.3px rgba(0, 0, 0, 0.061),
-                0px 8.8px 10px rgba(0, 0, 0, 0.075),
-                0px 15.4px 17.9px rgba(0, 0, 0, 0.089),
-                0px 30.6px 33.4px rgba(0, 0, 0, 0.108),
-                0px 100px 80px rgba(0, 0, 0, 0.15);
-    color: #47515e;
-    cursor: pointer;
-    font-size: 30px;
-    width: 380px;
-    height: 104px;
-  }
-  
-  .effect {
-    position: absolute; /* keeps the SVG effect positioned over/behind the button */
-    top: 0;
-    left: 0;
-  }
-  
-
-
-
-  /* Hidden Class */
-.hidden {
-  display: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Lato', Arial, sans-serif;
+  background: #f8f9fa;
+  color: #333;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Edit Panel Styles */
+/* Navbar wrapper */
+.nav-wrapper {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background: #fff;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.grad-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #EE7752, #E73C7E, #bdce00, #00ff08);
+  background-size: 200% 100%;
+  animation: gradientShift 5s ease infinite;
+}
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  padding: 0 1rem;
+}
+.navbar .nav {
+  display: flex;
+  list-style: none;
+  gap: 1rem;
+}
+.navbar .nav-item .nav-link {
+  text-decoration: none;
+  color: #ffffff;
+  padding: 0.5rem;
+  transition: color 0.3s ease;
+}
+.navbar .nav-item .nav-link:hover {
+  color: #ff9900;
+}
+.navbar-toggler {
+  border: none;
+}
+.navbar-toggler-icon {
+  filter: invert(0.5);
+}
+
+/* Mobile menu */
+.menu-toggle {
+  display: none;
+}
+@media (max-width: 768px) {
+  .menu-toggle { display: block; cursor: pointer; }
+  .nav.no-search {
+    display: none;
+    flex-direction: column;
+    background: #fff;
+    width: 100%;
+    text-align: center;
+  }
+  .nav.no-search.active { display: flex; }
+}
+
+/* Profile greeting */
+.page-wrapper > h1, h1 {
+  margin: 2rem auto;
+  text-align: center;
+  font-size: 2rem;
+}
+
+/* Button & SVG effect */
+.buttonContainer {
+  position: relative;
+  margin: 2rem auto;
+  width: 486px;
+  height: 174px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: scale(0.7);
+  transform-origin: center;
+  transition: transform 60ms;
+}
+.buttonContainer:active {
+  transform: scale(0.65);
+}
+.button {
+  position: relative;
+  width: 380px;
+  height: 104px;
+  background: transparent;
+  border: none;
+  border-radius: 50px;
+  box-shadow:
+    0px 2.4px 2.2px rgba(0,0,0,0.042),
+    0px 5.1px 5.3px rgba(0,0,0,0.061),
+    0px 8.8px 10px rgba(0,0,0,0.075),
+    0px 15.4px 17.9px rgba(0,0,0,0.089),
+    0px 30.6px 33.4px rgba(0,0,0,0.108),
+    0px 100px 80px rgba(0,0,0,0.15);
+  font-size: 30px;
+  color: #47515e;
+  cursor: pointer;
+}
+.effect {
+  position: absolute;
+  top: 0; left: 0;
+}
+
+/* Hidden panel */
+.hidden { display: none; }
 .edit-panel {
-  margin: 20px auto;
   max-width: 500px;
-  background-color: #fff;
-  padding: 20px;
+  margin: 1.5rem auto;
+  background: #fff;
+  padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
 .edit-panel h2 {
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
   text-align: center;
 }
-
 .edit-panel label {
   display: block;
-  margin: 10px 0 5px;
-  font-weight: bold;
+  margin: 0.75rem 0 0.25rem;
 }
-
 .edit-panel input {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 15px;
+  padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 .edit-panel button[type="submit"] {
-  background-color: #eea200;
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.5rem 1.5rem;
+  background: #eea200;
   color: #fff;
-  padding: 10px 20px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
-
 .edit-panel button[type="submit"]:hover {
-  background-color: #fcb500;
+  background: #fcb500;
 }
 
-
-
-/* Flash Message Styles */
+/* Flash messages */
 .flash-messages {
-	width: 100%;
-	max-width: 768px;
-	margin: 10px auto;
-	text-align: center;
+  max-width: 768px;
+  margin: 1rem auto;
+  text-align: center;
 }
 .alert {
-	padding: 12px 20px;
-	border-radius: 20px;
-	color: #fff;
-	margin: 15px 0;
-	font-size: 14px;
-	display: inline-block;
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 20px;
+  color: #fff;
 }
-.alert-success {
-	background-color: #28a745;
+.alert-success { background: #28a745; }
+.alert-danger  { background: #dc3545; }
+.alert-warning { background: #ff6207; color: #000; }
+.alert-info    { background: #ff9d00; }
+
+
+
+
+/* Profile page overrides */
+
+/* center the greeting */
+.page-wrapper > h1 {
+  margin: 2rem auto;
+  text-align: center;
+  color: #333;
+  font-size: 2rem;
 }
-.alert-danger {
-	background-color: #dc3545;
+
+/* align the edit panel and button */
+.buttonContainer {
+  position: relative;
+  margin: 2rem auto;
+  width: 486px;
+  height: 174px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: scale(0.7);
+  transform-origin: center;
+  transition: transform 60ms;
 }
-.alert-warning {
-	background-color: #ff6207;
-	color: #000;
+.buttonContainer:active {
+  transform: scale(0.65);
 }
-.alert-info {
-	background-color: #ff9d00;
+.button {
+  position: relative;
+  width: 380px;
+  height: 104px;
+  background: transparent;
+  border: none;
+  border-radius: 50px;
+  box-shadow:
+    0px 2.4px 2.2px rgba(0,0,0,0.042),
+    0px 5.1px 5.3px rgba(0,0,0,0.061),
+    0px 8.8px 10px rgba(0,0,0,0.075),
+    0px 15.4px 17.9px rgba(0,0,0,0.089),
+    0px 30.6px 33.4px rgba(0,0,0,0.108),
+    0px 100px 80px rgba(0,0,0,0.15);
+  font-size: 30px;
+  color: #47515e;
+  cursor: pointer;
 }
+.effect {
+  position: absolute;
+  top: 0; left: 0;
+}
+/* hidden utility */
+.hidden { display: none; }
+
+/* edit panel */
+.edit-panel {
+  max-width: 500px;
+  margin: 1.5rem auto;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.edit-panel h2 { text-align: center; margin-bottom: 1rem; }
+.edit-panel label { margin: .75rem 0 .25rem; display: block; }
+.edit-panel input {
+  width: 100%; padding: .5rem; margin-bottom: 1rem;
+  border: 1px solid #ccc; border-radius: 4px;
+}
+.edit-panel button {
+  display: block; margin: 0 auto;
+  padding: .5rem 1.5rem;
+  background: #eea200; color: #fff;
+  border: none; border-radius: 4px;
+}
+.edit-panel button:hover { background: #fcb500; }
+
+/* flash badges reuse bootstrap .badge */
+.flash-messages { text-align: center; margin: 1rem auto; }
+.alert { display: inline-block; margin-bottom: 1rem; }
+
+/* everything else (navbar, gradient-bar, badge, etc.) comes from dashboard.css */
