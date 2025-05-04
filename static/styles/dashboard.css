@@ -195,36 +195,48 @@ body {
 
 /* Navigation Wrapper */
 .nav-wrapper {
-  width: 100%;
   position: sticky;
   top: 0;
-  background-color: #fff;
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
- /* Gradient Bar */
- .grad-bar {
-  width: 100%;
+/* Gradient Bar */
+.grad-bar {
   height: 4px;
-  background: linear-gradient(90deg, #EE7752, #E73C7E, #bdce00, #00ff08);
+  background: linear-gradient(90deg, #3b3b3b, #0caaff, #000000, #ffffff);
   background-size: 200% 100%;
   animation: gradientShift 5s ease infinite;
 }
-
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
 }
 
 /* Navbar */
 .navbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  height: 60px;
-  padding: 0 20px;
+  padding: 0.5rem 1rem;
+}
+.navbar .nav {
+  display: flex;
+  list-style: none;
+  gap: 1rem;
+}
+.navbar .nav-item .nav-link {
+  color: #fff;
+  transition: color 0.2s;
+}
+.navbar .nav-item .nav-link:hover {
+  color: #ffd700;
+}
+.navbar-toggler {
+  border-color: rgba(255,255,255,0.5);
+}
+.navbar-toggler-icon {
+  filter: invert(1);
 }
 
 /* Mobile Menu Toggle */
@@ -341,4 +353,93 @@ body {
 
 
 
+/* static/styles/dashboard.css */
+
+/* 1) Gradient background */
+.hm-gradient {
+  background-image: linear-gradient(to top, #000000 0%, #14a5ff 99%, #5e5e5e 100%);
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+/* 2) Text utilities */
+.darken-grey-text { color: #2E2E2E; }
+.deep-purple-text { color: #323232; }
+.font-bold { font-weight: 700; }
+.font-up { text-transform: uppercase; }
+
+/* 3) Search box (from your snippet) */
+.input-group.md-form.form-sm.form-2 input {
+  border: 1px solid #bdbdbd;
+  border-top-left-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+input.purple-border {
+  border: 1px solid #797979;
+}
+input.purple-border:focus {
+  border: 1px solid #e3ff47;
+  box-shadow: none;
+}
+.form-2 .input-group-text {
+  border: 1px solid #464646;
+  background-color: #494949;
+  cursor: pointer;
+}
+.white-text { color: #fff!important; }
+
+/* 4) Table border utilities */
+.table-bordered.red-border,
+.table-bordered.red-border th,
+.table-bordered.red-border td {
+  border: 1px solid #ff3547!important;
+}
+.table thead th {
+  background-color: #000000;
+  color: #fff;
+}
+
+/* 5) Status badges (from your CSS) */
+.badge-danger  { background-color: #ff3547; }
+.badge-warning { background-color: #ffc107; color: #000; }
+.badge-info    { background-color: #17a2b8; }
+.badge-success { background-color: #00C851; }
+
+/* 6) Thumbnail styling */
+.image-thumb-admin {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.image-thumb-admin:hover {
+  transform: scale(1.05);
+}
+
+/* 7) Navbar styling */
+.navbar {
+  background-color: rgba(0, 0, 0, 0.85);
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+.navbar .nav-link {
+  color: #ffffff;
+  margin-right: 1rem;
+  transition: color 0.3s;
+}
+.navbar .nav-link:hover {
+  color: #ffffff;
+}
+
+/* 8) Utility resets */
+.mb-4 { margin-bottom: 1.5rem!important; }
+.mt-4 { margin-top: 1.5rem!important; }
+.pt-3 { padding-top: 1rem!important; }
+.pb-4 { padding-bottom: 1.5rem!important; }
+
+/* 9) Flash alerts (if any) */
+.alert {
+  border-radius: 0.25rem;
+}
 

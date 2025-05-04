@@ -1,23 +1,40 @@
-/* edit_user_roles.css */
+/* Container card */
+.admin-issues-container {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
 
+/* Heading */
 .admin-issues-container h1 {
-    margin-bottom: 20px;
-  }
-  
-  table.table-striped tbody tr:hover {
-    background-color: #f1f1f1;
-  }
-  
-  .form-select-sm, .form-control-sm {
-    width: 100%;
-  }
-  
-  .flash-messages .alert {
-    display: inline-block;
-    margin-bottom: 15px;
-  }
-  
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 500;
+}
 
+/* Flash alerts */
+.flash-messages .alert {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
 
+/* Compact inputs and selects */
+.form-select-sm {
+  max-width: 140px;
+}
+.form-control-sm {
+  max-width: 160px;
+}
 
-  
+/* Remove bottom margin on table wrapper */
+.table-responsive {
+  margin-bottom: 0;
+}
+
+/* Make table header dark */
+.table-dark th {
+  background-color: #343a40;
+  color: #fff;
+  border-color: #454d55;
+}
