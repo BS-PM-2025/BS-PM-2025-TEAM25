@@ -138,16 +138,28 @@ def admin_dashboard():
         flash("Admins only.", "danger")
         return redirect(url_for("auth.dashboard"))
 
-    issues            = list(mongo.db.issues.find().sort("timestamp", -1))
-    maintenance_users = list(mongo.db.users.find({"role": "maintenance"}))
-
+    # load all issues…
+    issues = list(mongo.db.issues.find().sort("timestamp", -1))
     for i in issues:
         i["_id"] = str(i["_id"])
+
+    # load maintenance users for the dropdown
+    maintenance_users = list(mongo.db.users.find({"role": "maintenance"}))
+
+    # count how many issues this admin has reported (for the "My Reports" badge)
+    my_issue_count = mongo.db.issues.count_documents({
+        "reporter_email": session["user"]
+    })
+
+    # don’t accidentally expose the password hash
+    user_data.pop("password", None)
 
     return render_template(
         "admin_dashboard.html",
         issues=issues,
-        maintenance_users=maintenance_users
+        maintenance_users=maintenance_users,
+        user=user_data,            # <— now available in the template
+        my_issue_count=my_issue_count
     )
 
 
