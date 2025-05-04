@@ -15,27 +15,113 @@
   <!-- Custom CSS -->
   <style>
     :root {
-      --yellow-500: #ffd500;
-      --yellow-700: #d4b200;
-      --dark-900: #1f1f1f;
-      --gray-200: #f5f6f7;
-      --shadow-sm: 0 2px 4px rgba(0, 0, 0, .08);
-      --shadow-lg: 0 8px 20px rgba(0, 0, 0, .15);
+      /* Brand colors */
+      --primary-500: #1e90ff;   /* DodgerBlue */
+      --primary-700: #ffffff;   /* Darker blue */
+      --dark-900:   #0d1117;    /* Almost black */
+      --gray-200:   #f5f6f7;
+      --shadow-sm:  0 2px 4px rgba(0, 0, 0, .08);
+      --shadow-lg:  0 8px 20px rgba(0, 0, 0, 0.986);
     }
-    body { background: var(--gray-200); font-family: 'Inter', sans-serif; }
-    .navbar { background: var(--dark-900) !important; }
-    #hero { background: linear-gradient(135deg, #ffe45c, #ffd500); position: relative; overflow: hidden; }
-    #hero::after { content: ''; position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/asfalt-light.png'); opacity: .25; }
-    #searchForm .form-control { border-radius: .5rem 0 0 .5rem; }
-    #searchForm .btn { border-radius: 0 .5rem .5rem 0; }
-    #locBtn:hover { background: var(--yellow-700); color: #fff; }
-    .card { border: none; box-shadow: var(--shadow-sm); transition: .15s ease; }
-    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-    .stats-number { font-size: 1.6rem; color: var(--dark-900); }
-    .recent-list { max-height: 270px; overflow-y: auto; }
-    .recent-list img { width: 48px; height: 48px; object-fit: cover; border-radius: .4rem; }
-    #map { height: 55vh; width: 100%; border-top: 4px solid var(--yellow-500); border-radius: 0 0 1rem 1rem; }
+
+    body {
+      background: var(--gray-200);
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: var(--dark-900) !important;
+    }
+    .navbar .nav-link.active,
+    .navbar .nav-link:hover {
+      color: var(--primary-500) !important;
+    }
+
+    /* Hero section */
+    #hero {
+      background: linear-gradient(
+        135deg,
+        var(--primary-500),
+        var(--primary-700)
+      );
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+    }
+    #hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://www.transparenttextures.com/patterns/asfalt-light.png');
+      opacity: .15;
+    }
+    #hero .btn-dark {
+      background: #fff;
+      color: var(--primary-700);
+      border: none;
+    }
+    #hero .btn-dark:hover {
+      background: var(--primary-700);
+      color: #fff;
+    }
+    #locBtn {
+      border-color: #fff;
+      color: #fff;
+    }
+    #locBtn:hover {
+      background: #fff;
+      color: var(--primary-700);
+    }
+
+    /* Input group */
+    #searchForm .form-control {
+      border-radius: .5rem 0 0 .5rem;
+      border-color: #ddd;
+    }
+    #searchForm .btn {
+      border-radius: 0 .5rem .5rem 0;
+      background: var(--primary-700);
+    }
+
+    /* Cards */
+    .card {
+      border: none;
+      box-shadow: var(--shadow-sm);
+      transition: .15s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Stats numbers */
+    .stats-number {
+      font-size: 1.6rem;
+      color: var(--dark-900);
+    }
+
+    /* Recent list */
+    .recent-list {
+      max-height: 270px;
+      overflow-y: auto;
+    }
+    .recent-list img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: .4rem;
+    }
+
+    /* Map container */
+    #map {
+      height: 55vh;
+      width: 100%;
+      border-top: 4px solid var(--primary-500);
+      border-radius: 0 0 1rem 1rem;
+    }
   </style>
+
 </head>
 <body class="d-flex flex-column min-vh-100">
 
@@ -51,7 +137,7 @@
       <div class="collapse navbar-collapse" id="navMenu">
         <!-- يسار الشريط: روابط عامة -->
         <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link active" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
           <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
         </ul>
   
@@ -99,7 +185,7 @@
       <div class="col-md-6">
         <form id="searchForm" class="input-group input-group-lg">
           <input id="searchInput" type="text" class="form-control" placeholder="Street or area…" required>
-          <button class="btn btn-dark" type="submit">Search</button>
+          <button class="btn btn-light" type="submit">Search</button>
         </form>
         <button id="locBtn" class="btn btn-outline-dark btn-sm mt-2">
           <i class="bi bi-geo-alt-fill me-1"></i>Use my location

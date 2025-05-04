@@ -1,188 +1,197 @@
+<!-- templates/report_issue.html -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Report a Road Issue</title>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Report a Road Issue</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/home.png') }}"/>
 
-    <!-- Custom CSS -->
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='styles/reports.css') }}"
-    />
+  <!-- Bootstrap 5 & Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    rel="stylesheet"
+  />
 
-    <!-- Leaflet CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-      crossorigin=""
-    />
-  </head>
-  <body>
-    <div class="page-wrapper">
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    crossorigin=""
+  />
 
-      <!-- Navbar -->
-      <div class="nav-wrapper">
-        <div class="grad-bar"></div>
-        <nav class="navbar">
-          <div class="menu-toggle" id="mobile-menu">
-            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
-          </div>
-          <ul class="nav no-search">
-            <li class="nav-item"><a href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
-          </ul>
-          <ul class="nav no-search">
-            <li class="nav-item"><a href="{{ url_for('main.home') }}"> Home</li>
-            <li class="nav-item"><a href="{{ url_for('auth.logout') }}">Logout</a></li></ul>
-          </nav>
-        </nav>
-      </div>
+  <!-- Your custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/reports.css') }}"/>
+</head>
+<body class="hm-gradient">
+  <div class="page-wrapper">
 
-      <!-- Main Content -->
-      <div class="report-container">
-        <h1>Report a Road Issue</h1>
+    
+   <!-- NAVBAR -->
+   <nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+      <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
+        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+      </a></li></ul>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#profileNav"
+        aria-controls="profileNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <!-- Flash Messages -->
-        <div class="flash-messages">
-          {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-              {% for category, msg in messages %}
-                <div class="alert alert-{{ category }}">{{ msg }}</div>
-              {% endfor %}
-            {% endif %}
-          {% endwith %}
-        </div>
-
-        <!-- Report Form -->
-        <form
-          action="{{ url_for('reports.report_issue') }}"
-          method="POST"
-          enctype="multipart/form-data"
-        >
-          <!-- 1. Description -->
-          <div class="mb-3">
-            <label for="description" class="form-label">Description:</label>
-            <textarea
-              id="description"
-              name="description"
-              class="form-control"
-              rows="4"
-              required
-            ></textarea>
-          </div>
-
-          <!-- 2. City / Street -->
-          <div class="mb-3">
-            <label for="city_street" class="form-label">City / Street:</label>
-            <input
-              type="text"
-              id="city_street"
-              name="city_street"
-              class="form-control"
-              placeholder="e.g. Tel Aviv / Dizengoff St."
-              required
-            />
-          </div>
-
-          <!-- 3. Category -->
-          <div class="mb-3">
-            <label for="category" class="form-label">Category:</label>
-            <select id="category" name="category" class="form-select" required>
-              <option value="">-- Select Category --</option>
-              <option value="pothole">Pothole</option>
-              <option value="signage">Missing Signage</option>
-              <option value="road_damage">Road Damage</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <!-- 4. Map Picker -->
-          <div id="map" style="width:100%;height:400px;margin-bottom:1rem;"></div>
-          <input type="hidden" id="lat" name="lat" />
-          <input type="hidden" id="lng" name="lng" />
-
-          <!-- 5. Image Upload (optional) -->
-          <div class="mb-3">
-            <label for="image" class="form-label">Upload Image (optional):</label>
-            <input
-              type="file"
-              id="image"
-              name="image"
-              class="form-control"
-              accept="image/*"
-            />
-          </div>
-
-          <!-- 6. Submit -->
-          <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
-            Submit Report
-          </button>
-        </form>
+      <div class="collapse navbar-collapse" id="profileNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.home') }}">
+              <i class="bi bi-house me-1"></i>Home
+            </a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+              <i class="bi bi-box-arrow-right me-1"></i>Logout
+            </a>
+          </li>
+        </ul>
       </div>
     </div>
+  </nav>
 
-    <!-- Leaflet JS -->
-    <script
-      src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-      crossorigin=""
-    ></script>
-    <script>
-      // Initialize
-      const map = L.map("map").setView([0, 0], 2);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "© OpenStreetMap"
-      }).addTo(map);
+    <!-- MAIN CONTENT -->
+    <div class="report-container">
+      <h1>Report a Road Issue</h1>
 
-      let marker;
-      const latInput = document.getElementById("lat");
-      const lngInput = document.getElementById("lng");
-      const submitBtn = document.getElementById("submitBtn");
+      <!-- Flash Messages -->
+      <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, msg in messages %}
+              <div class="alert alert-{{ category }}">{{ msg }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
 
-      function enableSubmit() {
-        if (latInput.value && lngInput.value) submitBtn.disabled = false;
-      }
+      <form
+        action="{{ url_for('reports.report_issue') }}"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <!-- 1. Description -->
+        <div class="mb-3">
+          <label for="description" class="form-label">Description:</label>
+          <textarea
+            id="description"
+            name="description"
+            class="form-control"
+            rows="4"
+            required
+          ></textarea>
+        </div>
 
-      function setMarker(lat, lng) {
-        if (!marker) {
-          marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-          marker.on("dragend", (e) => {
-            const p = e.target.getLatLng();
-            setMarker(p.lat, p.lng);
-          });
-        } else {
-          marker.setLatLng([lat, lng]);
-        }
-        latInput.value = lat;
-        lngInput.value = lng;
-        enableSubmit();
-      }
+        <!-- 2. City / Street -->
+        <div class="mb-3">
+          <label for="city_street" class="form-label">City / Street:</label>
+          <input
+            type="text"
+            id="city_street"
+            name="city_street"
+            class="form-control"
+            placeholder="e.g. Tel Aviv / Dizengoff St."
+            required
+          />
+        </div>
 
-      // Geolocation or fallback
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            map.setView([pos.coords.latitude, pos.coords.longitude], 13);
-            setMarker(pos.coords.latitude, pos.coords.longitude);
-          },
-          () => {
-            map.setView([31.7683, 35.2137], 13);
-            setMarker(31.7683, 35.2137);
-          }
-        );
-      } else {
-        map.setView([31.7683, 35.2137], 13);
-        setMarker(31.7683, 35.2137);
-      }
+        <!-- 3. Category -->
+        <div class="mb-3">
+          <label for="category" class="form-label">Category:</label>
+          <select id="category" name="category" class="form-select" required>
+            <option value="">-- Select Category --</option>
+            <option value="pothole">Pothole</option>
+            <option value="signage">Missing Signage</option>
+            <option value="road_damage">Road Damage</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
 
-      // Click-to-place
-      map.on("click", (e) => setMarker(e.latlng.lat, e.latlng.lng));
+        <!-- 4. Map Picker -->
+        <div id="map" style="width:100%;height:400px;margin-bottom:1rem;"></div>
+        <input type="hidden" id="lat" name="lat" />
+        <input type="hidden" id="lng" name="lng" />
 
-      // Mobile toggle
-      document
-        .getElementById("mobile-menu")
-        .addEventListener("click", () =>
-          document.querySelector(".nav").classList.toggle("active")
-        );
-    </script>
-  </body>
+        <!-- 5. Image Upload -->
+        <div class="mb-3">
+          <label for="image" class="form-label">Upload Image (optional):</label>
+          <input
+            type="file"
+            id="image"
+            name="image"
+            class="form-control"
+            accept="image/*"
+          />
+        </div>
+
+        <!-- 6. Submit -->
+        <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+          Submit Report
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+    crossorigin=""
+  ></script>
+  <!-- Bootstrap JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ></script>
+  <!-- Map Script (unchanged) -->
+  <script>
+    const map = L.map("map").setView([31.7683, 35.2137], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    let marker, latInput = document.getElementById("lat"), lngInput = document.getElementById("lng"), submitBtn = document.getElementById("submitBtn");
+
+    function enableSubmit() {
+      if (latInput.value && lngInput.value) submitBtn.disabled = false;
+    }
+    function setMarker(lat, lng) {
+      if (!marker) {
+        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        marker.on("dragend", e => setMarker(e.target.getLatLng().lat, e.target.getLatLng().lng));
+      } else marker.setLatLng([lat, lng]);
+      latInput.value = lat; lngInput.value = lng; enableSubmit();
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => { setMarker(pos.coords.latitude, pos.coords.longitude); map.setView([pos.coords.latitude, pos.coords.longitude], 13); },
+        () => setMarker(31.7683, 35.2137)
+      );
+    } else {
+      setMarker(31.7683, 35.2137);
+    }
+    map.on("click", e => setMarker(e.latlng.lat, e.latlng.lng));
+  </script>
+</body>
 </html>
