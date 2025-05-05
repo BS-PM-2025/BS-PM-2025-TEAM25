@@ -163,31 +163,33 @@ def admin_dashboard():
     )
 
 
-# ---------- تحديث الحالة ----------
-@reports_bp.route("/admin/update_status/<issue_id>", methods=["POST"])
-def update_status(issue_id):
-    mongo     = current_app.mongo
-    user_data = mongo.db.users.find_one({"email": session["user"]})
-    new_status = request.form.get("status")
-    issue      = mongo.db.issues.find_one({"_id": ObjectId(issue_id)})
+# # ---------- تحديث الحالة ----------
+# @reports_bp.route("/admin/update_status/<issue_id>", methods=["POST"])
+# def update_status(issue_id):
+#     mongo     = current_app.mongo
+#     user_data = mongo.db.users.find_one({"email": session["user"]})
+#     new_status = request.form.get("status")
+#     issue      = mongo.db.issues.find_one({"_id": ObjectId(issue_id)})
 
-    can_edit = (
-        user_data and (
-            user_data.get("role") == "admin" or
-            (user_data.get("role") == "maintenance" and
-             issue.get("assigned_to") == session["user"])
-        )
-    )
-    if can_edit:
-        mongo.db.issues.update_one(
-            {"_id": ObjectId(issue_id)},
-            {"$set": {"status": new_status}}
-        )
-        flash("Status updated!", "success")
-    else:
-        flash("Access denied.", "danger")
+#     can_edit = (
+#         user_data and (
+#             user_data.get("role") == "admin" or
+#             (user_data.get("role") == "maintenance" and
+#              issue.get("assigned_to") == session["user"])
+#         )
+#     )
+#     if can_edit:
+#         mongo.db.issues.update_one(
+#             {"_id": ObjectId(issue_id)},
+#             {"$set": {"status": new_status}}
+#         )
+#         flash("Status updated!", "success")
+#     else:
+#         flash("Access denied.", "danger")
 
-    return redirect(url_for("reports.admin_dashboard"))
+#     return redirect(url_for("reports.admin_dashboard"))
+
+
 
 
 # ---------- تعيين الصيانة ----------
@@ -243,3 +245,119 @@ def get_all_issues():
         elif isinstance(ts, str) and "." in ts:
             i["timestamp"] = ts.split(".")[0] + "Z"
     return {"issues": issues}, 200
+
+
+
+
+
+# ---------- Maintenance Dashboard (Maintenance Only) ----------
+@reports_bp.route("/maintenance/dashboard")
+def maintenance_dashboard():
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+
+    mongo = current_app.mongo
+    user = mongo.db.users.find_one({"email": session["user"]})
+    if not user or user.get("role") != "maintenance":
+        flash("Access denied.", "danger")
+        return redirect(url_for("auth.dashboard"))
+
+    raw_issues = mongo.db.issues.find(
+        {"assigned_to": session["user"]}
+    ).sort("timestamp", -1)
+
+    issues = []
+    for i in raw_issues:
+        i["_id"] = str(i["_id"])
+        issues.append(i)
+
+    return render_template(
+        "maintenance_dashboard.html",
+        user=user,
+        issues=issues
+    )
+
+
+# ---------- Maintenance: Update Status (excluding “Done”) ----------
+@reports_bp.route("/maintenance/update_status/<issue_id>", methods=["POST"])
+def maintenance_update_status(issue_id):
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+
+    mongo = current_app.mongo
+    user = mongo.db.users.find_one({"email": session["user"]})
+    if not user or user.get("role") != "maintenance":
+        flash("Access denied.", "danger")
+        return redirect(url_for("reports.maintenance_dashboard"))
+
+    issue = mongo.db.issues.find_one({"_id": ObjectId(issue_id)})
+    if not issue or issue.get("assigned_to") != session["user"]:
+        flash("Access denied.", "danger")
+    else:
+        new_status = request.form.get("status")
+        # Only handle In Progress / Resolved here
+        if new_status in ["in progress", "resolved"]:
+            mongo.db.issues.update_one(
+                {"_id": ObjectId(issue_id)},
+                {"$set": {"status": new_status}}
+            )
+            flash("Status updated!", "success")
+    return redirect(url_for("reports.maintenance_dashboard"))
+
+
+# ---------- Maintenance: Complete Issue (“Done” → report) ----------
+@reports_bp.route("/maintenance/complete_issue/<issue_id>", methods=["POST"])
+def maintenance_complete_issue(issue_id):
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+
+    mongo = current_app.mongo
+    user = mongo.db.users.find_one({"email": session["user"]})
+    if not user or user.get("role") != "maintenance":
+        abort(403)
+
+    issue = mongo.db.issues.find_one({"_id": ObjectId(issue_id)})
+    if not issue or issue.get("assigned_to") != session["user"]:
+        abort(403)
+
+    # Gather form data
+    desc   = request.form.get("completion_description", "")
+    before = request.files.get("before_image")
+    after  = request.files.get("after_image")
+
+    # Save uploads to static/uploads/done/
+    upload_folder = os.path.join("static", "uploads", "done")
+    os.makedirs(upload_folder, exist_ok=True)
+    def _save(f):
+        filename = secure_filename(f.filename)
+        path = os.path.join(upload_folder, filename)
+        f.save(path)
+        return f"uploads/done/{filename}"
+
+    before_path = _save(before)
+    after_path  = _save(after)
+
+    # Insert into done_issues
+    done_doc = {
+        "original_issue_id": issue_id,
+        "completion_description": desc,
+        "before_image": before_path,
+        "after_image": after_path,
+        "technician": session["user"],
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    mongo.db.done_issues.insert_one(done_doc)
+
+    # Mark original as done
+    mongo.db.issues.update_one(
+        {"_id": ObjectId(issue_id)},
+        {"$set": {"status": "done"}}
+    )
+
+    flash("Work completion report submitted!", "success")
+    return redirect(url_for("reports.maintenance_dashboard"))
+
+

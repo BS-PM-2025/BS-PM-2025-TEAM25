@@ -1,4 +1,5 @@
-<!-- templates/maintenance_dashboard.html -->
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,91 +18,42 @@
     rel="stylesheet"
   />
 
-  <!-- Dashboard CSS -->
+  <!-- Your custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}"/>
 
   <style>
-    /* Dark navbar */
-    .nav-wrapper { position: sticky; top: 0; z-index: 1000; }
-    .navbar {
-      background-color: rgba(0,0,0,0.85) !important;
-    }
-    .navbar .nav-link, .navbar .bi {
-      color: #fff !important;
-    }
-    .navbar .nav-link:hover {
-      color: #e3ff47 !important;
-    }
-    /* Search icon and input */
-    #search-icon { color: #fff; margin-left: .5rem; }
-    .search-input {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      color: #fff;
-      padding: .25rem .75rem;
-      border-radius: .25rem;
-      width: 200px;
-      transition: background .3s;
-    }
-    .search-input:focus {
-      background: rgba(255,255,255,0.25);
-      outline: none;
-      box-shadow: none;
-      color: #fff;
-    }
-
-    /* Page background */
     body.hm-gradient {
-      background-image: linear-gradient(to top, #000000 0%, #14a5ff 99%, #5e5e5e 100%);
-      min-height: 100vh;
-      padding-bottom: 2rem;
-      color: #333;
+      background-image: linear-gradient(to top, #000 0%, #14a5ff 99%, #5e5e5e 100%);
+      min-height: 100vh; padding-bottom: 2rem; color: #333;
     }
+    .nav-wrapper { position: sticky; top: 0; z-index: 1000; }
+    .navbar { background-color: rgba(0,0,0,0.85) !important; }
+    .navbar .nav-link, .navbar .bi { color: #fff !important; }
+    .navbar .nav-link:hover { color: #e3ff47 !important; }
 
-    /* Card styling */
     .admin-issues-container .card {
-      background: #fff;
-      border: none;
+      background: #fff; border: none;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
-    /* Buttons */
-    .btn-primary {
-      background-color: #00C851;
-      border-color: #00C851;
-    }
-    .btn-primary:hover {
-      background-color: #007E33;
-      border-color: #007E33;
-    }
-    .btn-success {
-      background-color: #007E33;
-      border-color: #007E33;
-    }
-    .btn-success:hover {
-      background-color: #00521A;
-      border-color: #00521A;
-    }
+    .btn-primary { background-color: #00C851; border-color: #00C851; }
+    .btn-primary:hover { background-color: #007E33; border-color: #007E33; }
+    .btn-success { background-color: #007E33; border-color: #007E33; }
+    .btn-success:hover { background-color: #00521A; border-color: #00521A; }
   </style>
 </head>
 <body class="hm-gradient">
   <div class="page-wrapper">
-
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light">
       <div class="container">
         <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#profileNav"
-          aria-controls="profileNav"
-          aria-expanded="false"
+          class="navbar-toggler" type="button"
+          data-bs-toggle="collapse" data-bs-target="#profileNav"
+          aria-controls="profileNav" aria-expanded="false"
           aria-label="Toggle navigation"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-  
         <div class="collapse navbar-collapse" id="profileNav">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
@@ -109,12 +61,11 @@
                 <i class="bi bi-house me-1"></i>Home
               </a>
             </li>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('reports.report_issue') }}">
-              <i class="bi bi-plus-circle me-1"></i>Report
-            </a>
-          </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('reports.report_issue') }}">
+                <i class="bi bi-plus-circle me-1"></i>Report
+              </a>
+            </li>
           </ul>
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <li class="nav-item">
@@ -128,8 +79,8 @@
     </nav>
 
     <div class="admin-issues-container container my-4">
-      <h1 class="text-center mb-1">Welcome to the Dashboard, {{ user.name }}!</h1>
-      <h2 class="text-center mb-4">Issues Assigned to You</h2>
+      <h1 class="text-center mb-1">Welcome, {{ user.name }}!</h1>
+      <h2 class="text-center mb-4">Your Assigned Issues</h2>
 
       <!-- Flash messages -->
       <div class="flash-messages text-center mb-3">
@@ -142,37 +93,46 @@
         {% endwith %}
       </div>
 
-      <!-- Maintenance Cards -->
+      <!-- ISSUE CARDS -->
       <div class="row g-4">
-        {% for issue in issues if issue.assigned_to == user.email %}
+        {% for issue in issues %}
         <div class="col-md-4">
           <div class="card h-100">
             <div class="card-body d-flex flex-column">
               {% if issue.image_path %}
-              <div class="image-container mb-3">
-                <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue Image">
-              </div>
+                <img src="{{ url_for('static', filename=issue.image_path) }}"
+                     alt="Issue" class="img-fluid mb-3">
               {% endif %}
               <h5 class="card-title">{{ issue.category }}</h5>
-              <p class="card-text flex-grow-1">{{ issue.description }}</p>
               <button
                 class="btn btn-primary mb-2"
                 data-bs-toggle="modal"
                 data-bs-target="#issueModal{{ issue._id }}"
+              >Details</button>
+
+              <!-- STATUS FORM -->
+              <form
+                class="status-form"
+                data-issue-id="{{ issue._id }}"
+                action="{{ url_for('reports.maintenance_update_status', issue_id=issue._id) }}"
+                method="POST"
               >
-                Details
-              </button>
-              <form action="{{ url_for('reports.update_status', issue_id=issue._id) }}" method="POST">
                 <div class="input-group">
-                  <select name="status" class="form-select">
-                    <option value="in progress" {% if issue.status=='in progress' %}selected{% endif %}>
+                  <select name="status" class="form-select status-select">
+                    <option value="in progress"
+                      {% if issue.status=='in progress' %}selected{% endif %}>
                       In Progress
                     </option>
-                    <option value="resolved" {% if issue.status=='resolved' %}selected{% endif %}>
+                    <option value="resolved"
+                      {% if issue.status=='resolved' %}selected{% endif %}>
                       Resolved
                     </option>
+                    <option value="done"
+                      {% if issue.status=='done' %}selected{% endif %}>
+                      Done
+                    </option>
                   </select>
-                  <button class="btn btn-success">Update</button>
+                  <button type="submit" class="btn btn-success">Update</button>
                 </div>
               </form>
             </div>
@@ -181,7 +141,7 @@
         {% endfor %}
       </div>
 
-      <!-- Detail Modals -->
+      <!-- DETAIL MODALS -->
       {% for issue in issues %}
       <div class="modal fade" id="issueModal{{ issue._id }}" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -193,13 +153,12 @@
             <div class="modal-body">
               <p><strong>Description:</strong><br>{{ issue.description }}</p>
               <p><strong>Location:</strong>
-                <a href="https://www.google.com/maps/search/?api=1&amp;query={{ issue.location.lat }},{{ issue.location.lng }}"
-                   target="_blank">View on Google Maps</a>
+                <a href="https://maps.google.com/?q={{ issue.location.lat }},{{ issue.location.lng }}"
+                   target="_blank">View on Map</a>
               </p>
               {% if issue.image_path %}
-              <div class="image-container my-3">
-                <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue Image">
-              </div>
+                <img src="{{ url_for('static', filename=issue.image_path) }}"
+                     class="img-fluid my-3">
               {% endif %}
             </div>
             <div class="modal-footer">
@@ -209,22 +168,106 @@
         </div>
       </div>
       {% endfor %}
+
+      <!-- COMPLETION MODALS -->
+      {% for issue in issues %}
+      <div class="modal fade" id="completionModal{{ issue._id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <form
+            action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}"
+            method="POST"
+            enctype="multipart/form-data"
+            class="modal-content"
+          >
+            <div class="modal-header bg-dark text-white">
+              <h5 class="modal-title">Work Completion Report</h5>
+              <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p>
+                I want to send a work completion report with a detailed
+                description and before and after photos, to show the process
+                and findings and ensure that the task was completed properly.
+              </p>
+              <div class="mb-3">
+                <label for="description_{{ issue._id }}" class="form-label">
+                  Detailed Description
+                </label>
+                <textarea
+                  name="completion_description"
+                  id="description_{{ issue._id }}"
+                  class="form-control"
+                  rows="4"
+                  required
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Before Photo</label>
+                <input
+                  type="file"
+                  name="before_image"
+                  accept="image/*"
+                  class="form-control"
+                  required
+                >
+              </div>
+              <div class="mb-3">
+                <label class="form-label">After Photo</label>
+                <input
+                  type="file"
+                  name="after_image"
+                  accept="image/*"
+                  class="form-control"
+                  required
+                >
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >Cancel</button>
+              <button type="submit" class="btn btn-primary">Submit Report</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
     </div>
   </div>
 
-  <!-- Bootstrap JS + helpers -->
+  <!-- Bootstrap + modal‐trigger JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // auto-dismiss flash
-    setTimeout(() =>
-      document.querySelectorAll('.alert').forEach(a => a.remove())
-    , 3000);
+    // auto‐dismiss flash
+    setTimeout(() => document.querySelectorAll('.alert').forEach(a=>a.remove()), 3000);
 
-    // mobile menu toggle
-    document.getElementById("mobile-menu")
-      .addEventListener("click", () =>
-        document.querySelector(".nav").classList.toggle("active")
-      );
+    // intercept “Done” selection
+    document.querySelectorAll('.status-select').forEach(sel=>{
+      sel.addEventListener('change', function(){
+        if (this.value==='done') {
+          let id = this.closest('.status-form').dataset.issueId;
+          new bootstrap.Modal(
+            document.getElementById('completionModal'+id)
+          ).show();
+        }
+      });
+    });
+
+    // prevent default submit when Done → let modal handle it
+    document.querySelectorAll('.status-form').forEach(form=>{
+      form.addEventListener('submit', e=>{
+        if (form.querySelector('.status-select').value==='done') {
+          e.preventDefault();
+        }
+      });
+    });
   </script>
 </body>
 </html>
+
