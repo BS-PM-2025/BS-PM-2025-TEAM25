@@ -68,21 +68,41 @@
       </div>
     </nav>
 
-    <!-- PROFILE CARD -->
-    <div class="container my-4">
-      <div class="card shadow-sm">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <h5 class="card-title mb-1">Your Profile</h5>
-            <p class="card-text mb-0"><strong>Name:</strong> {{ user.name }}</p>
-            <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+      <!-- PROFILE CARD -->
+      <div class="container my-4">
+        <div class="card shadow-sm">
+          <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="card-title mb-1">Your Profile</h5>
+              <p class="card-text mb-0"><strong>Name:</strong> {{ user.name }}</p>
+              <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+            </div>
+  
+            <!-- Edit button -->
+            <button class="btn btn-primary me-2" id="editProfileBtn">
+              <i class="bi bi-pencil-square me-1"></i>Edit Profile
+            </button>
+  
+            <!-- Delete form/button -->
+            <form
+              method="POST"
+              action="{{ url_for('main.delete_my_account') }}"
+              onsubmit="return confirm('Are you sure you want to delete your account?');"
+              class="d-inline"
+            >
+              <button
+              type="submit"
+              class="btn btn-sm btn-outline-danger"
+                title="Delete my account"
+              >
+                <i class="bi bi-trash-fill me-1"></i>
+                Delete My Account
+              </button>
+            </form>
           </div>
-          <button class="btn btn-primary" id="editProfileBtn">
-            <i class="bi bi-pencil-square me-1"></i>Edit Profile
-          </button>
         </div>
       </div>
-    </div>
+          
 
     <!-- EDIT PANEL -->
     <div class="edit-panel hidden" id="editPanel">

@@ -190,7 +190,7 @@
                         </select>
                         <button
                           type="submit"
-                          class="btn btn-success"
+                          class="btn btn-sm btn-outline-primary"
                         >
                           Assign
                         </button>
@@ -204,8 +204,9 @@
                       method="POST"
                       onsubmit="return confirm('Delete this report?')"
                     >
-                      <button type="submit" class="btn btn-sm btn-danger">
-                        <i class="bi bi-trash"></i>
+                      <button type="submit"
+                      class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"> Delete</i>
                       </button>
                     </form>
                     {% else %}&mdash;{% endif %}

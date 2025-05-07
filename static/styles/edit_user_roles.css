@@ -60,11 +60,11 @@
 
 /* Update button */
 .btn-outline-primary {
-  color: #4aa8f7;
-  border-color: #4aa8f7;
+  color: #006944;
+  border-color: #008357;
 }
 .btn-outline-primary:hover {
-  background: #4aa8f7;
+  background: #00784e;
   color: #fff;
 }
 
@@ -80,7 +80,7 @@
 
 /* Panel footer */
 .panel-footer {
-  background: #3d6470;
+  background: #005239;
   color: #fff;
   padding: 0.75rem;
   font-size: 0.9rem;
@@ -101,8 +101,8 @@
 
 /* 1) Gradient background */
 .hm-gradient {
-  background-image: linear-gradient(to top, #000000 0%, #14a5ff 99%, #5e5e5e 100%);
-  min-height: 100vh;
+  background-image: linear-gradient(to top, #c9c9c9 0%, #1effe1 99%, #ffffff 100%);
+    min-height: 100vh;
   padding-bottom: 2rem;
 }
 
@@ -165,7 +165,7 @@
 
 .panel-heading-custom {
   /* Gradient background */
-  background: linear-gradient(90deg, #4aa8f7 0%, #006bb3 100%);
+  background: linear-gradient(90deg, #03794f 0%, #5bffc5 100%);
   /* Padding and rounded corners */
   padding: 1rem 1.5rem;
   border-top-left-radius: 0.5rem;

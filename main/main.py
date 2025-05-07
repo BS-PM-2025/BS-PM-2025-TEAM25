@@ -107,3 +107,18 @@ def about():
         user=user_data,
         my_issue_count=my_issues_count
     )
+
+
+
+@main_bp.route("/delete_account", methods=["POST"])
+def delete_my_account():
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+
+    # remove user from DB
+    mongo = current_app.mongo
+    mongo.db.users.delete_one({"email": session["user"]})
+    session.clear()
+    flash("Your account has been deleted.", "info")
+    return redirect(url_for("auth.root"))
