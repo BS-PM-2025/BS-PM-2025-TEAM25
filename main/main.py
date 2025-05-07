@@ -77,3 +77,33 @@ def update_profile():
 
     return redirect(url_for("main.profile"))
 
+
+
+
+@main_bp.route("/about")
+def about():
+    """
+    About page: renders about.html
+    """
+    mongo = current_app.mongo
+
+    user_email      = session.get("user")
+    user_data       = None
+    my_issues_count = 0
+
+    if user_email:
+        # fetch & sanitize user
+        user_data = mongo.db.users.find_one({"email": user_email})
+        if user_data and "password" in user_data:
+            user_data.pop("password")
+        # count their reports
+        my_issues_count = mongo.db.issues.count_documents(
+            {"reporter_email": user_email}
+        )
+
+    return render_template(
+        "about.html",
+        year=datetime.utcnow().year,
+        user=user_data,
+        my_issue_count=my_issues_count
+    )

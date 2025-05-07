@@ -270,3 +270,59 @@ select {
 	font-size: 14px;
   }
   
+
+
+  /* Navbar */
+.navbar {
+	display: flex;
+	align-items: center;
+	padding: 0.5rem 1rem;
+  }
+  .navbar .nav {
+	display: flex;
+	list-style: none;
+	gap: 1rem;
+  }
+  .navbar .nav-item .nav-link {
+	color: #fff;
+	transition: color 0.2s;
+  }
+  .navbar .nav-item .nav-link:hover {
+	color: #ffd700;
+  }
+  .navbar-toggler {
+	border-color: rgba(255,255,255,0.5);
+  }
+  .navbar-toggler-icon {
+	filter: invert(1);
+  }
+  
+
+  /* 7) Navbar styling */
+.navbar {
+	background-color: rgba(0, 0, 0, 0.85);
+	box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+  }
+  .navbar .nav-link {
+	color: #ffffff;
+	margin-right: 1rem;
+	transition: color 0.3s;
+  }
+  .navbar .nav-link:hover {
+	color: #ffd700;
+  }
+  
+
+  /* Navbar overrides */
+.navbar {
+	background-color: rgba(0, 0, 0, 0.85) !important;
+  }
+  .navbar .nav-link {
+	color: #ffffff;
+	margin-right: 1rem;
+	transition: color 0.3s;
+  }
+  .navbar .nav-link:hover {
+	color: #ffd700;
+  }
+  

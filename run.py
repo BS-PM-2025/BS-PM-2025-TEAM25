@@ -42,7 +42,7 @@ app.mongo = mongo
 # Register blueprints
 app.register_blueprint(done_reports_bp)
 app.register_blueprint(user_roles_bp)
-app.register_blueprint(auth_bp)
+app.register_blueprint(auth_bp,  url_prefix="/auth")
 app.register_blueprint(main_bp)
 app.register_blueprint(reports_bp)
 

@@ -230,7 +230,7 @@ body {
   transition: color 0.2s;
 }
 .navbar .nav-item .nav-link:hover {
-  color: #00b3ff;
+  color: #ffd700;
 }
 .navbar-toggler {
   border-color: rgba(255,255,255,0.5);
@@ -429,7 +429,7 @@ input.purple-border:focus {
   transition: color 0.3s;
 }
 .navbar .nav-link:hover {
-  color: #ffffff;
+  color: #ffd700;
 }
 
 /* 8) Utility resets */

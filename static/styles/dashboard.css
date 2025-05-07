@@ -429,7 +429,7 @@ input.purple-border:focus {
   transition: color 0.3s;
 }
 .navbar .nav-link:hover {
-  color: #ffffff;
+  color: #ffd700;
 }
 
 /* 8) Utility resets */

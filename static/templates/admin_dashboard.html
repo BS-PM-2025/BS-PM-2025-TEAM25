@@ -69,7 +69,7 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('user_roles.edit_user_roles') }}">
-              Edit Roles
+              Edit Users
             </a>
           </li>
           <li class="nav-item">
@@ -183,7 +183,7 @@
                           name="maintenance_email"
                           class="form-select"
                         >
-                          <option value="">Maintenance</option>
+                          <option value="">unchanged</option>
                           {% for m in maintenance_users %}
                           <option value="{{ m.email }}">{{ m.name }}</option>
                           {% endfor %}

@@ -54,7 +54,7 @@ body {
   transition: color 0.3s ease;
 }
 .navbar .nav-item .nav-link:hover {
-  color: #ff9900;
+  color: #ffd700;
 }
 .navbar-toggler {
   border: none;

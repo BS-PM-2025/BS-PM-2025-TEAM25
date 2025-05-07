@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About – InfraReport</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/home.png') }}">
+
+  <!-- Bootstrap & Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    rel="stylesheet"
+  />
+
+  <!-- Custom CSS -->
+  <style>
+    :root {
+      --primary-500: #1e90ff;
+      --dark-900:   #0d1117;
+      --gray-200:   #f5f6f7;
+      --shadow-sm:  0 2px 4px rgba(0, 0, 0, .08);
+    }
+    body {
+      background: var(--gray-200);
+      font-family: 'Inter', sans-serif;
+    }
+    .navbar {
+      background: var(--dark-900) !important;
+      box-shadow: var(--shadow-sm);
+    }
+    .navbar .nav-link {
+      color: #fff !important;
+      margin-right: 1rem;
+    }
+    .navbar .nav-link:hover {
+      color: var(--primary-500) !important;
+    }
+    h1, h2 {
+      color: var(--dark-900);
+    }
+    section {
+      padding-top: 4rem;
+      padding-bottom: 4rem;
+    }
+  </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand fw-bold" href="{{ url_for('main.home') }}">InfraReport</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navMenu"
+        aria-controls="navMenu"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.home') }}">Home</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SPACING FOR FIXED NAV -->
+  <div style="height: 70px;"></div>
+
+  <main class="flex-fill">
+
+    <!-- ABOUT INTRO -->
+    <section class="text-center bg-white">
+      <div class="container">
+        <h1 class="fw-bold mb-3">What is InfraReport?</h1>
+        <p class="lead mx-auto" style="max-width: 720px;">
+          InfraReport is an open-source platform that empowers citizens to report
+          local infrastructure issues, helps municipalities track and resolve them,
+          and invites developers to contribute and extend its features.
+        </p>
+      </div>
+    </section>
+
+    <!-- FOR CITIZENS -->
+    <section id="citizens" class="bg-light">
+      <div class="container">
+        <h2 class="fw-semibold mb-3">For Citizens</h2>
+        <p>
+          Citizens can easily submit issues—potholes, broken streetlights, graffiti, and more—
+          using an intuitive map interface. Track the status of your reports in real time
+          and receive notifications when they’re resolved.
+        </p>
+      </div>
+    </section>
+
+    <!-- FOR MUNICIPALITY -->
+    <section id="municipality" class="bg-white">
+      <div class="container">
+        <h2 class="fw-semibold mb-3">For Municipality</h2>
+        <p>
+          Municipal officials gain a powerful dashboard to view incoming reports,
+          assign work orders to maintenance teams, monitor progress, and generate
+          analytics on city-wide trends to prioritize resources effectively.
+        </p>
+      </div>
+    </section>
+
+    <!-- FOR DEVELOPERS -->
+    <section id="developers" class="bg-light">
+      <div class="container">
+        <h2 class="fw-semibold mb-3">For Developers</h2>
+        <p>
+          InfraReport is fully open-source on GitHub. Developers can fork the repo,
+          submit pull requests, build plugins, or integrate its API into other
+          civic-tech initiatives to expand community impact.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto border-top py-3 text-center small text-muted bg-white">
+    &copy; {{ year }} InfraReport Team.
+  </footer>
+
+  <!-- Bootstrap JS Bundle -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ></script>
+</body>
+</html>
