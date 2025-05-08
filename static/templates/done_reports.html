@@ -1,38 +1,41 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Done Reports</title>
 
   <!-- Bootstrap + Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-        rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
   <!-- Your CSS -->
-  <link rel="stylesheet"
-        href="{{ url_for('static', filename='styles/dashboard.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}" />
 
   <style>
-    .thumb { width: 80px; height: auto; cursor: pointer; }
+    .thumb {
+      width: 80px;
+      height: auto;
+      cursor: pointer;
+    }
   </style>
 </head>
+
 <body class="hm-gradient">
 
   <!-- NAVBAR (same as admin, with Done Reports active) -->
   <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
           <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
             <i class="bi bi-speedometer2 me-1"></i>Dashboard
-          </a></li></ul>
-      <button class="navbar-toggler" type="button"
-              data-bs-toggle="collapse" data-bs-target="#nav"
-              aria-controls="nav" aria-expanded="false">
+          </a>
+        </li>
+      </ul>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav"
+        aria-expanded="false">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="nav">
@@ -85,6 +88,7 @@
                 <th>Before</th>
                 <th>After</th>
                 <th>When</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -97,22 +101,66 @@
                   </a>
                 </td>
                 <td>{{ dr.technician }}</td>
-                <td>{{ dr.completion_description[:40]
-                   ~ ('...' if dr.completion_description|length > 40 else '') }}
+                <td>
+                  <a href="#" data-bs-toggle="modal" data-bs-target="#descModal{{ dr._id }}"
+                    class="text-decoration-none">
+                    {{ dr.completion_description[:30] ~ ('...' if dr.completion_description|length > 30 else '') }}
+                  </a>
                 </td>
                 <td>
-                  <img src="{{ url_for('static', filename=dr.before_image) }}"
-                       class="thumb"
-                       data-bs-toggle="modal"
-                       data-bs-target="#beforeModal{{ dr._id }}"/>
+                  <img src="{{ url_for('static', filename=dr.before_image) }}" class="thumb" data-bs-toggle="modal"
+                    data-bs-target="#beforeModal{{ dr._id }}" />
                 </td>
                 <td>
-                  <img src="{{ url_for('static', filename=dr.after_image) }}"
-                       class="thumb"
-                       data-bs-toggle="modal"
-                       data-bs-target="#afterModal{{ dr._id }}"/>
+                  <img src="{{ url_for('static', filename=dr.after_image) }}" class="thumb" data-bs-toggle="modal"
+                    data-bs-target="#afterModal{{ dr._id }}" />
                 </td>
                 <td>{{ dr.timestamp }}</td>
+                <td>
+                  <!-- Accept button -->
+                  <form action="{{ url_for('done_reports.review_done_report', dr_id=dr._id) }}" method="POST"
+                    style="display:inline-block">
+                    <input type="hidden" name="status" value="accepted" />
+                    <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                  </form>
+
+                  <!-- Reject button → opens modal -->
+                  <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal{{ dr._id }}">Reject</button>
+
+                  <!-- Reject‐Reason Modal -->
+                  <div class="modal fade" id="rejectModal{{ dr._id }}" tabindex="-1"
+                    aria-labelledby="rejectModalLabel{{ dr._id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                      <form action="{{ url_for('done_reports.review_done_report', dr_id=dr._id) }}" method="POST"
+                        class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="rejectModalLabel{{ dr._id }}">
+                            Rejection Reason
+                          </h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          <input type="hidden" name="status" value="rejected" />
+                          <div class="mb-3">
+                            <label for="reason_{{ dr._id }}" class="form-label">
+                              Please explain why:
+                            </label>
+                            <textarea name="rejection_reason" id="reason_{{ dr._id }}" class="form-control" rows="3"
+                              required></textarea>
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-danger">
+                            Submit Rejection
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </td>
+
               </tr>
               {% endfor %}
             </tbody>
@@ -128,8 +176,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body text-center">
-          <img src="{{ url_for('static', filename=dr.before_image) }}"
-               class="img-fluid"/>
+          <img src="{{ url_for('static', filename=dr.before_image) }}" class="img-fluid" />
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -141,8 +188,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body text-center">
-          <img src="{{ url_for('static', filename=dr.after_image) }}"
-               class="img-fluid"/>
+          <img src="{{ url_for('static', filename=dr.after_image) }}" class="img-fluid" />
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -152,9 +198,30 @@
   </div>
   {% endfor %}
 
+  <!-- DESCRIPTION MODALS -->
+  {% for dr in done_reports %}
+  <div class="modal fade" id="descModal{{ dr._id }}" tabindex="-1" aria-labelledby="descModalLabel{{ dr._id }}"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="descModalLabel{{ dr._id }}">Full Description</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>{{ dr.completion_description }}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
-
-

@@ -1,36 +1,31 @@
-
 <!-- templates/admin_dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard</title>
   <link rel="icon" href="{{ url_for('static', filename='images/home.png') }}">
 
   <!-- Bootstrap 5 + Icons -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
   <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <!-- Your custom CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}" />
   <style>
     /* inline height for map containers */
-    .map-container { width: 100%; height: 300px; }
+    .map-container {
+      width: 100%;
+      height: 300px;
+    }
   </style>
 </head>
+
 <body class="hm-gradient">
 
   <!-- NAVBAR -->
@@ -43,15 +38,8 @@
           </a>
         </li>
       </ul>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#adminNav"
-        aria-controls="adminNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav"
+        aria-controls="adminNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
@@ -100,13 +88,8 @@
         <div class="card-body">
           <h2 class="h5 text-center mb-3">Search within table</h2>
           <div class="input-group">
-            <input
-              id="searchInput"
-              class="form-control"
-              type="text"
-              placeholder="Search something here…"
-              aria-label="Search"
-            />
+            <input id="searchInput" class="form-control" type="text" placeholder="Search something here…"
+              aria-label="Search" />
             <span class="input-group-text">
               <i class="bi bi-search"></i>
             </span>
@@ -137,31 +120,22 @@
                   <th scope="row">{{ issue._id }}</th>
                   <td>{{ issue.reporter_email }}</td>
                   <td>
-                    <a
-                      href="#"
-                      data-bs-toggle="modal"
-                      data-bs-target="#descModal{{ issue._id }}"
-                      class="text-decoration-none"
-                    >
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#descModal{{ issue._id }}"
+                      class="text-decoration-none">
                       {{ issue.description[:30] ~ ('...' if issue.description|length>30 else '') }}
                     </a>
                   </td>
                   <td>
                     {% if issue.location %}
-                      <a href="#" data-bs-toggle="modal" data-bs-target="#locModal{{ issue._id }}">
-                        View Map
-                      </a>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#locModal{{ issue._id }}">
+                      View Map
+                    </a>
                     {% else %}&mdash;{% endif %}
                   </td>
                   <td>
                     {% if issue.image_path %}
-                      <img
-                        src="{{ url_for('static', filename=issue.image_path) }}"
-                        class="image-thumb-admin"
-                        alt="Issue"
-                        data-bs-toggle="modal"
-                        data-bs-target="#imageModal{{ issue._id }}"
-                      />
+                    <img src="{{ url_for('static', filename=issue.image_path) }}" class="image-thumb-admin" alt="Issue"
+                      data-bs-toggle="modal" data-bs-target="#imageModal{{ issue._id }}" />
                     {% else %}&mdash;{% endif %}
                   </td>
                   <td>
@@ -174,24 +148,15 @@
                     </span>
                   </td>
                   <td>
-                    <form
-                      action="{{ url_for('reports.assign_issue', issue_id=issue._id) }}"
-                      method="POST"
-                    >
+                    <form action="{{ url_for('reports.assign_issue', issue_id=issue._id) }}" method="POST">
                       <div class="input-group input-group-sm">
-                        <select
-                          name="maintenance_email"
-                          class="form-select"
-                        >
+                        <select name="maintenance_email" class="form-select">
                           <option value="">unchanged</option>
                           {% for m in maintenance_users %}
                           <option value="{{ m.email }}">{{ m.name }}</option>
                           {% endfor %}
                         </select>
-                        <button
-                          type="submit"
-                          class="btn btn-sm btn-outline-primary"
-                        >
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
                           Assign
                         </button>
                       </div>
@@ -199,13 +164,9 @@
                   </td>
                   <td>
                     {% if user.role=='admin' or issue.reporter_email==user.email %}
-                    <form
-                      action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}"
-                      method="POST"
-                      onsubmit="return confirm('Delete this report?')"
-                    >
-                      <button type="submit"
-                      class="btn btn-sm btn-outline-danger">
+                    <form action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}" method="POST"
+                      onsubmit="return confirm('Delete this report?')">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">
                         <i class="bi bi-trash"> Delete</i>
                       </button>
                     </form>
@@ -221,20 +182,11 @@
 
       <!-- IMAGE MODALS -->
       {% for issue in issues if issue.image_path %}
-      <div
-        class="modal fade"
-        id="imageModal{{ issue._id }}"
-        tabindex="-1"
-        aria-hidden="true"
-      >
+      <div class="modal fade" id="imageModal{{ issue._id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-body text-center">
-              <img
-                src="{{ url_for('static', filename=issue.image_path) }}"
-                class="img-fluid"
-                alt="Full Issue"
-              >
+              <img src="{{ url_for('static', filename=issue.image_path) }}" class="img-fluid" alt="Full Issue">
             </div>
             <div class="modal-footer">
               <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -246,12 +198,7 @@
 
       <!-- DESCRIPTION MODALS -->
       {% for issue in issues %}
-      <div
-        class="modal fade"
-        id="descModal{{ issue._id }}"
-        tabindex="-1"
-        aria-hidden="true"
-      >
+      <div class="modal fade" id="descModal{{ issue._id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
@@ -271,14 +218,8 @@
 
       <!-- LOCATION MODALS -->
       {% for issue in issues if issue.location %}
-      <div
-        class="modal fade"
-        id="locModal{{ issue._id }}"
-        data-lat="{{ issue.location.lat }}"
-        data-lng="{{ issue.location.lng }}"
-        tabindex="-1"
-        aria-hidden="true"
-      >
+      <div class="modal fade" id="locModal{{ issue._id }}" data-lat="{{ issue.location.lat }}"
+        data-lng="{{ issue.location.lng }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content">
             <div class="modal-header">
@@ -289,11 +230,8 @@
               <div id="map{{ issue._id }}" class="map-container"></div>
             </div>
             <div class="modal-footer">
-              <a
-                href="https://www.google.com/maps/dir/?api=1&destination={{ issue.location.lat }},{{ issue.location.lng }}"
-                target="_blank"
-                class="btn btn-primary"
-              >
+              <a href="https://www.google.com/maps/dir/?api=1&destination={{ issue.location.lat }},{{ issue.location.lng }}"
+                target="_blank" class="btn btn-primary">
                 Get Directions
               </a>
               <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -314,7 +252,7 @@
   <!-- Search filter & Map initialization -->
   <script>
     // Live search
-    document.getElementById('searchInput').addEventListener('keyup', function(){
+    document.getElementById('searchInput').addEventListener('keyup', function () {
       const filter = this.value.toLowerCase();
       document
         .querySelectorAll('#issuesTable tbody tr')
@@ -333,7 +271,7 @@
         if (!mapInstances[mid]) {
           const lat = +modalEl.dataset.lat;
           const lng = +modalEl.dataset.lng;
-          const mapDiv = document.getElementById('map' + mid.replace('locModal',''));
+          const mapDiv = document.getElementById('map' + mid.replace('locModal', ''));
           const map = L.map(mapDiv).setView([lat, lng], 15);
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
@@ -347,5 +285,5 @@
     });
   </script>
 </body>
-</html>
 
+</html>
