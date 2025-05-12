@@ -138,46 +138,6 @@ def admin_dashboard():
         flash("Admins only.", "danger")
         return redirect(url_for("auth.dashboard"))
 
-<<<<<<< HEAD
-    issues            = list(mongo.db.issues.find().sort("timestamp", -1))
-    maintenance_users = list(mongo.db.users.find({"role": "maintenance"}))
-
-    for i in issues:
-        i["_id"] = str(i["_id"])
-
-    return render_template(
-        "admin_dashboard.html",
-        issues=issues,
-        maintenance_users=maintenance_users
-    )
-
-
-# ---------- تحديث الحالة ----------
-@reports_bp.route("/admin/update_status/<issue_id>", methods=["POST"])
-def update_status(issue_id):
-    mongo     = current_app.mongo
-    user_data = mongo.db.users.find_one({"email": session["user"]})
-    new_status = request.form.get("status")
-    issue      = mongo.db.issues.find_one({"_id": ObjectId(issue_id)})
-
-    can_edit = (
-        user_data and (
-            user_data.get("role") == "admin" or
-            (user_data.get("role") == "maintenance" and
-             issue.get("assigned_to") == session["user"])
-        )
-    )
-    if can_edit:
-        mongo.db.issues.update_one(
-            {"_id": ObjectId(issue_id)},
-            {"$set": {"status": new_status}}
-        )
-        flash("Status updated!", "success")
-    else:
-        flash("Access denied.", "danger")
-
-    return redirect(url_for("reports.admin_dashboard"))
-=======
     # load all issues…
     issues = list(mongo.db.issues.find().sort("timestamp", -1))
     for i in issues:
@@ -201,7 +161,6 @@ def update_status(issue_id):
         user=user_data,            # <— now available in the template
         my_issue_count=my_issue_count
     )
->>>>>>> my-changes
 
 
 # ---------- تعيين الصيانة ----------
@@ -257,8 +216,6 @@ def get_all_issues():
         elif isinstance(ts, str) and "." in ts:
             i["timestamp"] = ts.split(".")[0] + "Z"
     return {"issues": issues}, 200
-<<<<<<< HEAD
-=======
 
 
 @reports_bp.route("/maintenance/dashboard")
@@ -418,4 +375,3 @@ def rejected_reports():
       user    = user,
       reports = reports
     )
->>>>>>> my-changes

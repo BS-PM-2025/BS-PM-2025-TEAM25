@@ -1,33 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<<<<<<< HEAD
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Profile</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/profile.png') }}"/>
-
-  <!-- Bootstrap + Icons -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-    rel="stylesheet"
-  />
-
-  <!-- Shared dashboard styles & profile overrides -->
-  <link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='styles/dashboard.css') }}"
-  />
-  <link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='styles/profile.css') }}"
-  />
-</head>
-=======
 
 <head>
   <meta charset="UTF-8" />
@@ -44,7 +16,6 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/profile.css') }}" />
 </head>
 
->>>>>>> my-changes
 <body class="hm-gradient">
   <div class="page-wrapper">
 
@@ -53,20 +24,6 @@
       <div class="container">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-<<<<<<< HEAD
-        <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
-          <i class="bi bi-speedometer2 me-1"></i>Dashboard
-        </a></li></ul>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#profileNav"
-          aria-controls="profileNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-=======
             <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
               <i class="bi bi-speedometer2 me-1"></i>Dashboard
             </a>
@@ -74,7 +31,6 @@
         </ul>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#profileNav"
           aria-controls="profileNav" aria-expanded="false" aria-label="Toggle navigation">
->>>>>>> my-changes
           <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -106,11 +62,6 @@
             <p class="card-text mb-0"><strong>Name:</strong> {{ user.name }}</p>
             <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
           </div>
-<<<<<<< HEAD
-          <button class="btn btn-primary" id="editProfileBtn">
-            <i class="bi bi-pencil-square me-1"></i>Edit Profile
-          </button>
-=======
 
           <!-- Edit button -->
           <button class="btn btn-primary me-2" id="editProfileBtn">
@@ -125,41 +76,19 @@
               Delete My Account
             </button>
           </form>
->>>>>>> my-changes
         </div>
       </div>
     </div>
 
-<<<<<<< HEAD
-=======
 
->>>>>>> my-changes
     <!-- EDIT PANEL -->
     <div class="edit-panel hidden" id="editPanel">
       <form action="{{ url_for('main.update_profile') }}" method="POST">
         <h2>Edit Your Information</h2>
         <label for="name">Name</label>
-<<<<<<< HEAD
-        <input
-          type="text"
-          id="name"
-          name="name"
-          class="form-control"
-          placeholder="Enter new name"
-        />
-        <label for="password" class="mt-3">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          class="form-control"
-          placeholder="••••••"
-        />
-=======
         <input type="text" id="name" name="name" class="form-control" placeholder="Enter new name" />
         <label for="password" class="mt-3">Password</label>
         <input type="password" id="password" name="password" class="form-control" placeholder="••••••" />
->>>>>>> my-changes
         <button type="submit" class="btn btn-success mt-4">Save Changes</button>
       </form>
     </div>
@@ -167,15 +96,6 @@
     <!-- FLASH MESSAGES -->
     <div class="flash-messages">
       {% with messages = get_flashed_messages(with_categories=true) %}
-<<<<<<< HEAD
-        {% if messages %}
-          {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
-              {{ message }}
-            </div>
-          {% endfor %}
-        {% endif %}
-=======
       {% if messages %}
       {% for category, message in messages %}
       <div class="alert alert-{{ category }}">
@@ -183,7 +103,6 @@
       </div>
       {% endfor %}
       {% endif %}
->>>>>>> my-changes
       {% endwith %}
     </div>
 
@@ -208,9 +127,5 @@
     );
   </script>
 </body>
-<<<<<<< HEAD
-</html>
-=======
 
 </html>
->>>>>>> my-changes

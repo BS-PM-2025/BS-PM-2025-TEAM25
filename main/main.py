@@ -77,8 +77,6 @@ def update_profile():
 
     return redirect(url_for("main.profile"))
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -124,4 +122,3 @@ def delete_my_account():
     session.clear()
     flash("Your account has been deleted.", "info")
     return redirect(url_for("auth.root"))
->>>>>>> my-changes
