@@ -15,7 +15,7 @@ def check_admin():
         flash("Access denied: Admins only.", "danger")
         return redirect(url_for("auth.dashboard"))
 
-@user_roles_bp.route("/admin/users/roles", methods=["GET", "POST"])
+@user_roles_bp.route("/admin/users/", methods=["GET", "POST"])
 def edit_user_roles():
     mongo = current_app.mongo
     # POST: apply updates
@@ -43,4 +43,19 @@ def edit_user_roles():
         {"role": {"$in": ["user", "maintenance"]}},
         {"password": 0}  # hide password hash
     ))
-    return render_template("edit_user_roles.html", users=users)
+    return render_template("edit_users.html", users=users)
+
+
+@user_roles_bp.route("/admin/users/delete/<user_id>", methods=["POST"])
+def delete_user(user_id):
+    """
+    Delete a user by their ObjectId.
+    Only admins can hit this because of @before_request.
+    """
+    mongo = current_app.mongo
+    result = mongo.db.users.delete_one({"_id": ObjectId(user_id)})
+    if result.deleted_count:
+        flash("User deleted successfully.", "success")
+    else:
+        flash("User not found or already deleted.", "warning")
+    return redirect(url_for("user_roles.edit_user_roles"))

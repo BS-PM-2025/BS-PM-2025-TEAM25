@@ -1,42 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Auth Page</title>
-  <!-- Link to your CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/auth.css') }}">
+
+  <!-- Bootstrap CSS (for navbar) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Your CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/auth.css') }}" />
+
+  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/auth.png') }}">
 </head>
+
 <body>
 
 
-  <div class="container" id="container">
+  <!-- 1) NAVBAR immediately after <body> -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand fw-bold" href="{{ url_for('main.home') }}">InfraReport</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+        aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.home') }}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/about">About</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
+  <div class="container" id="container">
     <!-- Registration Form -->
-<div class="form-container sign-up-container">
-  <form action="{{ url_for('auth.register') }}" method="POST">
-    <h1>Create Account</h1>
-    <input type="text" name="name" placeholder="Name" required />
-    <input type="email" name="email" placeholder="Email" required />
-    <input type="password" name="password" placeholder="Password" required />
-    
-    <!-- Role Dropdown -->
-    <select name="role" required>
-      <option value="">Select Role</option>
-      <option value="user">User</option>
-      <option value="admin">Admin</option>
-      <option value="maintenance">Maintenance</option>
-    </select>
-    
-    <button type="submit">Sign Up</button>
-  </form>
-</div>
+    <div class="form-container sign-up-container">
+      <form action="{{ url_for('auth.register') }}" method="POST">
+        <h1>Create Account</h1>
+        <input type="text" name="name" placeholder="Name" required />
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <select name="role" required>
+          <option value="">Select Role</option>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+        <button type="submit">Sign Up</button>
+      </form>
+    </div>
 
     <!-- Login Form -->
     <div class="form-container sign-in-container">
       <form action="{{ url_for('auth.login') }}" method="POST">
-        <h1>Sign in</h1>
+        <h1>Sign In</h1>
         <input type="email" name="email" placeholder="Email" required />
         <input type="password" name="password" placeholder="Password" required />
         <a href="#">Forgot your password?</a>
@@ -44,7 +69,7 @@
       </form>
     </div>
 
-    <!-- Overlay for toggling forms -->
+    <!-- Overlay -->
     <div class="overlay-container">
       <div class="overlay">
         <div class="overlay-panel overlay-left">
@@ -54,58 +79,45 @@
         </div>
         <div class="overlay-panel overlay-right">
           <h1>Hello, Friend!</h1>
-          <p>Enter your personal details and start journey with us</p>
+          <p>Enter your personal details and start your journey with us</p>
           <button class="ghost" id="signUp">Sign Up</button>
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- Toggle between Sign In and Sign Up -->
+  <!-- Toggle between Sign In / Sign Up -->
   <script>
     const signUpButton = document.getElementById('signUp');
     const signInButton = document.getElementById('signIn');
     const container = document.getElementById('container');
-
-    signUpButton.addEventListener('click', () => {
-      container.classList.add("right-panel-active");
-    });
-
-    signInButton.addEventListener('click', () => {
-      container.classList.remove("right-panel-active");
-    });
+    signUpButton.addEventListener('click', () => container.classList.add("right-panel-active"));
+    signInButton.addEventListener('click', () => container.classList.remove("right-panel-active"));
   </script>
- <!-- Flash Messages -->
- <div class="flash-messages">
+
+  <!-- Flash Messages -->
+  <div class="flash-messages">
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
     {% endwith %}
   </div>
-  
-  <!-- Hide (fade out) flash messages after 10 seconds -->
+
+  <!-- Auto-hide flash after 3s -->
   <script>
-    // Wait 10 seconds (10,000 ms), then fade out messages
     setTimeout(() => {
-      const alerts = document.querySelectorAll('.alert');
-      alerts.forEach(alert => {
-        // Optional: Fade out effect
-        alert.style.transition = 'opacity 1s ease';
-        alert.style.opacity = '0';
-        
-        // Remove the element from the DOM after the transition
-        setTimeout(() => {
-          alert.remove();
-        }, 300); // matches the 1s fade-out
-      });
-    }, 3000); // 10,000 ms = 10 seconds
+      document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
+    }, 3000);
   </script>
-  
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

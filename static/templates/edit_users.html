@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Users</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/home.png') }}"/>
+
+  <!-- Google Font: Noto Sans -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Bootstrap 5 & Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    rel="stylesheet"
+  />
+
+  <!-- This page’s custom styles only -->
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='styles/edit_user_roles.css') }}"
+  />
+</head>
+<body class="hm-gradient">
+
+  <!-- NAVBAR -->
+   <nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+      <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
+        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#profileNav"
+        aria-controls="profileNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="profileNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.home') }}">
+              <i class="bi bi-house me-1"></i>Home
+            </a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+              <i class="bi bi-box-arrow-right me-1"></i>Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE CONTENT -->
+  <main class="mt-4 mb-5">
+    <div class="container">
+
+      <!-- Panel -->
+      <div class="panel mx-auto">
+        <!-- Heading -->
+        <div class="panel-heading panel-heading-custom">
+          Edit Users Information
+        </div>
+        
+
+        <!-- Flash messages -->
+        <div class="flash-messages text-center px-3 py-2">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div
+                  class="alert alert-{{ category }} alert-dismissible fade show"
+                  role="alert"
+                >
+                  {{ message }}
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                  ></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+
+        <!-- Table Body -->
+        <div class="panel-body">
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Current Role</th>
+                  <th>New Role</th>
+                  <th>Update Role</th>
+                  <th>New Password</th>
+                  <th>Update Password</th>
+                  <th>Delete User</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for u in users %}
+                <tr>
+                  <td>{{ u.name }}</td>
+                  <td>{{ u.email }}</td>
+                  <td class="text-capitalize">{{ u.role }}</td>
+
+                  <!-- Role form -->
+                  <td>
+                    <form
+                      method="POST"
+                      action="{{ url_for('user_roles.edit_user_roles') }}"
+                      class="d-flex align-items-center mb-0"
+                    >
+                      <input type="hidden" name="user_id" value="{{ u._id }}">
+                      <select name="role" class="form-select form-select-sm">
+                        <option value="">– unchanged –</option>
+                        <option value="user">User</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                  </td>
+                  <td class="text-center">
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-primary"
+                        title="Update role"
+                      >
+                        <i class="bi bi-pencil-fill"> Edit</i>
+                      </button>
+                    </form>
+                  </td>
+
+                  <!-- Password form -->
+                  <td>
+                    <form
+                      method="POST"
+                      action="{{ url_for('user_roles.edit_user_roles') }}"
+                      class="d-flex align-items-center mb-0"
+                    >
+                      <input type="hidden" name="user_id" value="{{ u._id }}">
+                      <input
+                        type="password"
+                        name="password"
+                        class="form-control form-control-sm"
+                        placeholder="••••••"
+                      />
+                  </td>
+                  <td class="text-center">
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-primary"
+                        title="Update password"
+                      >
+                        <i class="bi bi-pencil-fill"> Edit</i>
+                      </button>
+                    </form>
+                  </td>
+
+                  <!-- Delete form -->
+                  <td class="text-center">
+                    <form
+                      method="POST"
+                      action="{{ url_for('user_roles.delete_user', user_id=u._id) }}"
+                      onsubmit="return confirm('Delete this user?');"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-danger"
+                        title="Delete user"
+                      >
+                        <i class="bi bi-trash-fill">{{ u.name }}</i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="panel-footer text-center">
+          Showing <strong>{{ users|length }}</strong> user{{ users|length != 1 and 's' }}
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bootstrap JS Bundle -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ></script>
+
+  <!-- Auto-dismiss flash alerts after 3s -->
+  <script>
+    setTimeout(() => {
+      document.querySelectorAll('.alert').forEach((el) => {
+        // Bootstrap 5: remove show to trigger fade out
+        el.classList.remove('show');
+      });
+    }, 3000); // 3 seconds
+  </script>
+</body>
+</html>

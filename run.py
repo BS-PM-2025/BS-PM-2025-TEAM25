@@ -4,10 +4,13 @@ from auth.main import auth_bp
 from main.main import main_bp
 from main.user_roles import user_roles_bp
 from reports.reports import reports_bp
+from reports.done_reports import done_reports_bp
+
 import urllib.parse
 import os
 import atexit
 from dotenv import load_dotenv
+
 
 
 
@@ -37,8 +40,9 @@ mongo = PyMongo(app)
 app.mongo = mongo
 
 # Register blueprints
+app.register_blueprint(done_reports_bp)
 app.register_blueprint(user_roles_bp)
-app.register_blueprint(auth_bp)
+app.register_blueprint(auth_bp,  url_prefix="/auth")
 app.register_blueprint(main_bp)
 app.register_blueprint(reports_bp)
 

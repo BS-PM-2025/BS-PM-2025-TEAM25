@@ -77,3 +77,51 @@ def update_profile():
 
     return redirect(url_for("main.profile"))
 
+<<<<<<< HEAD
+=======
+
+
+
+@main_bp.route("/about")
+def about():
+    """
+    About page: renders about.html
+    """
+    mongo = current_app.mongo
+
+    user_email      = session.get("user")
+    user_data       = None
+    my_issues_count = 0
+
+    if user_email:
+        # fetch & sanitize user
+        user_data = mongo.db.users.find_one({"email": user_email})
+        if user_data and "password" in user_data:
+            user_data.pop("password")
+        # count their reports
+        my_issues_count = mongo.db.issues.count_documents(
+            {"reporter_email": user_email}
+        )
+
+    return render_template(
+        "about.html",
+        year=datetime.utcnow().year,
+        user=user_data,
+        my_issue_count=my_issues_count
+    )
+
+
+
+@main_bp.route("/delete_account", methods=["POST"])
+def delete_my_account():
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+
+    # remove user from DB
+    mongo = current_app.mongo
+    mongo.db.users.delete_one({"email": session["user"]})
+    session.clear()
+    flash("Your account has been deleted.", "info")
+    return redirect(url_for("auth.root"))
+>>>>>>> my-changes

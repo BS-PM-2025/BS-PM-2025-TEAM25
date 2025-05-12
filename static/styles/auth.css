@@ -67,8 +67,13 @@ a {
 /* Button Styles */
 button {
 	border-radius: 20px;
+<<<<<<< HEAD
 	border: 1px solid #1500cf;
 	background-color: #00aeff;
+=======
+	border: 1px solid #1effc3;
+	background-color: #1effe1;
+>>>>>>> my-changes
 	color: #FFFFFF;
 	font-size: 12px;
 	font-weight: bold;
@@ -182,9 +187,15 @@ input {
 }
 
 .overlay {
+<<<<<<< HEAD
 	background: #1208d7;
 	background: -webkit-linear-gradient(to right, #108ce4, #001d86);
 	background: linear-gradient(to right, #a4aef9, #025acd);
+=======
+	background: #1effe1;
+	background: -webkit-linear-gradient(to right, #1effe1, #1effe1);
+	background: linear-gradient(to right, #a4cdf9, #1effe1);
+>>>>>>> my-changes
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: 0 0;
@@ -268,5 +279,61 @@ select {
 	width: 100%;
 	border-radius: 4px;
 	font-size: 14px;
+  }
+  
+
+
+  /* Navbar */
+.navbar {
+	display: flex;
+	align-items: center;
+	padding: 0.5rem 1rem;
+  }
+  .navbar .nav {
+	display: flex;
+	list-style: none;
+	gap: 1rem;
+  }
+  .navbar .nav-item .nav-link {
+	color: #fff;
+	transition: color 0.2s;
+  }
+  .navbar .nav-item .nav-link:hover {
+	color: #ffd700;
+  }
+  .navbar-toggler {
+	border-color: rgba(255,255,255,0.5);
+  }
+  .navbar-toggler-icon {
+	filter: invert(1);
+  }
+  
+
+  /* 7) Navbar styling */
+.navbar {
+	background-color: rgba(0, 0, 0, 0.85);
+	box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+  }
+  .navbar .nav-link {
+	color: #ffffff;
+	margin-right: 1rem;
+	transition: color 0.3s;
+  }
+  .navbar .nav-link:hover {
+	color: #ffd700;
+  }
+  
+
+  /* Navbar overrides */
+.navbar {
+	background-color: rgba(0, 0, 0, 0.85) !important;
+  }
+  .navbar .nav-link {
+	color: #ffffff;
+	margin-right: 1rem;
+	transition: color 0.3s;
+  }
+  .navbar .nav-link:hover {
+	color: #ffd700;
   }
   

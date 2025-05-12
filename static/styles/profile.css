@@ -54,7 +54,11 @@ body {
   transition: color 0.3s ease;
 }
 .navbar .nav-item .nav-link:hover {
+<<<<<<< HEAD
   color: #ff9900;
+=======
+  color: #ffd700;
+>>>>>>> my-changes
 }
 .navbar-toggler {
   border: none;

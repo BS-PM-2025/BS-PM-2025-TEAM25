@@ -1,6 +1,6 @@
-<!-- templates/maintenance_dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -8,6 +8,7 @@
   <link rel="icon" href="{{ url_for('static', filename='images/home.png') }}">
 
   <!-- Bootstrap CSS & Icons -->
+<<<<<<< HEAD
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
     rel="stylesheet"
@@ -53,11 +54,23 @@
     /* Page background */
     body.hm-gradient {
       background-image: linear-gradient(to top, #000000 0%, #14a5ff 99%, #5e5e5e 100%);
+=======
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <!-- Your custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+
+  <style>
+    body.hm-gradient {
+      background-image: linear-gradient(to top, #000 0%, #14a5ff 99%, #5e5e5e 100%);
+>>>>>>> my-changes
       min-height: 100vh;
       padding-bottom: 2rem;
       color: #333;
     }
 
+<<<<<<< HEAD
     /* Card styling */
     .admin-issues-container .card {
       background: #fff;
@@ -66,24 +79,64 @@
     }
 
     /* Buttons */
+=======
+    .nav-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar {
+      background-color: rgba(0, 0, 0, 0.85) !important;
+    }
+
+    .navbar .nav-link,
+    .navbar .bi {
+      color: #fff !important;
+    }
+
+    .navbar .nav-link:hover {
+      color: #e3ff47 !important;
+    }
+
+    .admin-issues-container .card {
+      background: #fff;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+>>>>>>> my-changes
     .btn-primary {
       background-color: #00C851;
       border-color: #00C851;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> my-changes
     .btn-primary:hover {
       background-color: #007E33;
       border-color: #007E33;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> my-changes
     .btn-success {
       background-color: #007E33;
       border-color: #007E33;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> my-changes
     .btn-success:hover {
       background-color: #00521A;
       border-color: #00521A;
     }
   </style>
 </head>
+<<<<<<< HEAD
 <body class="hm-gradient">
   <div class="page-wrapper">
 
@@ -102,6 +155,18 @@
           <span class="navbar-toggler-icon"></span>
         </button>
   
+=======
+
+<body class="hm-gradient">
+  <div class="page-wrapper">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+      <div class="container">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#profileNav"
+          aria-controls="profileNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+>>>>>>> my-changes
         <div class="collapse navbar-collapse" id="profileNav">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
@@ -109,12 +174,25 @@
                 <i class="bi bi-house me-1"></i>Home
               </a>
             </li>
+<<<<<<< HEAD
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('reports.report_issue') }}">
               <i class="bi bi-plus-circle me-1"></i>Report
             </a>
           </li>
+=======
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('reports.report_issue') }}">
+                <i class="bi bi-plus-circle me-1"></i>Report
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('reports.rejected_reports') }}">
+                <i class="bi bi-envelope-exclamation me-1"></i> Rejections
+              </a>
+            </li>            
+>>>>>>> my-changes
           </ul>
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <li class="nav-item">
@@ -128,12 +206,18 @@
     </nav>
 
     <div class="admin-issues-container container my-4">
+<<<<<<< HEAD
       <h1 class="text-center mb-1">Welcome to the Dashboard, {{ user.name }}!</h1>
       <h2 class="text-center mb-4">Issues Assigned to You</h2>
+=======
+      <h1 class="text-center mb-1">Welcome, {{ user.name }}!</h1>
+      <h2 class="text-center mb-4">Your Assigned Issues</h2>
+>>>>>>> my-changes
 
       <!-- Flash messages -->
       <div class="flash-messages text-center mb-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
+<<<<<<< HEAD
           {% if messages %}
             {% for category, message in messages %}
               <div class="alert alert-{{ category }}">{{ message }}</div>
@@ -145,15 +229,46 @@
       <!-- Maintenance Cards -->
       <div class="row g-4">
         {% for issue in issues if issue.assigned_to == user.email %}
+=======
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+      </div>
+
+      <!-- ISSUE CARDS -->
+      <div class="row g-4">
+        {% for issue in issues %}
+>>>>>>> my-changes
         <div class="col-md-4">
           <div class="card h-100">
             <div class="card-body d-flex flex-column">
+
               {% if issue.image_path %}
+<<<<<<< HEAD
               <div class="image-container mb-3">
                 <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue Image">
+=======
+              <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue" class="img-fluid mb-3">
+              {% endif %}
+
+              {# Show rejection reason or awaiting badge #}
+              {% if issue.rejection_reason %}
+              <div class="alert alert-warning mt-2">
+                Your last completion was rejected:
+                <strong>{{ issue.rejection_reason }}</strong>
+              </div>
+              {% elif issue.awaiting %}
+              <div class="alert alert-info mt-2">
+                Awaiting admin approval…
+>>>>>>> my-changes
               </div>
               {% endif %}
+
               <h5 class="card-title">{{ issue.category }}</h5>
+<<<<<<< HEAD
               <p class="card-text flex-grow-1">{{ issue.description }}</p>
               <button
                 class="btn btn-primary mb-2"
@@ -163,25 +278,38 @@
                 Details
               </button>
               <form action="{{ url_for('reports.update_status', issue_id=issue._id) }}" method="POST">
+=======
+              <button class="btn btn-primary mb-2" data-bs-toggle="modal"
+                data-bs-target="#issueModal{{ issue._id }}">Details</button>
+
+              <!-- STATUS FORM -->
+              <form class="status-form mt-auto" data-issue-id="{{ issue._id }}"
+                action="{{ url_for('reports.maintenance_update_status', issue_id=issue._id) }}" method="POST">
+>>>>>>> my-changes
                 <div class="input-group">
-                  <select name="status" class="form-select">
+                  <select name="status" class="form-select status-select">
                     <option value="in progress" {% if issue.status=='in progress' %}selected{% endif %}>
                       In Progress
                     </option>
-                    <option value="resolved" {% if issue.status=='resolved' %}selected{% endif %}>
-                      Resolved
+                    <option value="done" {% if issue.status=='done' %}selected{% endif %}>
+                      Done
                     </option>
                   </select>
-                  <button class="btn btn-success">Update</button>
+                  <button type="submit" class="btn btn-success">Update</button>
                 </div>
               </form>
+
             </div>
           </div>
         </div>
         {% endfor %}
       </div>
 
+<<<<<<< HEAD
       <!-- Detail Modals -->
+=======
+      <!-- DETAIL MODALS -->
+>>>>>>> my-changes
       {% for issue in issues %}
       <div class="modal fade" id="issueModal{{ issue._id }}" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -193,6 +321,7 @@
             <div class="modal-body">
               <p><strong>Description:</strong><br>{{ issue.description }}</p>
               <p><strong>Location:</strong>
+<<<<<<< HEAD
                 <a href="https://www.google.com/maps/search/?api=1&amp;query={{ issue.location.lat }},{{ issue.location.lng }}"
                    target="_blank">View on Google Maps</a>
               </p>
@@ -200,6 +329,13 @@
               <div class="image-container my-3">
                 <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue Image">
               </div>
+=======
+                <a href="https://maps.google.com/?q={{ issue.location.lat }},{{ issue.location.lng }}"
+                  target="_blank">View on Map</a>
+              </p>
+              {% if issue.image_path %}
+              <img src="{{ url_for('static', filename=issue.image_path) }}" class="img-fluid my-3">
+>>>>>>> my-changes
               {% endif %}
             </div>
             <div class="modal-footer">
@@ -209,6 +345,7 @@
         </div>
       </div>
       {% endfor %}
+<<<<<<< HEAD
     </div>
   </div>
 
@@ -225,6 +362,79 @@
       .addEventListener("click", () =>
         document.querySelector(".nav").classList.toggle("active")
       );
+=======
+
+      <!-- COMPLETION MODALS -->
+      {% for issue in issues %}
+      <div class="modal fade" id="completionModal{{ issue._id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <form action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}" method="POST"
+            enctype="multipart/form-data" class="modal-content">
+            <div class="modal-header bg-dark text-white">
+              <h5 class="modal-title">Work Completion Report</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p>
+                I want to send a work completion report with a detailed
+                description and before and after photos, to show the process
+                and findings and ensure that the task was completed properly.
+              </p>
+              <div class="mb-3">
+                <label for="description_{{ issue._id }}" class="form-label">
+                  Detailed Description
+                </label>
+                <textarea name="completion_description" id="description_{{ issue._id }}" class="form-control" rows="4"
+                  required></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Before Photo</label>
+                <input type="file" name="before_image" accept="image/*" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">After Photo</label>
+                <input type="file" name="after_image" accept="image/*" class="form-control" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Submit Report</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Bootstrap + modal‐trigger JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // auto-dismiss flash
+    setTimeout(() => document.querySelectorAll('.alert').forEach(a => a.remove()), 3000);
+
+    // intercept “Done” selection
+    document.querySelectorAll('.status-select').forEach(sel => {
+      sel.addEventListener('change', function () {
+        if (this.value === 'done') {
+          let id = this.closest('.status-form').dataset.issueId;
+          new bootstrap.Modal(
+            document.getElementById('completionModal' + id)
+          ).show();
+        }
+      });
+    });
+
+    // prevent default submit when Done → let modal handle it
+    document.querySelectorAll('.status-form').forEach(form => {
+      form.addEventListener('submit', e => {
+        if (form.querySelector('.status-select').value === 'done') {
+          e.preventDefault();
+        }
+      });
+    });
+>>>>>>> my-changes
   </script>
 </body>
+
 </html>

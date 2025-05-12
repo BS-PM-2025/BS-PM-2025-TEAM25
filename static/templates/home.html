@@ -16,7 +16,11 @@
   <style>
     :root {
       /* Brand colors */
+<<<<<<< HEAD
       --primary-500: #1e90ff;   /* DodgerBlue */
+=======
+      --primary-500: #1effe1;   /* DodgerBlue */
+>>>>>>> my-changes
       --primary-700: #ffffff;   /* Darker blue */
       --dark-900:   #0d1117;    /* Almost black */
       --gray-200:   #f5f6f7;
@@ -35,7 +39,11 @@
     }
     .navbar .nav-link.active,
     .navbar .nav-link:hover {
+<<<<<<< HEAD
       color: var(--primary-500) !important;
+=======
+      color: #ffd700;
+>>>>>>> my-changes
     }
 
     /* Hero section */
@@ -124,6 +132,7 @@
 
 </head>
 <body class="d-flex flex-column min-vh-100">
+<<<<<<< HEAD
 
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
@@ -174,6 +183,42 @@
       </div>
     </div>
   </nav>
+=======
+ <!-- NAVBAR -->
+ <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold" href="{{ url_for('main.home') }}">InfraReport</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          {% if user %}
+            <a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a>
+          {% endif %}
+        </li>
+        <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        {% if user %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('reports.my_reports') }}">
+              My Reports <span class="badge bg-light text-dark">{{ my_issue_count }}</span>
+            </a>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}">Report Issue</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.root') }}">Sign Up</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.root') }}">Login</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+>>>>>>> my-changes
   
 
 <!-- HERO -->

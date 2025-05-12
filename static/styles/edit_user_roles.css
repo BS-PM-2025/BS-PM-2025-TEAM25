@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Container card */
 .admin-issues-container {
   background: #fff;
@@ -12,6 +13,141 @@
   text-align: center;
   font-weight: 500;
 }
+=======
+/* Page font & background */
+.edit-users-page {
+  font-family: 'Noto Sans', sans-serif;
+  background: #f1f8fc;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Panel container */
+.panel {
+  max-width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+/* Panel heading */
+.panel-heading {
+  background: #4aa8f7;
+  color: #fff;
+  padding: 1rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+/* Flash container */
+.flash-messages .alert {
+  display: inline-block;
+  width: auto;
+  margin-bottom: 0.5rem;
+}
+
+/* Panel body */
+.panel-body {
+  padding: 0;
+}
+.panel-body .table-responsive {
+  overflow-x: auto;
+}
+.panel-body .table {
+  margin-bottom: 0;
+}
+.panel-body .table thead {
+  background: #000;
+  color: #fff;
+}
+.panel-body .table thead th {
+  border: none;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+.panel-body .table tbody tr td {
+  vertical-align: middle;
+  padding: 0.75rem;
+  border-top: 1px solid #e9ecef;
+}
+
+/* Update button */
+.btn-outline-primary {
+  color: #006944;
+  border-color: #008357;
+}
+.btn-outline-primary:hover {
+  background: #00784e;
+  color: #fff;
+}
+
+/* Delete button */
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+.btn-outline-danger:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* Panel footer */
+.panel-footer {
+  background: #005239;
+  color: #fff;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+}
+
+
+/* Gradient Bar */
+.grad-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #3b3b3b, #0caaff, #000000, #ffffff);
+  background-size: 200% 100%;
+  animation: gradientShift 5s ease infinite;
+}
+@keyframes gradientShift {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+
+/* 1) Gradient background */
+.hm-gradient {
+  background-image: linear-gradient(to top, #c9c9c9 0%, #1effe1 99%, #ffffff 100%);
+    min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+
+/* Navbar */
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+}
+.navbar .nav {
+  display: flex;
+  list-style: none;
+  gap: 1rem;
+}
+.navbar .nav-item .nav-link {
+  color: #fff;
+  transition: color 0.2s;
+}
+.navbar .nav-item .nav-link:hover {
+  color: #ffd700;
+}
+.navbar-toggler {
+  border-color: rgba(255,255,255,0.5);
+}
+.navbar-toggler-icon {
+  filter: invert(1);
+}
+>>>>>>> my-changes
 
 /* Flash alerts */
 .flash-messages .alert {
@@ -27,6 +163,7 @@
   max-width: 160px;
 }
 
+<<<<<<< HEAD
 /* Remove bottom margin on table wrapper */
 .table-responsive {
   margin-bottom: 0;
@@ -37,4 +174,49 @@
   background-color: #343a40;
   color: #fff;
   border-color: #454d55;
+=======
+
+/* 7) Navbar styling */
+.navbar {
+  background-color: rgba(0, 0, 0, 0.85);
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+.navbar .nav-link {
+  color: #ffffff;
+  margin-right: 1rem;
+  transition: color 0.3s;
+}
+.navbar .nav-link:hover {
+  color: #ffd700;
+}
+
+/* 8) Utility resets */
+.mb-4 { margin-bottom: 1.5rem!important; }
+.mt-4 { margin-top: 1.5rem!important; }
+.pt-3 { padding-top: 1rem!important; }
+.pb-4 { padding-bottom: 1.5rem!important; }
+
+/* 9) Flash alerts (if any) */
+.alert {
+  border-radius: 0.25rem;
+}
+
+
+
+
+.panel-heading-custom {
+  /* Gradient background */
+  background: linear-gradient(90deg, #03794f 0%, #5bffc5 100%);
+  /* Padding and rounded corners */
+  padding: 1rem 1.5rem;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  /* Centered, large, white text */
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  /* A subtle shadow to lift it off the page */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+>>>>>>> my-changes
 }

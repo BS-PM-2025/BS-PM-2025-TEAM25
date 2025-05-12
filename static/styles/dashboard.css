@@ -357,7 +357,11 @@ body {
 
 /* 1) Gradient background */
 .hm-gradient {
+<<<<<<< HEAD
   background-image: linear-gradient(to top, #000000 0%, #14a5ff 99%, #5e5e5e 100%);
+=======
+  background-image: linear-gradient(to top, #c9c9c9 0%, #1effe1 99%, #ffffff 100%);
+>>>>>>> my-changes
   min-height: 100vh;
   padding-bottom: 2rem;
 }
@@ -429,7 +433,11 @@ input.purple-border:focus {
   transition: color 0.3s;
 }
 .navbar .nav-link:hover {
+<<<<<<< HEAD
   color: #ffffff;
+=======
+  color: #ffd700;
+>>>>>>> my-changes
 }
 
 /* 8) Utility resets */
@@ -442,4 +450,18 @@ input.purple-border:focus {
 .alert {
   border-radius: 0.25rem;
 }
+<<<<<<< HEAD
+=======
+
+
+/* Update button */
+.btn-outline-primary {
+  color: #006944;
+  border-color: #008357;
+}
+.btn-outline-primary:hover {
+  background: #00784e;
+  color: #fff;
+}
+>>>>>>> my-changes
 

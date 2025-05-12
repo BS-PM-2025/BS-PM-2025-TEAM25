@@ -1,6 +1,7 @@
 <!-- templates/admin_dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -8,6 +9,7 @@
   <link rel="icon" href="{{ url_for('static', filename='images/home.png') }}">
 
   <!-- Bootstrap 5 + Icons -->
+<<<<<<< HEAD
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
     rel="stylesheet"
@@ -32,10 +34,32 @@
 </head>
 <body class="hm-gradient">
 
+=======
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Your custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+  <style>
+    /* inline height for map containers */
+    .map-container {
+      width: 100%;
+      height: 300px;
+    }
+  </style>
+</head>
+
+<body class="hm-gradient">
+
+>>>>>>> my-changes
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+<<<<<<< HEAD
       <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">
         <i class="bi bi-person-circle"></i> {{ user.name }}
       </a></li></ul>
@@ -48,11 +72,22 @@
         aria-expanded="false"
         aria-label="Toggle navigation"
       >
+=======
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('main.profile') }}">
+            <i class="bi bi-person-circle"></i> {{ user.name }}
+          </a>
+        </li>
+      </ul>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav"
+        aria-controls="adminNav" aria-expanded="false" aria-label="Toggle navigation">
+>>>>>>> my-changes
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="adminNav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+<<<<<<< HEAD
           <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}">Report Issue</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('user_roles.edit_user_roles') }}">Edit Roles</a></li>
           <li class="nav-item">
@@ -60,6 +95,29 @@
               My Reports <span class="badge bg-light text-dark">{{ my_issue_count }}</span>
             </a>
           </li>
+=======
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('reports.report_issue') }}">
+              Report Issue
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('done_reports.done_issue') }}">
+              Done reports
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('user_roles.edit_user_roles') }}">
+              Edit Users
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('reports.my_reports') }}">
+              My Reports
+              <span class="badge bg-light text-dark">{{ my_issue_count }}</span>
+            </a>
+          </li>
+>>>>>>> my-changes
         </ul>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}">Home</a></li>
@@ -73,13 +131,19 @@
     <div class="container mt-4">
 
       <!-- TITLE -->
+<<<<<<< HEAD
       <div class="text-center darken-grey-text mb-4">
         <h1 class="font-bold mt-4 mb-3 h5">All Reported Issues</h1>
+=======
+      <div class="text-center text-white mb-4">
+        <h1 class="mt-4 mb-3">All Reported Issues</h1>
+>>>>>>> my-changes
       </div>
 
       <!-- SEARCH CARD -->
       <div class="card mb-4">
         <div class="card-body">
+<<<<<<< HEAD
           <h2 class="pt-3 pb-4 text-center font-bold font-up deep-purple-text">
             Search within table
           </h2>
@@ -93,6 +157,14 @@
             />
             <span class="input-group-text waves-effect purple lighten-2" id="basic-addon1">
               <i class="bi bi-search white-text"></i>
+=======
+          <h2 class="h5 text-center mb-3">Search within table</h2>
+          <div class="input-group">
+            <input id="searchInput" class="form-control" type="text" placeholder="Search something here…"
+              aria-label="Search" />
+            <span class="input-group-text">
+              <i class="bi bi-search"></i>
+>>>>>>> my-changes
             </span>
           </div>
         </div>
@@ -102,9 +174,15 @@
       <div class="card mb-4">
         <div class="card-body">
           <div class="table-responsive">
+<<<<<<< HEAD
             <table class="table table-striped table-hover">
               <thead class="mdb-color darken-3">
                 <tr class="text-white">
+=======
+            <table class="table table-striped table-hover" id="issuesTable">
+              <thead class="bg-dark text-white">
+                <tr>
+>>>>>>> my-changes
                   <th>ID</th>
                   <th>Reporter</th>
                   <th>Description</th>
@@ -120,6 +198,7 @@
                 <tr>
                   <th scope="row">{{ issue._id }}</th>
                   <td>{{ issue.reporter_email }}</td>
+<<<<<<< HEAD
 
                   <!-- DESCRIPTION: truncated + modal trigger -->
                   <td>
@@ -219,6 +298,61 @@
     &mdash;
   {% endif %}
 </td>
+=======
+                  <td>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#descModal{{ issue._id }}"
+                      class="text-decoration-none">
+                      {{ issue.description[:30] ~ ('...' if issue.description|length>30 else '') }}
+                    </a>
+                  </td>
+                  <td>
+                    {% if issue.location %}
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#locModal{{ issue._id }}">
+                      View Map
+                    </a>
+                    {% else %}&mdash;{% endif %}
+                  </td>
+                  <td>
+                    {% if issue.image_path %}
+                    <img src="{{ url_for('static', filename=issue.image_path) }}" class="image-thumb-admin" alt="Issue"
+                      data-bs-toggle="modal" data-bs-target="#imageModal{{ issue._id }}" />
+                    {% else %}&mdash;{% endif %}
+                  </td>
+                  <td>
+                    <span class="badge
+                      {% if issue.status=='pending' %}bg-danger
+                      {% elif issue.status=='in progress' %}bg-warning text-dark
+                      {% elif issue.status=='approved' %}bg-info text-dark
+                      {% else %}bg-success{% endif %}">
+                      {{ issue.status|capitalize }}
+                    </span>
+                  </td>
+                  <td>
+                    <form action="{{ url_for('reports.assign_issue', issue_id=issue._id) }}" method="POST">
+                      <div class="input-group input-group-sm">
+                        <select name="maintenance_email" class="form-select">
+                          <option value="">unchanged</option>
+                          {% for m in maintenance_users %}
+                          <option value="{{ m.email }}">{{ m.name }}</option>
+                          {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                          Assign
+                        </button>
+                      </div>
+                    </form>
+                  </td>
+                  <td>
+                    {% if user.role=='admin' or issue.reporter_email==user.email %}
+                    <form action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}" method="POST"
+                      onsubmit="return confirm('Delete this report?')">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"> Delete</i>
+                      </button>
+                    </form>
+                    {% else %}&mdash;{% endif %}
+                  </td>
+>>>>>>> my-changes
                 </tr>
                 {% endfor %}
               </tbody>
@@ -233,11 +367,15 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-body text-center">
+<<<<<<< HEAD
               <img
                 src="{{ url_for('static', filename=issue.image_path) }}"
                 class="img-fluid"
                 alt="Full Issue"
               >
+=======
+              <img src="{{ url_for('static', filename=issue.image_path) }}" class="img-fluid" alt="Full Issue">
+>>>>>>> my-changes
             </div>
             <div class="modal-footer">
               <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -269,6 +407,7 @@
 
       <!-- LOCATION MODALS -->
       {% for issue in issues if issue.location %}
+<<<<<<< HEAD
       <div
         class="modal fade"
         id="locModal{{ issue._id }}"
@@ -277,6 +416,10 @@
         tabindex="-1"
         aria-hidden="true"
       >
+=======
+      <div class="modal fade" id="locModal{{ issue._id }}" data-lat="{{ issue.location.lat }}"
+        data-lng="{{ issue.location.lng }}" tabindex="-1" aria-hidden="true">
+>>>>>>> my-changes
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content">
             <div class="modal-header">
@@ -284,6 +427,7 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0">
+<<<<<<< HEAD
               <div
                 id="map{{ issue._id }}"
                 class="map-container"
@@ -295,6 +439,13 @@
                 target="_blank"
                 class="btn btn-primary"
               >
+=======
+              <div id="map{{ issue._id }}" class="map-container"></div>
+            </div>
+            <div class="modal-footer">
+              <a href="https://www.google.com/maps/dir/?api=1&destination={{ issue.location.lat }},{{ issue.location.lng }}"
+                target="_blank" class="btn btn-primary">
+>>>>>>> my-changes
                 Get Directions
               </a>
               <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -311,6 +462,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<<<<<<< HEAD
   <!-- Map Initialization -->
   <script>
     // store maps so we only init once
@@ -322,6 +474,32 @@
           const lat = +modalEl.dataset.lat;
           const lng = +modalEl.dataset.lng;
           const mapDiv = document.getElementById('map' + mid.replace('locModal',''));
+=======
+
+  <!-- Search filter & Map initialization -->
+  <script>
+    // Live search
+    document.getElementById('searchInput').addEventListener('keyup', function () {
+      const filter = this.value.toLowerCase();
+      document
+        .querySelectorAll('#issuesTable tbody tr')
+        .forEach(row => {
+          row.style.display = Array.from(row.cells).some(cell =>
+            cell.textContent.toLowerCase().includes(filter)
+          ) ? '' : 'none';
+        });
+    });
+
+    // Map initialization
+    const mapInstances = {};
+    document.querySelectorAll('[id^="locModal"]').forEach(modalEl => {
+      modalEl.addEventListener('shown.bs.modal', () => {
+        const mid = modalEl.id; // e.g. "locModal123"
+        if (!mapInstances[mid]) {
+          const lat = +modalEl.dataset.lat;
+          const lng = +modalEl.dataset.lng;
+          const mapDiv = document.getElementById('map' + mid.replace('locModal', ''));
+>>>>>>> my-changes
           const map = L.map(mapDiv).setView([lat, lng], 15);
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
@@ -335,5 +513,10 @@
     });
   </script>
 </body>
+<<<<<<< HEAD
 </html>
   
+=======
+
+</html>
+>>>>>>> my-changes
