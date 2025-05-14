@@ -1,11 +1,73 @@
-/* Requires the Docker Pipeline plugin */
+// Jenkinsfile
+
 pipeline {
-    agent { docker { image 'python:3.13.3-alpine3.21' } }
+    agent any
+
+    environment {
+        // adjust image name & registry as needed
+        DOCKER_IMAGE = "your-dockerhub-username/bs-pm-2025-team25"
+        APP_PORT     = "5000"
+    }
+
     stages {
-        stage('build') {
+        stage('Checkout') {
             steps {
-                sh 'python --version'
+                checkout scm
             }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build(DOCKER_IMAGE)
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                // if you have tests, mount container and run them
+                sh """
+                   docker run --rm ${DOCKER_IMAGE} pytest --maxfail=1 --disable-warnings -q
+                """
+            }
+        }
+
+        stage('Push to Registry') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                        docker.image(DOCKER_IMAGE).push("${env.BUILD_NUMBER}")
+                        docker.image(DOCKER_IMAGE).push('latest')
+                    }
+                }
+            }
+        }
+
+        stage('Deploy (optional)') {
+            when {
+                branch 'main'
+            }
+            steps {
+                // e.g., SSH to server and pull+run, or trigger Kubernetes rollout
+                echo "Deploying ${DOCKER_IMAGE}:latest to production..."
+                // sh 'ssh deploy@yourserver "docker pull ${DOCKER_IMAGE}:latest && docker-compose up -d"'
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo 'Build succeeded!'
+        }
+        failure {
+            echo 'Build failed!'
         }
     }
 }
