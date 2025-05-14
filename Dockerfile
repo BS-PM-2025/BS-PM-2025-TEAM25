@@ -16,9 +16,9 @@ RUN apt-get update \
        build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# 5. Install Python dependencies
+# 5. Install Python dependencies + pytest
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt pytest
 
 # 6. Copy project
 COPY . .

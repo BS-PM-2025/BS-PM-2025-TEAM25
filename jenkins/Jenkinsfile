@@ -1,5 +1,3 @@
-// Jenkinsfile
-
 pipeline {
     agent any
 
@@ -26,10 +24,13 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                // if you have tests, mount container and run them
-                sh """
-                   docker run --rm ${DOCKER_IMAGE} pytest --maxfail=1 --disable-warnings -q
-                """
+                script {
+                    // run inside the container, install pytest on-the-fly, then execute
+                    docker.image(DOCKER_IMAGE).inside {
+                        sh 'pip install --no-cache-dir pytest'
+                        sh 'pytest --maxfail=1 --disable-warnings -q'
+                    }
+                }
             }
         }
 
@@ -52,8 +53,8 @@ pipeline {
                 branch 'main'
             }
             steps {
-                // e.g., SSH to server and pull+run, or trigger Kubernetes rollout
                 echo "Deploying ${DOCKER_IMAGE}:latest to production..."
+                // Example:
                 // sh 'ssh deploy@yourserver "docker pull ${DOCKER_IMAGE}:latest && docker-compose up -d"'
             }
         }
