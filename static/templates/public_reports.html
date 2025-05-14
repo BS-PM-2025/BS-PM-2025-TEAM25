@@ -1,108 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>InfraReport – All Reports</title>
 
   <!-- Bootstrap & Icons -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
   <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
-    html, body { height:100%; margin:0; }
-    .d-flex-full { display:flex; height:100%; flex-direction: column; }
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    .d-flex-full {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+    }
 
     /* push main content below navbar */
-    .main-content { flex:1; display:flex; }
+    .main-content {
+      flex: 1;
+      display: flex;
+    }
 
     .sidebar {
-      width:360px;
-      background:#f8f9fa;
-      border-right:1px solid #dee2e6;
-      display:flex; flex-direction:column;
+      width: 360px;
+      background: #f8f9fa;
+      border-right: 1px solid #dee2e6;
+      display: flex;
+      flex-direction: column;
     }
+
     .filter-header {
-      background:#28a745;
-      color:#fff;
-      text-align:center;
-      padding:.75rem;
-      font-weight:bold;
+      background: #28a745;
+      color: #fff;
+      text-align: center;
+      padding: .75rem;
+      font-weight: bold;
     }
-    #filterForm .form-select-sm { font-size:.85rem; }
+
+    #filterForm .form-select-sm {
+      font-size: .85rem;
+    }
+
     .report-list {
-      flex:1;
-      overflow-y:auto;
+      flex: 1;
+      overflow-y: auto;
     }
+
     .report-list .list-group-item {
-      cursor:pointer;
+      cursor: pointer;
     }
+
     .report-list .list-group-item:hover {
-      background:#e9ecef;
+      background: #e9ecef;
     }
+
     .report-thumb {
-      width:40px;
-      height:40px;
-      object-fit:cover;
-      margin-right:.75rem;
-      border-radius:.25rem;
-      flex-shrink:0;
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      margin-right: .75rem;
+      border-radius: .25rem;
+      flex-shrink: 0;
     }
+
     #publicMap {
-      flex:1;
-      height:100%;
+      flex: 1;
+      height: 100%;
     }
-    .badge-status { text-transform:capitalize; }
+
+    .badge-status {
+      text-transform: capitalize;
+    }
+
     .pagination-info {
-      padding:.5rem 1rem;
-      font-size:.9rem;
-      color:#000000b5;
-      border-top:1px solid #dee2e6;
+      padding: .5rem 1rem;
+      font-size: .9rem;
+      color: #000000b5;
+      border-top: 1px solid #dee2e6;
     }
 
     /* override default light navbar */
     .navbar {
       background-color: #000000eb !important;
     }
+
     .navbar .nav-link {
-      color: rgba(255,255,255,.85) !important;
+      color: rgba(255, 255, 255, .85) !important;
     }
+
     .navbar .nav-link:hover {
       color: #4079ff !important;
     }
   </style>
 </head>
+
 <body class="d-flex-full">
 
-   <!-- NAVBAR -->
-   <nav class="navbar navbar-expand-lg navbar-light">
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-      <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
-        <i class="bi bi-speedometer2 me-1"></i>Dashboard
-      </a></li></ul>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#profileNav"
-        aria-controls="profileNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
+          <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
+            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+          </a>
+        </li>
+      </ul>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#profileNav"
+        aria-controls="profileNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
@@ -113,12 +129,12 @@
               <i class="bi bi-house me-1"></i>Home
             </a>
           </li>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('reports.report_issue') }}">
-            <i class="bi bi-plus-circle me-1"></i>Report
-          </a>
-        </li>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('reports.report_issue') }}">
+              <i class="bi bi-plus-circle me-1"></i>Report
+            </a>
+          </li>
         </ul>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item">
@@ -141,8 +157,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="filter-header">
-        <a href="{{ url_for('reports.report_issue') }}"
-           class="text-white text-decoration-none">
+        <a href="{{ url_for('reports.report_issue') }}" class="text-white text-decoration-none">
           CLICK MAP TO REPORT A PROBLEM &rarr;
         </a>
       </div>
@@ -164,7 +179,7 @@
             <select id="categoryFilter" class="form-select form-select-sm">
               <option value="">Everything</option>
               {% for cat in categories %}
-                <option value="{{ cat }}">{{ cat }}</option>
+              <option value="{{ cat }}">{{ cat }}</option>
               {% endfor %}
             </select>
           </div>
@@ -176,7 +191,7 @@
             </select>
           </div>
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="showOlder"/>
+            <input class="form-check-input" type="checkbox" id="showOlder" />
             <label class="form-check-label small" for="showOlder">
               Show older reports
             </label>
@@ -205,15 +220,15 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    (function() {
-      const statusFilter   = document.getElementById('statusFilter'),
-            categoryFilter = document.getElementById('categoryFilter'),
-            sortBy         = document.getElementById('sortBy'),
-            showOlder      = document.getElementById('showOlder'),
-            filterForm     = document.getElementById('filterForm'),
-            reportList     = document.getElementById('reportList'),
-            paginationInfo = document.getElementById('paginationInfo'),
-            showOlderLink  = document.getElementById('showOlderLink');
+    (function () {
+      const statusFilter = document.getElementById('statusFilter'),
+        categoryFilter = document.getElementById('categoryFilter'),
+        sortBy = document.getElementById('sortBy'),
+        showOlder = document.getElementById('showOlder'),
+        filterForm = document.getElementById('filterForm'),
+        reportList = document.getElementById('reportList'),
+        paginationInfo = document.getElementById('paginationInfo'),
+        showOlderLink = document.getElementById('showOlderLink');
 
       // init map
       const map = L.map('publicMap');
@@ -274,7 +289,7 @@
             <div class="flex-grow-1">
               <strong>${i.category || 'Report'}</strong><br>
               <small class="text-muted">${i.timestamp.toLocaleString()}</small><br>
-              ${i.description.slice(0,60)}${i.description.length>60?'…':''}
+              ${i.description.slice(0, 60)}${i.description.length > 60 ? '…' : ''}
             </div>
             <span class="badge bg-${statusColor(i.status)} badge-status">
               ${i.status}
@@ -319,14 +334,15 @@
       });
 
       function statusColor(st) {
-        switch ((st||'').toLowerCase()) {
-          case 'resolved':    return 'success';
+        switch ((st || '').toLowerCase()) {
+          case 'resolved': return 'success';
           case 'in progress': return 'info';
-          case 'approved':    return 'primary';
-          default:            return 'secondary';
+          case 'approved': return 'primary';
+          default: return 'secondary';
         }
       }
     })();
   </script>
 </body>
+
 </html>

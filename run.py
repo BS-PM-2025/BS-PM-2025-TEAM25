@@ -46,6 +46,9 @@ app.register_blueprint(auth_bp,  url_prefix="/auth")
 app.register_blueprint(main_bp)
 app.register_blueprint(reports_bp)
 
+
+
+
 # Graceful shutdown log (no session logic!)
 @atexit.register
 def on_shutdown():

@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Maintenance Dashboard</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/home.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='images/dashboard.png') }}">
 
   <!-- Bootstrap CSS & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -16,7 +16,7 @@
 
   <style>
     body.hm-gradient {
-      background-image: linear-gradient(to top, #000 0%, #14a5ff 99%, #5e5e5e 100%);
+      background-image: linear-gradient(to top, #c9c9c9 0%, #1effe1 99%, #ffffff 100%);
       min-height: 100vh;
       padding-bottom: 2rem;
       color: #333;
@@ -94,7 +94,7 @@
               <a class="nav-link" href="{{ url_for('reports.rejected_reports') }}">
                 <i class="bi bi-envelope-exclamation me-1"></i> Rejections
               </a>
-            </li>            
+            </li>
           </ul>
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <li class="nav-item">
@@ -149,10 +149,10 @@
               <button class="btn btn-primary mb-2" data-bs-toggle="modal"
                 data-bs-target="#issueModal{{ issue._id }}">Details</button>
 
-              <!-- STATUS FORM -->
               <form class="status-form mt-auto" data-issue-id="{{ issue._id }}"
                 action="{{ url_for('reports.maintenance_update_status', issue_id=issue._id) }}" method="POST">
                 <div class="input-group">
+                  {% if issue.status != 'done' %}
                   <select name="status" class="form-select status-select">
                     <option value="in progress" {% if issue.status=='in progress' %}selected{% endif %}>
                       In Progress
@@ -161,9 +161,17 @@
                       Done
                     </option>
                   </select>
-                  <button type="submit" class="btn btn-success">Update</button>
+                  {% else %}
+                  <!-- preserve the value so the form still submits something -->
+                  <input type="hidden" name="status" value="done">
+                  <span class="form-control-plaintext">Done</span>
+                  {% endif %}
+                  <button type="submit" class="btn btn-success" {% if issue.status=='done' %}disabled{% endif %}>
+                    Update
+                  </button>
                 </div>
               </form>
+
 
             </div>
           </div>

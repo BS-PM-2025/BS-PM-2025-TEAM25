@@ -217,7 +217,6 @@ def get_all_issues():
             i["timestamp"] = ts.split(".")[0] + "Z"
     return {"issues": issues}, 200
 
-
 @reports_bp.route("/maintenance/dashboard")
 def maintenance_dashboard():
     if "user" not in session:
@@ -230,7 +229,7 @@ def maintenance_dashboard():
         flash("Access denied.", "danger")
         return redirect(url_for("auth.dashboard"))
 
-    # 1) fetch ALL assigned issues, regardless of their issue.status
+    # 1) fetch ALL assigned issues
     raw_issues = mongo.db.issues.find(
         {"assigned_to": session["user"]}
     ).sort("timestamp", -1)
@@ -238,31 +237,36 @@ def maintenance_dashboard():
     issues = []
     for i in raw_issues:
         i["_id"] = str(i["_id"])
-
-        # 2) look for a done_report for this issue
-        dr = mongo.db.done_issues.find_one({
-            "original_issue_id": i["_id"]
-        })
-
-        # 3) if admin already accepted it, skip it completely
+        dr = mongo.db.done_issues.find_one({"original_issue_id": i["_id"]})
         if dr and dr.get("status") == "accepted":
             continue
-
-        # 4) if admin rejected it, attach the reason
         if dr and dr.get("status") == "rejected":
             i["rejection_reason"] = dr.get("rejection_reason")
             i["awaiting"] = False
-
-        # 5) if there's a pending report (no status yet), flag it
         elif dr:
             i["awaiting"] = True
-
         issues.append(i)
+
+    # ───────────────────────────────────────────────────────────────────────────
+    # NEW: count how many _active_ rejections this technician has:
+    rejected_count = 0
+    for r in mongo.db.rejected_reports.find({"technician": session["user"]}):
+        try:
+            issue = mongo.db.issues.find_one({
+                "_id": ObjectId(r["original_issue_id"])
+            })
+        except:
+            continue
+        # only count if that issue is not already done/fixed
+        if issue and issue.get("status") not in ("done", "fixed"):
+            rejected_count += 1
+    # ───────────────────────────────────────────────────────────────────────────
 
     return render_template(
         "maintenance_dashboard.html",
         user=user,
-        issues=issues
+        issues=issues,
+        rejected_count=rejected_count    # pass it into the template
     )
 
 
@@ -338,16 +342,9 @@ def maintenance_complete_issue(issue_id):
     }
     mongo.db.done_issues.insert_one(done_doc)
 
-    # # Mark original as done
-    # mongo.db.issues.update_one(
-    #     {"_id": ObjectId(issue_id)},
-    #     {"$set": {"status": "done"}}
-    # )
 
     flash("Work completion report submitted!", "success")
     return redirect(url_for("reports.maintenance_dashboard"))
-
-
 
 @reports_bp.route("/maintenance/rejected_reports")
 def rejected_reports():
@@ -360,18 +357,55 @@ def rejected_reports():
         flash("Access denied.", "danger")
         return redirect(url_for("reports.maintenance_dashboard"))
 
-    # fetch only this technician’s rejection messages
+    # fetch this technician’s rejection messages, newest first
     raw = current_app.mongo.db.rejected_reports.find(
         {"technician": session["user"]}
     ).sort("timestamp", -1)
 
     reports = []
     for r in raw:
+        # assume each rejection doc has an "original_issue_id" field
+        try:
+            issue_obj_id = ObjectId(r["original_issue_id"])
+        except Exception:
+            # skip malformed IDs
+            continue
+
+        issue = current_app.mongo.db.issues.find_one({"_id": issue_obj_id})
+        # skip if the original issue is gone or already done/fixed
+        if not issue or issue.get("status") in ("done", "fixed"):
+            continue
+
+        # safe to show
         r["_id"] = str(r["_id"])
+        # if you need the link in the template you may also stringify:
+        r["original_issue_id"] = str(r["original_issue_id"])
         reports.append(r)
 
     return render_template(
-      "rejected_reports.html",
-      user    = user,
-      reports = reports
+        "rejected_reports.html",
+        user=user,
+        reports=reports
     )
+
+
+
+@reports_bp.context_processor
+def inject_rejected_count():
+    tech = session.get("user")
+    if not tech:
+        return dict(rejected_count=0)
+
+    # count only “active” rejections (issue not done/fixed)
+    count = 0
+    for r in current_app.mongo.db.rejected_reports.find({"technician": tech}):
+        try:
+            issue = current_app.mongo.db.issues.find_one({
+                "_id": ObjectId(r["original_issue_id"])
+            })
+        except:
+            continue
+        if issue and issue.get("status") not in ("done","fixed"):
+            count += 1
+
+    return dict(rejected_count=count)

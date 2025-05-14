@@ -75,7 +75,6 @@ def review_done_report(dr_id):
             {"_id": orig_id},
             {"$set": {
                 "status": "done",
-                "assigned_to": None
             }}
         )
 
