@@ -1,7 +1,6 @@
 <!-- templates/report_issue.html -->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,21 +8,34 @@
   <link rel="icon" href="{{ url_for('static', filename='images/home (3).png') }}" />
 
   <!-- Bootstrap 5 & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    rel="stylesheet"
+  />
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" crossorigin="" />
+  <!-- Leaflet CSS (no integrity/crossorigin) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  />
 
   <!-- Your custom CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/reports.css') }}" />
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='styles/dashboard.css') }}"
+  />
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='styles/reports.css') }}"
+  />
 </head>
 
 <body class="hm-gradient">
   <div class="page-wrapper">
-
-
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light">
       <div class="container">
@@ -34,8 +46,15 @@
             </a>
           </li>
         </ul>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#profileNav"
-          aria-controls="profileNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#profileNav"
+          aria-controls="profileNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
           <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -62,7 +81,6 @@
     <div class="report-container">
       <h1>Report a Road Issue</h1>
 
-
       <form action="{{ url_for('reports.report_issue') }}" method="POST" enctype="multipart/form-data">
         <!-- 1. Description -->
         <div class="mb-3">
@@ -73,8 +91,14 @@
         <!-- 2. City / Street -->
         <div class="mb-3">
           <label for="city_street" class="form-label">City / Street:</label>
-          <input type="text" id="city_street" name="city_street" class="form-control"
-            placeholder="e.g. Tel Aviv / Dizengoff St." required />
+          <input
+            type="text"
+            id="city_street"
+            name="city_street"
+            class="form-control"
+            placeholder="e.g. Tel Aviv / Dizengoff St."
+            required
+          />
         </div>
 
         <!-- 3. Category -->
@@ -90,7 +114,7 @@
         </div>
 
         <!-- 4. Map Picker -->
-        <div id="map" style="width:100%;height:400px;margin-bottom:1rem;"></div>
+        <div id="map" style="width:100%; height:400px; margin-bottom:1rem;"></div>
         <input type="hidden" id="lat" name="lat" />
         <input type="hidden" id="lng" name="lng" />
 
@@ -108,11 +132,12 @@
     </div>
   </div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" crossorigin=""></script>
+  <!-- Leaflet JS (no integrity/crossorigin) -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Map Script (unchanged) -->
+
+  <!-- Map + Geocoding Script -->
   <script>
     const map = L.map("map").setView([31.7683, 35.2137], 13);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -120,29 +145,71 @@
       attribution: "© OpenStreetMap"
     }).addTo(map);
 
-    let marker, latInput = document.getElementById("lat"), lngInput = document.getElementById("lng"), submitBtn = document.getElementById("submitBtn");
+    let marker;
+    const latInput  = document.getElementById("lat");
+    const lngInput  = document.getElementById("lng");
+    const submitBtn = document.getElementById("submitBtn");
+    const addressIn = document.getElementById("city_street");
 
     function enableSubmit() {
-      if (latInput.value && lngInput.value) submitBtn.disabled = false;
+      submitBtn.disabled = !(latInput.value && lngInput.value);
     }
+
     function setMarker(lat, lng) {
       if (!marker) {
         marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-        marker.on("dragend", e => setMarker(e.target.getLatLng().lat, e.target.getLatLng().lng));
-      } else marker.setLatLng([lat, lng]);
-      latInput.value = lat; lngInput.value = lng; enableSubmit();
+        marker.on("dragend", e => {
+          const { lat, lng } = e.target.getLatLng();
+          setMarker(lat, lng);
+        });
+      } else {
+        marker.setLatLng([lat, lng]);
+      }
+      latInput.value = lat;
+      lngInput.value = lng;
+      enableSubmit();
     }
 
+    // Try browser geolocation first
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        pos => { setMarker(pos.coords.latitude, pos.coords.longitude); map.setView([pos.coords.latitude, pos.coords.longitude], 13); },
+        pos => {
+          setMarker(pos.coords.latitude, pos.coords.longitude);
+          map.setView([pos.coords.latitude, pos.coords.longitude], 13);
+        },
         () => setMarker(31.7683, 35.2137)
       );
     } else {
       setMarker(31.7683, 35.2137);
     }
+
+    // Click to place marker
     map.on("click", e => setMarker(e.latlng.lat, e.latlng.lng));
+
+    // Debounced geocode lookup on address input, restricted to Israel
+    let geocodeTimer = null;
+    addressIn.addEventListener("input", () => {
+      clearTimeout(geocodeTimer);
+      geocodeTimer = setTimeout(() => {
+        const query = addressIn.value.trim();
+        if (!query) return;
+        fetch(
+          "https://nominatim.openstreetmap.org/search?format=json"
+          + "&countrycodes=il"
+          + "&bounded=1"
+          + "&q=" + encodeURIComponent(query)
+        )
+          .then(res => res.json())
+          .then(results => {
+            if (results && results.length) {
+              const { lat, lon } = results[0];
+              map.setView([lat, lon], 16);
+              setMarker(lat, lon);
+            }
+          })
+          .catch(err => console.error("Geocode error:", err));
+      }, 700);
+    });
   </script>
 </body>
-
 </html>

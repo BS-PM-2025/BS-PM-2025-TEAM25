@@ -443,3 +443,12 @@ input.purple-border:focus {
   border-radius: 0.25rem;
 }
 
+
+
+
+#map {
+  width: 100%;
+  height: 400px !important;    /* force the 400px height */
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;      /* optional, just to see its outline */
+}
