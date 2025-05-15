@@ -29,3 +29,6 @@ EXPOSE 5000
 
 # 8. Default command
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]
+
+
+CMD ["pytest", "-q"]
