@@ -339,6 +339,7 @@ def maintenance_complete_issue(issue_id):
         "after_image": after_path,
         "technician": session["user"],
         "timestamp": datetime.utcnow().isoformat()
+        
     }
     mongo.db.done_issues.insert_one(done_doc)
 

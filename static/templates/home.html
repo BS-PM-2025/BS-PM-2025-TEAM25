@@ -8,24 +8,20 @@
   <link rel="icon" href="{{ url_for('static', filename='images/aa.png') }}">
 
   <!-- Bootstrap & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <!-- Custom CSS -->
   <style>
     :root {
-      /* Brand colors */
       --primary-500: #1effe1;
-      /* DodgerBlue */
       --primary-700: #ffffff;
-      /* Darker blue */
       --dark-900: #0d1117;
-      /* Almost black */
       --gray-200: #f5f6f7;
       --shadow-sm: 0 2px 4px rgba(0, 0, 0, .08);
-      --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.986);
+      --shadow-lg: 0 8px 20px rgba(0, 0, 0, .986);
     }
 
     body {
@@ -33,7 +29,6 @@
       font-family: 'Inter', sans-serif;
     }
 
-    /* Navbar */
     .navbar {
       background: var(--dark-900) !important;
     }
@@ -43,11 +38,8 @@
       color: #ffd700;
     }
 
-    /* Hero section */
     #hero {
-      background: linear-gradient(135deg,
-          var(--primary-500),
-          var(--primary-700));
+      background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
       position: relative;
       overflow: hidden;
       color: #fff;
@@ -82,7 +74,6 @@
       color: var(--primary-700);
     }
 
-    /* Input group */
     #searchForm .form-control {
       border-radius: .5rem 0 0 .5rem;
       border-color: #ddd;
@@ -93,7 +84,6 @@
       background: var(--primary-700);
     }
 
-    /* Cards */
     .card {
       border: none;
       box-shadow: var(--shadow-sm);
@@ -105,13 +95,11 @@
       box-shadow: var(--shadow-lg);
     }
 
-    /* Stats numbers */
     .stats-number {
       font-size: 1.6rem;
       color: var(--dark-900);
     }
 
-    /* Recent list */
     .recent-list {
       max-height: 270px;
       overflow-y: auto;
@@ -124,18 +112,24 @@
       border-radius: .4rem;
     }
 
-    /* Map container */
     #map {
       height: 55vh;
       width: 100%;
       border-top: 4px solid var(--primary-500);
       border-radius: 0 0 1rem 1rem;
     }
-  </style>
 
+    .thumb {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: .4rem;
+    }
+  </style>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
+
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
     <div class="container-fluid px-4">
@@ -147,13 +141,13 @@
       </button>
       <div class="collapse navbar-collapse" id="navMenu">
         <ul class="navbar-nav me-auto">
+          {% if user %}
           <li class="nav-item">
-            {% if user %}
             <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
               <i class="bi bi-speedometer2 ms-1"></i> Dashboard
             </a>
-            {% endif %}
           </li>
+          {% endif %}
           <li class="nav-item">
             <a class="nav-link" href="/about">
               <i class="bi bi-info-circle ms-1"></i> About
@@ -166,7 +160,6 @@
             <a class="nav-link" href="{{ url_for('reports.my_reports') }}">
               <i class="bi bi-journal-text ms-1"></i> My Reports
               <span class="badge bg-light text-dark">{{ my_issue_count }}</span>
-
             </a>
           </li>
           <li class="nav-item">
@@ -201,8 +194,6 @@
     </div>
   </nav>
 
-
-
   <!-- HERO -->
   <section id="hero" class="py-5 text-center text-dark">
     <div class="container">
@@ -222,44 +213,58 @@
     </div>
   </section>
 
-  <!-- HOW-TO & RECENT -->
+  <!-- HOW-TO & REPORTS -->
   <section class="container my-5">
     <div class="row g-4">
+      <!-- How-to + stats -->
       <div class="col-lg-6">
         <div class="card h-100">
           <div class="card-body">
             <h5 class="card-title mb-3">How to report a problem</h5>
-            <ol class="list-group list-group-numbered">
+            <ol class="list-group list-group-numbered mb-4">
               <li class="list-group-item">Enter a street name or use your location.</li>
               <li class="list-group-item">Pinpoint the problem on the map.</li>
               <li class="list-group-item">Describe the issue and add a photo (optional).</li>
               <li class="list-group-item">We forward it to the responsible team.</li>
             </ol>
-            <div class="d-flex justify-content-between pt-3 border-top mt-3">
+            <div class="d-flex justify-content-between pt-3 border-top">
               <div>
-                <div class="stats-number" id="weekReports">—</div><small>Reports this week</small>
+                <div class="stats-number" id="weekReports">—</div>
+                <small>Reports this week</small>
               </div>
               <div>
-                <div class="stats-number" id="monthFixed">—</div><small>Fixed this month</small>
+                <div class="stats-number" id="monthFixed">—</div>
+                <small>Fixed this month</small>
               </div>
               <div>
-                <div class="stats-number" id="totalUpdates">—</div><small>Total reports</small>
+                <div class="stats-number" id="totalUpdates">—</div>
+                <small>Total reports</small>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="col-lg-6">
+      <!-- Recent reports -->
+      <div class="col-lg-6 d-flex flex-column gap-4">
         <div class="card h-100">
           <div class="card-body">
             <h5 class="card-title mb-3">Recent reports</h5>
             <ul id="recentReports" class="list-group recent-list small"></ul>
-            <a href="{{ url_for('reports.public_reports') }}" class="link-secondary small float-end mt-2">
-              View all →
-            </a>
+            <a href="{{ url_for('reports.public_reports') }}" class="link-secondary small float-end mt-2">View all →</a>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Done reports -->
+  <section class="container my-5">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Done reports</h5>
+        <!-- Empty list; JS will fill it from /api/done_reports -->
+        <ul id="doneReports" class="list-group list-group-flush recent-list small"></ul>
       </div>
     </div>
   </section>
@@ -276,7 +281,6 @@
           </div>
         </div>
       </div>
-
       <div class="col-md-4">
         <div class="card h-100 border-info">
           <div class="card-body text-center">
@@ -286,7 +290,6 @@
           </div>
         </div>
       </div>
-
       <div class="col-md-4">
         <div class="card h-100 border-secondary">
           <div class="card-body text-center">
@@ -299,93 +302,127 @@
     </div>
   </section>
 
+  <!-- MAP -->
   <div id="map"></div>
 
-  <footer class="mt-auto border-top py-3 text-center small text-muted bg-white">© {{ year }} InfraReport Team.</footer>
-  <!-- … رأس الصفحة كما هو … -->
-
-
+  <footer class="mt-auto border-top py-3 text-center small text-muted bg-white">
+    © {{ year }} InfraReport Team.
+  </footer>
 
   <!-- JS libs -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- (1) أضف وسم <script> المفقود -->
+  <!-- Data & map initialization -->
   <script>
     const DETAIL_BASE = "{{ url_for('reports.report_detail', issue_id='') }}";
-  </script>
-
-  <script>
     (function () {
       const weekReports = document.getElementById('weekReports'),
         monthFixed = document.getElementById('monthFixed'),
         totalUpdates = document.getElementById('totalUpdates'),
         recentList = document.getElementById('recentReports'),
+        doneList = document.getElementById('doneReports'),
         mapEl = document.getElementById('map');
 
       const map = L.map(mapEl);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { attribution: '© OpenStreetMap' }).addTo(map);
+        { attribution: '© OpenStreetMap' })
+        .addTo(map);
 
-      const coords = [];
+      const cleanDate = iso =>
+        new Date(iso.includes('.') ? iso.split('.')[0] : iso).getTime();
 
-      /* helper يحذف microseconds */
-      const cleanDate = iso => new Date(iso.includes('.') ? iso.split('.')[0] : iso);
-
+      // 1) Load ALL issues for stats + recent + map
       fetch('/api/issues')
         .then(r => r.json())
         .then(({ issues }) => {
-
-          // (2) استعمل cleanDate بدل new Date مباشرة
           issues.sort((a, b) => cleanDate(b.timestamp) - cleanDate(a.timestamp));
           const now = Date.now();
 
-          weekReports.textContent = issues.filter(i =>
-            now - cleanDate(i.timestamp) < 7 * 864e5).length;
-
+          weekReports.textContent = issues.filter(i => now - cleanDate(i.timestamp) < 7 * 864e5).length;
           monthFixed.textContent = issues.filter(i =>
             i.status === 'resolved' &&
-            now - cleanDate(i.timestamp) < 30 * 864e5).length;
-
+            now - cleanDate(i.timestamp) < 30 * 864e5
+          ).length;
           totalUpdates.textContent = issues.length.toLocaleString();
 
-          /* recent list */
+          // Recent
           issues.slice(0, 6).forEach(i => {
             const li = document.createElement('li');
-            li.className = 'list-group-item p-0';          // بدون حشوة إضافية
-
+            li.className = 'list-group-item p-0';
             li.innerHTML = `
               <a href="/report/${i._id}"
                  class="d-flex align-items-center text-decoration-none text-dark p-2">
-                ${i.image_path
-                ? `<img src="/static/${i.image_path}" class="me-2"
-                          style="width:48px;height:48px;object-fit:cover;border-radius:.4rem">`
-                : ''}
+                ${i.image_path ? `
+                  <img src="/static/${i.image_path}"
+                       class="me-2"
+                       style="width:48px;height:48px;object-fit:cover;border-radius:.4rem">
+                ` : ''}
                 <div class="flex-grow-1">
                   ${i.description.slice(0, 60)}${i.description.length > 60 ? '…' : ''}
                 </div>
                 <span class="badge bg-${statusColor(i.status)} text-capitalize ms-2">
                   ${i.status || 'pending'}
                 </span>
-              </a>
-            `;
-
+              </a>`;
             recentList.appendChild(li);
           });
 
-          /* markers */
+          // Map markers
+          const coords = [];
           issues.forEach(i => {
             if (i.location) {
               coords.push([i.location.lat, i.location.lng]);
-              L.marker([i.location.lat, i.location.lng]).addTo(map)
+              L.marker([i.location.lat, i.location.lng])
+                .addTo(map)
                 .bindPopup(`<strong>${i.category || 'Report'}</strong><br>${i.description}`);
             }
           });
-
           coords.length
             ? map.fitBounds(L.latLngBounds(coords).pad(0.2))
             : map.setView([31.95, 35.93], 7);
-        });
+        })
+        .catch(console.error);
+
+      // 2) Load DONE-ISSUES for the “Done reports” card
+      fetch('/api/done_reports')
+        .then(r => r.json())
+        .then(({ done_reports }) => {
+          if (!done_reports.length) {
+            const empty = document.createElement('li');
+            empty.className = 'list-group-item text-center text-muted py-3';
+            empty.textContent = 'No completed reports yet.';
+            doneList.appendChild(empty);
+            return;
+          }
+
+          done_reports.slice(0, 6).forEach(dr => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center py-3';
+
+            li.innerHTML = `
+              <div class="d-flex align-items-start">
+                ${dr.before_image ? `
+                  <img src="/static/${dr.before_image}"
+                       class="thumb me-3"
+                       alt="Before">` : ''}
+                ${dr.after_image ? `
+                  <img src="/static/${dr.after_image}"
+                       class="thumb me-3"
+                       alt="After">` : ''}
+                <div>
+                  <p class="mb-1">${dr.completion_description}</p>
+                  <small class="text-muted">
+                    ${dr.timestamp.slice(0, 10)} &bull; ${dr.timestamp.slice(11, 19)}
+                  </small>
+                </div>
+              </div>
+              <span class="badge bg-success">Done</span>
+            `;
+            doneList.appendChild(li);
+          });
+        })
+        .catch(console.error);
 
       function statusColor(st) {
         switch ((st || '').toLowerCase()) {
