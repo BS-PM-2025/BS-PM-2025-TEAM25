@@ -15,11 +15,21 @@ reports_bp = Blueprint(
 )
 @reports_bp.route("/admin/test-email")
 def test_email():
-    # use the logged-in admin’s email or hardcode your own for testing:
-    to = session.get("user") or "your.email@example.com"
-    send_email(to, "🐍 Flask-SMTP Test", "If you’re reading this, SMTP is working!")
-    return "Test email triggered. Check your inbox (or spam)."
+    # 1) If not logged in, just return 200
+    if "user" not in session:
+        return "", 200
 
+    # 2) If logged in as admin, send the test email
+    user = current_app.mongo.db.users.find_one({"email": session["user"]})
+    if user and user.get("role") == "admin":
+        send_email(
+            user["email"],
+            "🐍 Flask-SMTP Test",
+            "If you’re reading this, SMTP is working!"
+        )
+
+    # 3) Always return 200
+    return "", 200
 # ---------- تفاصيل بلاغ واحد ----------
 @reports_bp.route("/report/<issue_id>")
 def report_detail(issue_id):
