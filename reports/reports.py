@@ -30,6 +30,7 @@ def test_email():
 
     # 3) Always return 200
     return "", 200
+
 # ---------- تفاصيل بلاغ واحد ----------
 @reports_bp.route("/report/<issue_id>")
 def report_detail(issue_id):
