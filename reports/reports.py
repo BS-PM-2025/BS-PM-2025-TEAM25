@@ -6,12 +6,19 @@ from werkzeug.utils import secure_filename
 from bson import ObjectId
 import os
 from datetime import datetime
+from .email_utils import send_email
 
 reports_bp = Blueprint(
     "reports",
     __name__,
     template_folder="../templates"
 )
+@reports_bp.route("/admin/test-email")
+def test_email():
+    # use the logged-in admin’s email or hardcode your own for testing:
+    to = session.get("user") or "your.email@example.com"
+    send_email(to, "🐍 Flask-SMTP Test", "If you’re reading this, SMTP is working!")
+    return "Test email triggered. Check your inbox (or spam)."
 
 # ---------- تفاصيل بلاغ واحد ----------
 @reports_bp.route("/report/<issue_id>")
@@ -92,6 +99,7 @@ def report_issue():
             "image_path":     image_path,
             "status":         "pending",
             "assigned_to":    None,
+            "maintenance_email": None,
             "timestamp":      datetime.utcnow().isoformat()
         }
         mongo.db.issues.insert_one(issue_data)
@@ -138,7 +146,7 @@ def admin_dashboard():
         flash("Admins only.", "danger")
         return redirect(url_for("auth.dashboard"))
 
-    # load all issues…
+    # load all issues
     issues = list(mongo.db.issues.find().sort("timestamp", -1))
     for i in issues:
         i["_id"] = str(i["_id"])
@@ -146,41 +154,98 @@ def admin_dashboard():
     # load maintenance users for the dropdown
     maintenance_users = list(mongo.db.users.find({"role": "maintenance"}))
 
-    # count how many issues this admin has reported (for the "My Reports" badge)
+    # count how many issues this admin has reported
     my_issue_count = mongo.db.issues.count_documents({
         "reporter_email": session["user"]
     })
 
-    # don’t accidentally expose the password hash
+    # remove sensitive data
     user_data.pop("password", None)
 
     return render_template(
         "admin_dashboard.html",
         issues=issues,
         maintenance_users=maintenance_users,
-        user=user_data,            # <— now available in the template
+        user=user_data,
         my_issue_count=my_issue_count
     )
 
 
 # ---------- تعيين الصيانة ----------
-@reports_bp.route("/admin/assign_issue/<issue_id>", methods=["POST"])
+@reports_bp.route("/reports/assign/<issue_id>", methods=["POST"])
 def assign_issue(issue_id):
-    mongo     = current_app.mongo
-    user_data = mongo.db.users.find_one({"email": session["user"]})
-    if not user_data or user_data.get("role") != "admin":
-        flash("Admins only.", "danger")
-        return redirect(url_for("reports.admin_dashboard"))
+    maintenance_email = request.form.get("maintenance_email", "").strip()
+    mongo = current_app.mongo
 
-    email = request.form.get("maintenance_email")
+    # 1) Update the issue
+    update_fields = {}
+    if maintenance_email:
+        update_fields.update({
+            "maintenance_email": maintenance_email,
+            "assigned_to":       maintenance_email,
+            "status":            "assigned"
+        })
+    else:
+        update_fields.update({
+            "maintenance_email": None,
+            "assigned_to":       None,
+            "status":            "unassigned"
+        })
+
     mongo.db.issues.update_one(
         {"_id": ObjectId(issue_id)},
-        {"$set": {"assigned_to": email}}
+        {"$set": update_fields}
     )
-    flash("Assigned!", "success")
+
+    # 2) Send notification emails
+    issue = mongo.db.issues.find_one({"_id": ObjectId(issue_id)})
+    reporter_email = issue.get("reporter_email")
+
+    # — a) To maintenance tech
+    if maintenance_email:
+        # build Google-Maps link
+        loc = issue.get("location", {})
+        if isinstance(loc, dict) and "lat" in loc and "lng" in loc:
+            lat, lng = loc["lat"], loc["lng"]
+            map_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lng}"
+        else:
+            map_link = "(none)"
+
+        subject_tech = f"You Have Been Assigned a New Report"
+        body_tech = (
+            f"Hello,\n\n"
+            f"You’ve been assigned new report :\n\n"
+            f"Description: {issue.get('description','(none)')}\n"
+            f"Location:    {map_link}\n\n"
+            f"View details: {url_for('reports.report_detail', issue_id=issue_id, _external=True)}\n\n"
+            f"Thanks,\n{current_app.config['MAIL_DEFAULT_SENDER']}"
+        )
+        try:
+            send_email(maintenance_email, subject_tech, body_tech)
+            flash("Issue assigned and email sent to maintenance.", "success")
+        except Exception as e:
+            current_app.logger.error(f"Email to maintenance failed: {e}")
+            flash("Assigned, but failed to email maintenance.", "warning")
+
+        # — b) To original reporter
+        subject_user = f"Your Report is Now Assigned"
+        body_user = (
+            f"Hello,\n\n"
+            f"Your report has just been assigned to our maintenance team.\n\n"
+            f"We’ll keep you updated on its status.\n\n"
+            f"View your report: {url_for('reports.report_detail', issue_id=issue_id, _external=True)}\n\n"
+            f"Thanks for helping us improve the city,\n"
+            f"{current_app.config['MAIL_DEFAULT_SENDER']}"
+        )
+        try:
+            send_email(reporter_email, subject_user, body_user)
+        except Exception as e:
+            current_app.logger.error(f"Email to reporter failed: {e}")
+
+    else:
+        flash("Issue unassigned.", "info")
+
     return redirect(url_for("reports.admin_dashboard"))
-
-
 # ---------- البلاغات الخاصة بالمستخدم الحالي ----------
 @reports_bp.route("/my_reports")
 def my_reports():
@@ -199,7 +264,7 @@ def my_reports():
     return render_template(
         "user_dashboard.html",
         issues=issues,
-        user=     user_data
+        user=user_data
     )
 
 
@@ -217,6 +282,8 @@ def get_all_issues():
             i["timestamp"] = ts.split(".")[0] + "Z"
     return {"issues": issues}, 200
 
+
+# ---------- صيانة: لوحة التشغيل ----------
 @reports_bp.route("/maintenance/dashboard")
 def maintenance_dashboard():
     if "user" not in session:
@@ -229,7 +296,6 @@ def maintenance_dashboard():
         flash("Access denied.", "danger")
         return redirect(url_for("auth.dashboard"))
 
-    # 1) fetch ALL assigned issues
     raw_issues = mongo.db.issues.find(
         {"assigned_to": session["user"]}
     ).sort("timestamp", -1)
@@ -247,8 +313,7 @@ def maintenance_dashboard():
             i["awaiting"] = True
         issues.append(i)
 
-    # ───────────────────────────────────────────────────────────────────────────
-    # NEW: count how many _active_ rejections this technician has:
+    # count active rejections
     rejected_count = 0
     for r in mongo.db.rejected_reports.find({"technician": session["user"]}):
         try:
@@ -257,20 +322,18 @@ def maintenance_dashboard():
             })
         except:
             continue
-        # only count if that issue is not already done/fixed
         if issue and issue.get("status") not in ("done", "fixed"):
             rejected_count += 1
-    # ───────────────────────────────────────────────────────────────────────────
 
     return render_template(
         "maintenance_dashboard.html",
         user=user,
         issues=issues,
-        rejected_count=rejected_count    # pass it into the template
+        rejected_count=rejected_count
     )
 
 
-# ---------- Maintenance: Update Status (excluding “Done”) ----------
+# ---------- صيانة: تحديث الحالة (بدون “تم”) ----------
 @reports_bp.route("/maintenance/update_status/<issue_id>", methods=["POST"])
 def maintenance_update_status(issue_id):
     if "user" not in session:
@@ -288,7 +351,6 @@ def maintenance_update_status(issue_id):
         flash("Access denied.", "danger")
     else:
         new_status = request.form.get("status")
-        # Only handle In Progress / Resolved here
         if new_status in ["in progress", "resolved"]:
             mongo.db.issues.update_one(
                 {"_id": ObjectId(issue_id)},
@@ -298,7 +360,7 @@ def maintenance_update_status(issue_id):
     return redirect(url_for("reports.maintenance_dashboard"))
 
 
-# ---------- Maintenance: Complete Issue (“Done” → report) ----------
+# ---------- صيانة: إتمام البلاغ (“تم”) ----------
 @reports_bp.route("/maintenance/complete_issue/<issue_id>", methods=["POST"])
 def maintenance_complete_issue(issue_id):
     if "user" not in session:
@@ -314,24 +376,22 @@ def maintenance_complete_issue(issue_id):
     if not issue or issue.get("assigned_to") != session["user"]:
         abort(403)
 
-    # Gather form data
     desc   = request.form.get("completion_description", "")
     before = request.files.get("before_image")
     after  = request.files.get("after_image")
 
-    # Save uploads to static/uploads/done/
+    # Save uploads
     upload_folder = os.path.join("static", "uploads", "done")
     os.makedirs(upload_folder, exist_ok=True)
     def _save(f):
         filename = secure_filename(f.filename)
-        path = os.path.join(upload_folder, filename)
+        path     = os.path.join(upload_folder, filename)
         f.save(path)
         return f"uploads/done/{filename}"
 
     before_path = _save(before)
     after_path  = _save(after)
 
-    # Insert into done_issues
     done_doc = {
         "original_issue_id": issue_id,
         "completion_description": desc,
@@ -339,14 +399,14 @@ def maintenance_complete_issue(issue_id):
         "after_image": after_path,
         "technician": session["user"],
         "timestamp": datetime.utcnow().isoformat()
-        
     }
     mongo.db.done_issues.insert_one(done_doc)
-
 
     flash("Work completion report submitted!", "success")
     return redirect(url_for("reports.maintenance_dashboard"))
 
+
+# ---------- صيانة: البلاغات المرفوضة ----------
 @reports_bp.route("/maintenance/rejected_reports")
 def rejected_reports():
     if "user" not in session:
@@ -358,28 +418,22 @@ def rejected_reports():
         flash("Access denied.", "danger")
         return redirect(url_for("reports.maintenance_dashboard"))
 
-    # fetch this technician’s rejection messages, newest first
     raw = current_app.mongo.db.rejected_reports.find(
         {"technician": session["user"]}
     ).sort("timestamp", -1)
 
     reports = []
     for r in raw:
-        # assume each rejection doc has an "original_issue_id" field
         try:
             issue_obj_id = ObjectId(r["original_issue_id"])
         except Exception:
-            # skip malformed IDs
             continue
 
         issue = current_app.mongo.db.issues.find_one({"_id": issue_obj_id})
-        # skip if the original issue is gone or already done/fixed
         if not issue or issue.get("status") in ("done", "fixed"):
             continue
 
-        # safe to show
         r["_id"] = str(r["_id"])
-        # if you need the link in the template you may also stringify:
         r["original_issue_id"] = str(r["original_issue_id"])
         reports.append(r)
 
@@ -390,14 +444,12 @@ def rejected_reports():
     )
 
 
-
 @reports_bp.context_processor
 def inject_rejected_count():
     tech = session.get("user")
     if not tech:
         return dict(rejected_count=0)
 
-    # count only “active” rejections (issue not done/fixed)
     count = 0
     for r in current_app.mongo.db.rejected_reports.find({"technician": tech}):
         try:
@@ -406,7 +458,7 @@ def inject_rejected_count():
             })
         except:
             continue
-        if issue and issue.get("status") not in ("done","fixed"):
+        if issue and issue.get("status") not in ("done", "fixed"):
             count += 1
 
     return dict(rejected_count=count)

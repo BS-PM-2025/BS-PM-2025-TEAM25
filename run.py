@@ -5,7 +5,7 @@ from main.main import main_bp
 from main.user_roles import user_roles_bp
 from reports.reports import reports_bp
 from reports.done_reports import done_reports_bp
-
+from config import Config
 import urllib.parse
 import os
 import atexit
@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-
+app.config.from_object(Config)
 
 
 raw_username = os.getenv("raw_username")

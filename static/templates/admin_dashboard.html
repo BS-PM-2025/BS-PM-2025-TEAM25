@@ -166,12 +166,11 @@
                           <option value="{{ m.email }}">{{ m.name }}</option>
                           {% endfor %}
                         </select>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                          Assign
-                        </button>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Assign</button>
                       </div>
                     </form>
                   </td>
+
                   <td>
                     {% if user.role=='admin' or issue.reporter_email==user.email %}
                     <form action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}" method="POST"
