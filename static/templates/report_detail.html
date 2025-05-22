@@ -20,223 +20,231 @@
       margin: 0;
     }
 
-    .d-flex-full {
-      display: flex;
-      height: 100%;
-      flex-direction: column;
-    }
-
-    /* push main content below navbar */
-    .main-content {
-      flex: 1;
-      display: flex;
-    }
-
-    .sidebar {
-      width: 360px;
+    body {
       background: #f8f9fa;
-      border-right: 1px solid #dee2e6;
-      display: flex;
-      flex-direction: column;
     }
 
-    .filter-header {
-      background: #28a745;
-      color: #fff;
-      text-align: center;
-      padding: .75rem;
-      font-weight: bold;
-    }
-
-    #filterForm .form-select-sm {
-      font-size: .85rem;
-    }
-
-    .report-list {
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .report-list .list-group-item {
-      cursor: pointer;
-    }
-
-    .report-list .list-group-item:hover {
-      background: #e9ecef;
-    }
-
-    .report-thumb {
-      width: 40px;
-      height: 40px;
-      object-fit: cover;
-      margin-right: .75rem;
-      border-radius: .25rem;
-      flex-shrink: 0;
-    }
-
-    #publicMap {
-      flex: 1;
-      height: 100%;
-    }
-
-    .badge-status {
-      text-transform: capitalize;
-    }
-
-    .pagination-info {
-      padding: .5rem 1rem;
-      font-size: .9rem;
-      color: #000000b5;
-      border-top: 1px solid #dee2e6;
-    }
-
-    /* override default light navbar */
+    /* Navbar */
     .navbar {
-      background-color: #000000eb !important;
+      background-color: #fff !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand {
+      font-weight: bold;
+      color: #000;
     }
 
     .navbar .nav-link {
-      color: rgba(255, 255, 255, .85) !important;
+      color: #000 !important;
+      font-weight: 500;
     }
 
     .navbar .nav-link:hover {
-      color: #4079ff !important;
+      color: #0ef !important;
     }
 
-    body,
-    html {
+    /* Back nav */
+    .back-nav {
+      background: #fff;
+      padding: .5rem 1rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .back-nav .nav-link {
+      color: #333;
+      font-weight: 500;
+    }
+
+    .d-flex-full {
+      display: flex;
+      flex-direction: column;
       height: 100%;
-      margin: 0;
     }
 
+    .main-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Sidebar detail */
     .sidebar {
-      width: 340px;
-      max-width: 100%;
-      height: 100vh;
+      width: 360px;
+      background: #fff;
+      padding: 2rem 1.5rem;
       overflow-y: auto;
     }
 
-    #detailMap {
-      height: 100vh;
+    .sidebar h2 {
+      font-size: 1.75rem;
+      margin-bottom: .5rem;
+    }
+
+    .badge-status {
+      display: inline-block;
+      font-size: .75rem;
+      text-transform: uppercase;
+      padding: .4em .8em;
+      border-radius: .25rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge-status.pending {
+      background: #ffc107;
+      color: #212529;
+    }
+
+    .badge-status.completed {
+      background: #28a745;
+      color: #fff;
+    }
+
+    .status-icon {
+      font-size: 2rem;
+      color: #28a745;
+      margin-bottom: 1rem;
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1.25rem;
+    }
+
+    .info-list li {
+      margin-bottom: .5rem;
+      font-size: .9rem;
+      color: #555;
+    }
+
+    .info-list li strong {
+      color: #000;
+    }
+
+    .description-title {
+      font-weight: 600;
+      margin-top: 1rem;
+      margin-bottom: .5rem;
+    }
+
+    .description-text {
+      font-size: .95rem;
+      line-height: 1.5;
+      color: #333;
+    }
+
+    .image-card {
+      margin-top: 1.5rem;
+      border-radius: .5rem;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-card img {
       width: 100%;
+      display: block;
+    }
+
+    /* Map */
+    #detailMap {
+      flex: 1;
     }
   </style>
 </head>
 
-<body class="bg-light">
-
-  <body class="bg-light">
-
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-      <div class="container">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
-              <i class="bi bi-speedometer2 me-1"></i>Dashboard
-            </a>
-          </li>
+<body class="d-flex-full">
+  <!-- Main Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('main.home') }}">
+        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
+          class="d-inline-block align-text-top">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.my_reports') }}">My Reports</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}">Report Issue</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">Profile</a></li>
         </ul>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#profileNav"
-          aria-controls="profileNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="profileNav">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.home') }}">
-                <i class="bi bi-house me-1"></i>Home
-              </a>
-            </li>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('reports.report_issue') }}">
-                <i class="bi bi-plus-circle me-1"></i>Report
-              </a>
-            </li>
-          </ul>
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('auth.logout') }}">
-                <i class="bi bi-box-arrow-right me-1"></i>Logout
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-
-    <!-- Back link -->
-    <nav class="navbar navbar-light bg-white shadow-sm">
-      <div class="container-fluid">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('reports.public_reports') }}">
-              <i class="bi bi-arrow-left"></i> Back to all reports
-            </a>
-          </li>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
         </ul>
       </div>
-    </nav>
-
-    <div class="d-flex">
-      <!-- SIDEBAR -->
-      <aside class="sidebar bg-white p-4 border-end">
-        <h4>{{ issue.city_street or issue.category or 'Report' }}</h4>
-
-        <p class="text-muted small">
-          Reported by <strong>{{ issue.reporter_email }}</strong><br>
-          <span class="text-secondary">{{ issue.timestamp }}</span>
-        </p>
-
-        {% if issue.image_path %}
-        <a href="#" data-bs-toggle="modal" data-bs-target="#imgModal">
-          <img src="{{ url_for('static', filename=issue.image_path) }}" class="img-fluid rounded mb-3"
-            alt="Issue image">
-        </a>
-        {% endif %}
-
-        <p>{{ issue.description }}</p>
-
-        <p>
-          <span class="badge bg-secondary text-capitalize">
-            {{ issue.status }}
-          </span>
-        </p>
-
-        {% if issue.location %}
-        <a class="btn btn-sm btn-outline-primary mt-2"
-          href="https://www.google.com/maps?q={{ issue.location.lat }},{{ issue.location.lng }}" target="_blank">
-          <i class="bi bi-geo-alt-fill me-1"></i> Open in Google Maps
-        </a>
-        {% endif %}
-      </aside>
-
-      <!-- MAP CONTAINER -->
-      <div id="detailMap" {% if issue.location %} data-lat="{{ issue.location.lat }}"
-        data-lng="{{ issue.location.lng }}" {% endif %} data-cat="{{ issue.category|e or 'Report' }}"></div>
     </div>
+  </nav>
 
-    {% if issue.image_path %}
-    <div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content bg-transparent border-0">
-          <button type="button" class="btn-close position-absolute end-0 top-0 m-3" data-bs-dismiss="modal"
-            aria-label="Close"></button>
-          <img src="{{ url_for('static', filename=issue.image_path) }}" class="img-fluid rounded"
-            alt="Issue image large">
-        </div>
+  <!-- Back Link -->
+  <div class="back-nav">
+    <a class="nav-link" href="{{ url_for('reports.public_reports') }}"><i class="bi bi-arrow-left me-1"></i>Back to all
+      reports</a>
+  </div>
+
+  <!-- Content -->
+  <div class="main-content">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>{{ issue.city_street or issue.category or 'Report' }}</h2>
+      <span class="badge-status {{ issue.status|lower|replace(' ', '-') }}">{{ issue.status }}</span>
+      {# Determine icon via Jinja #}
+      {% set cat_lc = issue.category|lower %}
+      {% if cat_lc == 'traffic light failure' %}
+      {% set icon = 'traffic-light' %}
+      {% elif cat_lc == 'water leak' %}
+      {% set icon = 'droplet' %}
+      {% elif cat_lc == 'signage' %}
+      {% set icon = 'signpost' %}
+      {% else %}
+      {% set icon = 'exclamation-circle' %}
+      {% endif %}
+      <div class="status-icon">
+        <i class="bi bi-{{ icon }}"></i>
       </div>
-    </div>
-    {% endif %}
 
-    <!-- libs -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- our script -->
-    <script src="{{ url_for('static', filename='js/report_detail.js') }}"></script>
-  </body>
+      <ul class="info-list">
+        <li><strong>Reported by:</strong> {{ issue.reporter_email }}</li>
+        <li><strong>Date of Incident:</strong> {{ issue.timestamp }}</li>
+        <li><strong>Location:</strong> {{ issue.location_address or issue.city_street }}</li>
+      </ul>
+
+      <div class="description">
+        <div class="description-title">Description of the Issue:</div>
+        <div class="description-text">{{ issue.description }}</div>
+      </div>
+
+      {% if issue.image_path %}
+      <div class="image-card">
+        <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue image">
+      </div>
+      {% endif %}
+    </aside>
+
+    <!-- Map -->
+    <div id="detailMap" data-lat="{{ issue.location.lat if issue.location }}"
+      data-lng="{{ issue.location.lng if issue.location }}"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Map init
+    const map = L.map('detailMap');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+    const lat = parseFloat(document.getElementById('detailMap').dataset.lat);
+    const lng = parseFloat(document.getElementById('detailMap').dataset.lng);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      map.setView([lat, lng], 15);
+      L.marker([lat, lng]).addTo(map);
+    } else {
+      map.setView([31.95, 35.93], 7);
+    }
+    setTimeout(() => map.invalidateSize(), 200);
+  </script>
+</body>
 
 </html>

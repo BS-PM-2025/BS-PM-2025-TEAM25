@@ -420,7 +420,7 @@ input.purple-border:focus {
 
 /* 7) Navbar styling */
 .navbar {
-  background-color: rgba(0, 0, 0, 0.85);
+  background-color: rgba(255, 255, 255, 0.85);
   box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
 }
 .navbar .nav-link {
