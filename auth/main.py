@@ -82,6 +82,14 @@ def dashboard():
         issues = list(mongo.db.issues.find({"reporter_email": session["user"]}))
         maintenance_users = []
 
+
+    # ── ADD NORMALIZATION HERE ──
+    for i in issues:
+        # convert Mongo ObjectId to string
+        i["_id"] = str(i["_id"])
+        # guarantee there's always a dict at issue.location
+        i["location"] = i.get("location", {})
+    # ─────────────────────────────
     # 4. Choose the correct template
     template_map = {
         "admin":       "admin_dashboard.html",

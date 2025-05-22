@@ -314,6 +314,7 @@ def maintenance_dashboard():
     issues = []
     for i in raw_issues:
         i["_id"] = str(i["_id"])
+        i["location"] = i.get("location", {})          # ← add this
         dr = mongo.db.done_issues.find_one({"original_issue_id": i["_id"]})
         if dr and dr.get("status") == "accepted":
             continue
