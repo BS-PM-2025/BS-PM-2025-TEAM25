@@ -474,3 +474,10 @@ def inject_rejected_count():
             count += 1
 
     return dict(rejected_count=count)
+
+
+# in reports_bp (reports blueprint)
+@reports_bp.route("/tracking")
+def tracking():
+    # …your tracking logic…
+    return render_template("tracking.html")

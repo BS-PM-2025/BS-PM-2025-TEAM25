@@ -226,7 +226,7 @@ body {
   gap: 1rem;
 }
 .navbar .nav-item .nav-link {
-  color: #fff;
+  color: #000000;
   transition: color 0.2s;
 }
 .navbar .nav-item .nav-link:hover {
@@ -264,7 +264,7 @@ body {
 
 .nav-item a {
   text-decoration: none;
-  color: #333;
+  color: #000000;
   font-size: 1rem;
   transition: color 0.3s ease;
 }
@@ -420,11 +420,11 @@ input.purple-border:focus {
 
 /* 7) Navbar styling */
 .navbar {
-  background-color: rgba(0, 0, 0, 0.85);
-  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 .navbar .nav-link {
-  color: #ffffff;
+  color: #000000;
   margin-right: 1rem;
   transition: color 0.3s;
 }
