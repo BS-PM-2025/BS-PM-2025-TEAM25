@@ -1,6 +1,6 @@
-<!-- templates/report_issue.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,136 +8,201 @@
   <link rel="icon" href="{{ url_for('static', filename='images/home (3).png') }}" />
 
   <!-- Bootstrap 5 & Icons -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
-  <!-- Leaflet CSS (no integrity/crossorigin) -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-  />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 
-  <!-- Your custom CSS -->
-  <link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='styles/dashboard.css') }}"
-  />
-  <link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='styles/reports.css') }}"
-  />
+  <style>
+    /* Reset & base */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: #f8f9f8;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    /* Navbar styling */
+    .navbar {
+      background-color: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar .nav-link {
+      color: #333;
+      transition: color .2s;
+    }
+
+    .navbar .nav-link:hover,
+    .navbar .nav-link.active {
+      color: #1effe1;
+    }
+
+    /* Gradient bar */
+    .grad-bar {
+      height: 4px;
+      background: linear-gradient(90deg, #1effe1, #ffffff);
+      background-size: 200% 100%;
+      animation: shift 5s ease infinite;
+    }
+
+    @keyframes shift {
+
+      0%,
+      100% {
+        background-position: 0%;
+      }
+
+      50% {
+        background-position: 100%;
+      }
+    }
+
+    /* Form container */
+    .report-container {
+      max-width: 720px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .report-container h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      color: #1effe1;
+    }
+
+    /* Form elements */
+    label.form-label {
+      font-weight: 600;
+      margin-bottom: .5rem;
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    /* Map */
+    #map {
+      width: 100%;
+      height: 400px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+
+    /* Submit btn */
+    button#submitBtn {
+      width: 100%;
+      padding: .75rem;
+      font-size: 1.1rem;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 
-<body class="hm-gradient">
-  <div class="page-wrapper">
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-      <div class="container">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.dashboard') }}">
-              <i class="bi bi-speedometer2 me-1"></i>Dashboard
-            </a>
-          </li>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="{{ url_for('main.home') }}">
+        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" width="30" height="30" alt="Logo"
+          class="me-2 align-text-top" />
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto">
+
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.my_reports') }}">My Reports</a></li>
+
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">Profile</a></li>
         </ul>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#profileNav"
-          aria-controls="profileNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="profileNav">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.home') }}">
-                <i class="bi bi-house me-1"></i>Home
-              </a>
-            </li>
-          </ul>
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('auth.logout') }}">
-                <i class="bi bi-box-arrow-right me-1"></i>Logout
-              </a>
-            </li>
-          </ul>
-        </div>
+        {% if user %}
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        </ul>
+        {% endif %}
       </div>
-    </nav>
-
-    <!-- MAIN CONTENT -->
-    <div class="report-container">
-      <h1>Report a Road Issue</h1>
-
-      <form action="{{ url_for('reports.report_issue') }}" method="POST" enctype="multipart/form-data">
-        <!-- 1. Description -->
-        <div class="mb-3">
-          <label for="description" class="form-label">Description:</label>
-          <textarea id="description" name="description" class="form-control" rows="4" required></textarea>
-        </div>
-
-        <!-- 2. City / Street -->
-        <div class="mb-3">
-          <label for="city_street" class="form-label">City / Street:</label>
-          <input
-            type="text"
-            id="city_street"
-            name="city_street"
-            class="form-control"
-            placeholder="e.g. Tel Aviv / Dizengoff St."
-            required
-          />
-        </div>
-
-        <!-- 3. Category -->
-        <div class="mb-3">
-          <label for="category" class="form-label">Category:</label>
-          <select id="category" name="category" class="form-select" required>
-            <option value="">-- Select Category --</option>
-            <option value="pothole">Pothole</option>
-            <option value="signage">Missing Signage</option>
-            <option value="road_damage">Road Damage</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <!-- 4. Map Picker -->
-        <div id="map" style="width:100%; height:400px; margin-bottom:1rem;"></div>
-        <input type="hidden" id="lat" name="lat" />
-        <input type="hidden" id="lng" name="lng" />
-
-        <!-- 5. Image Upload -->
-        <div class="mb-3">
-          <label for="image" class="form-label">Upload Image (optional):</label>
-          <input type="file" id="image" name="image" class="form-control" accept="image/*" />
-        </div>
-
-        <!-- 6. Submit -->
-        <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
-          Submit Report
-        </button>
-      </form>
     </div>
+  </nav>
+  <div class="grad-bar"></div>
+
+  <!-- Report Form -->
+  <div class="report-container">
+    <h1>Report a Road Issue</h1>
+    <form action="{{ url_for('reports.report_issue') }}" method="POST" enctype="multipart/form-data">
+      <!-- 1. Description -->
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
+      </div>
+
+      <!-- 2. City / Street -->
+      <div class="mb-3">
+        <label for="city_street" class="form-label">City / Street</label>
+        <input type="text" id="city_street" name="city_street" class="form-control"
+          placeholder="e.g. Tel Aviv / Dizengoff St." required />
+      </div>
+
+      <!-- 3. Category -->
+      <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <select id="category" name="category" class="form-select" required>
+          <option value="">-- Select Category --</option>
+          <option value="traffic_light_failure">Traffic Light Failure</option>
+          <option value="water_leak">Water Leak</option>
+          <option value="road_closure">Road Closure</option>
+          <option value="power_cut">Power Cut</option>
+          <option value="hole_in_the_road">Hole In The Road</option>
+          <option value="pothole">Pothole</option>
+          <option value="missing_signage">Missing Signage</option>
+          <option value="overgrown_vegetation">Overgrown Vegetation</option>
+          <option value="street_lighting">Street Lighting Issue</option>
+          <option value="sidewalk_damage">Sidewalk Damage</option>
+          <option value="garbage_obstruction">Garbage/Obstruction</option>
+          <option value="noise_complaint">Noise Complaint</option>
+          <option value="vandalism">Vandalism</option>
+          <option value="flooding">Flooding</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <!-- 4. Map Picker -->
+      <div id="map"></div>
+      <input type="hidden" id="lat" name="lat" />
+      <input type="hidden" id="lng" name="lng" />
+
+      <!-- 5. Image Upload -->
+      <div class="mb-3">
+        <label for="image" class="form-label">Upload Image (optional)</label>
+        <input type="file" id="image" name="image" class="form-control" accept="image/*" />
+      </div>
+
+      <!-- 6. Submit -->
+      <button type="submit" id="submitBtn" class="btn btn-primary" disabled>Submit Report</button>
+    </form>
   </div>
 
-  <!-- Leaflet JS (no integrity/crossorigin) -->
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  <!-- Bootstrap JS -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Map + Geocoding Script -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <script>
     const map = L.map("map").setView([31.7683, 35.2137], 13);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -145,71 +210,11 @@
       attribution: "© OpenStreetMap"
     }).addTo(map);
 
-    let marker;
-    const latInput  = document.getElementById("lat");
-    const lngInput  = document.getElementById("lng");
-    const submitBtn = document.getElementById("submitBtn");
-    const addressIn = document.getElementById("city_street");
-
-    function enableSubmit() {
-      submitBtn.disabled = !(latInput.value && lngInput.value);
-    }
-
-    function setMarker(lat, lng) {
-      if (!marker) {
-        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-        marker.on("dragend", e => {
-          const { lat, lng } = e.target.getLatLng();
-          setMarker(lat, lng);
-        });
-      } else {
-        marker.setLatLng([lat, lng]);
-      }
-      latInput.value = lat;
-      lngInput.value = lng;
-      enableSubmit();
-    }
-
-    // Try browser geolocation first
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          setMarker(pos.coords.latitude, pos.coords.longitude);
-          map.setView([pos.coords.latitude, pos.coords.longitude], 13);
-        },
-        () => setMarker(31.7683, 35.2137)
-      );
-    } else {
-      setMarker(31.7683, 35.2137);
-    }
-
-    // Click to place marker
-    map.on("click", e => setMarker(e.latlng.lat, e.latlng.lng));
-
-    // Debounced geocode lookup on address input, restricted to Israel
-    let geocodeTimer = null;
-    addressIn.addEventListener("input", () => {
-      clearTimeout(geocodeTimer);
-      geocodeTimer = setTimeout(() => {
-        const query = addressIn.value.trim();
-        if (!query) return;
-        fetch(
-          "https://nominatim.openstreetmap.org/search?format=json"
-          + "&countrycodes=il"
-          + "&bounded=1"
-          + "&q=" + encodeURIComponent(query)
-        )
-          .then(res => res.json())
-          .then(results => {
-            if (results && results.length) {
-              const { lat, lon } = results[0];
-              map.setView([lat, lon], 16);
-              setMarker(lat, lon);
-            }
-          })
-          .catch(err => console.error("Geocode error:", err));
-      }, 700);
-    });
+    let marker; const latInput = document.getElementById("lat"), lngInput = document.getElementById("lng"), submitBtn = document.getElementById("submitBtn"), addressIn = document.getElementById("city_street");
+    function enableSubmit() { submitBtn.disabled = !(latInput.value && lngInput.value); } function setMarker(lat, lng) { if (!marker) { marker = L.marker([lat, lng], { draggable: true }).addTo(map); marker.on("dragend", e => { const p = e.target.getLatLng(); setMarker(p.lat, p.lng); }); } else marker.setLatLng([lat, lng]); latInput.value = lat; lngInput.value = lng; enableSubmit(); }
+    if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(p => { setMarker(p.coords.latitude, p.coords.longitude); map.setView([p.coords.latitude, p.coords.longitude], 13); }, () => setMarker(31.7683, 35.2137)); } else setMarker(31.7683, 35.2137);
+    map.on("click", e => setMarker(e.latlng.lat, e.latlng.lng)); let geocodeTimer; addressIn.addEventListener("input", () => { clearTimeout(geocodeTimer); geocodeTimer = setTimeout(() => { const q = addressIn.value.trim(); if (!q) return; fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=il&bounded=1&q=${encodeURIComponent(q)}`).then(r => r.json()).then(res => { if (res.length) { setMarker(res[0].lat, res[0].lon); map.setView([res[0].lat, res[0].lon], 16); } }).catch(console.error); }, 700); });
   </script>
 </body>
+
 </html>

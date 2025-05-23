@@ -44,7 +44,7 @@
       color: #0ef !important;
     }
 
-    /* Back nav */
+    /* Back link */
     .back-nav {
       background: #fff;
       padding: .5rem 1rem;
@@ -68,7 +68,7 @@
       overflow: hidden;
     }
 
-    /* Sidebar detail */
+    /* Sidebar */
     .sidebar {
       width: 360px;
       background: #fff;
@@ -95,14 +95,39 @@
       color: #212529;
     }
 
+    .badge-status.in-progress {
+      background: #17a2b8;
+      color: #fff;
+    }
+
+    .badge-status.approved {
+      background: #0d6efd;
+      color: #fff;
+    }
+
+    .badge-status.assigned {
+      background: #ffc107;
+      color: #212529;
+    }
+
+    .badge-status.done,
     .badge-status.completed {
       background: #28a745;
       color: #fff;
     }
 
+    .badge-status.rejected {
+      background: #dc3545;
+      color: #fff;
+    }
+
+    .badge-status.other {
+      background: #6c757d;
+      color: #fff;
+    }
+
     .status-icon {
       font-size: 2rem;
-      color: #28a745;
       margin-bottom: 1rem;
     }
 
@@ -158,7 +183,7 @@
   <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
       <a class="navbar-brand" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
+        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" width="30" height="30" alt="CityFix"
           class="d-inline-block align-text-top">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
@@ -168,7 +193,8 @@
         <ul class="navbar-nav me-auto">
           <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.my_reports') }}">My Reports</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}">Report Issue</a></li>
+          <li class="nav-item"><a class="nav-link active" href="{{ url_for('reports.report_issue') }}">Report Issue</a>
+          </li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">Profile</a></li>
         </ul>
         <ul class="navbar-nav ms-auto">
@@ -178,36 +204,52 @@
     </div>
   </nav>
 
-  <!-- Back Link -->
+  <!-- Back to all reports -->
   <div class="back-nav">
-    <a class="nav-link" href="{{ url_for('reports.public_reports') }}"><i class="bi bi-arrow-left me-1"></i>Back to all
-      reports</a>
+    <a class="nav-link" href="{{ url_for('reports.public_reports') }}">
+      <i class="bi bi-arrow-left me-1"></i> Back to All Reports
+    </a>
   </div>
 
-  <!-- Content -->
   <div class="main-content">
     <!-- Sidebar -->
     <aside class="sidebar">
       <h2>{{ issue.city_street or issue.category or 'Report' }}</h2>
-      <span class="badge-status {{ issue.status|lower|replace(' ', '-') }}">{{ issue.status }}</span>
-      {# Determine icon via Jinja #}
-      {% set cat_lc = issue.category|lower %}
-      {% if cat_lc == 'traffic light failure' %}
+
+      {# Badge for status #}
+      {% set st = issue.status|lower %}
+      {% set badge_class = 'secondary' %}
+      {% if st in ['done','completed'] %}
+      {% set badge_class = 'success' %}
+      {% elif st == 'in progress' %}
+      {% set badge_class = 'info' %}
+      {% elif st == 'approved' %}
+      {% set badge_class = 'primary' %}
+      {% elif st in ['assigned','pending'] %}
+      {% set badge_class = 'warning' %}
+      {% elif st == 'rejected' %}
+      {% set badge_class = 'danger' %}
+      {% endif %}
+      <span class="badge bg-{{ badge_class }} text-capitalize mb-2">{{ issue.status }}</span>
+
+      {# Icon based on category #}
+      {% set cat = issue.category|lower %}
+      {% if cat == 'traffic light failure' %}
       {% set icon = 'traffic-light' %}
-      {% elif cat_lc == 'water leak' %}
+      {% elif cat == 'water leak' %}
       {% set icon = 'droplet' %}
-      {% elif cat_lc == 'signage' %}
+      {% elif cat == 'signage' %}
       {% set icon = 'signpost' %}
       {% else %}
       {% set icon = 'exclamation-circle' %}
       {% endif %}
-      <div class="status-icon">
-        <i class="bi bi-{{ icon }}"></i>
+      <div class="status-icon text-{{ badge_class }} mb-3">
+        <i class="bi bi-{{ icon }}-fill"></i>
       </div>
 
       <ul class="info-list">
         <li><strong>Reported by:</strong> {{ issue.reporter_email }}</li>
-        <li><strong>Date of Incident:</strong> {{ issue.timestamp }}</li>
+        <li><strong>Date:</strong> {{ issue.timestamp }}</li>
         <li><strong>Location:</strong> {{ issue.location_address or issue.city_street }}</li>
       </ul>
 
@@ -218,7 +260,7 @@
 
       {% if issue.image_path %}
       <div class="image-card">
-        <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue image">
+        <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Issue Image">
       </div>
       {% endif %}
     </aside>
@@ -232,11 +274,11 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Map init
+    // Initialize Leaflet map
     const map = L.map('detailMap');
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-    const lat = parseFloat(document.getElementById('detailMap').dataset.lat);
-    const lng = parseFloat(document.getElementById('detailMap').dataset.lng);
+    const el = document.getElementById('detailMap');
+    const lat = parseFloat(el.dataset.lat), lng = parseFloat(el.dataset.lng);
     if (!isNaN(lat) && !isNaN(lng)) {
       map.setView([lat, lng], 15);
       L.marker([lat, lng]).addTo(map);
