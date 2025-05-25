@@ -42,7 +42,6 @@
       overflow: hidden;
     }
 
-    /* Navbar */
     .navbar {
       background-color: #fff !important;
     }
@@ -60,7 +59,6 @@
       color: #0ef !important;
     }
 
-    /* Sidebar */
     .sidebar {
       width: 360px;
       background: #fff;
@@ -108,7 +106,6 @@
       width: calc(100% - 2rem);
     }
 
-    /* Report list cards */
     #reportList {
       flex: 1;
       overflow-y: auto;
@@ -122,12 +119,21 @@
       border-radius: .5rem;
       margin-bottom: 1rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
     }
 
     .report-card .card-body {
       display: flex;
       align-items: center;
       padding: 1rem;
+    }
+
+    .report-thumb {
+      width: 60px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: .25rem;
+      margin-right: 1rem;
     }
 
     .report-card i.category-icon {
@@ -155,7 +161,6 @@
       font-size: .75rem;
     }
 
-    /* Map */
     #publicMap {
       flex: 1;
     }
@@ -187,12 +192,14 @@
     </div>
   </nav>
 
-  <!-- pass STATIC_URL into JS -->
-  <script>const STATIC_URL = "{{ url_for('static', filename='') }}";</script>
+  <!-- pass URLs into JS -->
+  <script>
+    const STATIC_URL = "{{ url_for('static', filename='') }}";
+    const UPLOAD_URL = "{{ url_for('reports.serve_upload', file_id='') }}";
+  </script>
 
   <!-- Main content -->
   <div class="main-content">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="filter-section">
         <div class="filter-item">
@@ -213,9 +220,7 @@
               class="bi bi-chevron-right chevron"></i></span>
           <select id="categoryFilter" class="hidden-select">
             <option value="">Everything</option>
-            {% for cat in categories %}
-            <option value="{{ cat }}">{{ cat }}</option>
-            {% endfor %}
+            {% for cat in categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
           </select>
         </div>
         <div class="filter-item">
@@ -231,7 +236,6 @@
       <div id="reportList"></div>
     </aside>
 
-    <!-- Map -->
     <div id="publicMap"></div>
   </div>
 
@@ -261,7 +265,6 @@
           render();
         });
 
-      // apply filter from button
       window.applyFilters = function () {
         statusValue.textContent = statusFilter.options[statusFilter.selectedIndex].text;
         categoryValue.textContent = categoryFilter.options[categoryFilter.selectedIndex].text;
@@ -278,14 +281,15 @@
         filtered.sort((a, b) => sortBy.value === 'oldest' ? a.timestamp - b.timestamp : b.timestamp - a.timestamp);
 
         reportList.innerHTML = '';
-        map.eachLayer(layer => { if (layer instanceof L.Marker) map.removeLayer(layer); });
+        map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l); });
 
         const bounds = [];
         filtered.forEach(i => {
-          const div = document.createElement('div');
-          div.className = 'report-card';
-          div.innerHTML = `
+          const card = document.createElement('div');
+          card.className = 'report-card';
+          card.innerHTML = `
             <div class="card-body">
+              ${i.image_file_id ? `<img class="report-thumb" src="${UPLOAD_URL}${i.image_file_id}" alt="Thumb">` : ''}
               <i class="category-icon bi bi-${iconFor(i.category)}"></i>
               <div class="report-info">
                 <div class="title">${i.category || 'Report'}</div>
@@ -293,8 +297,8 @@
               </div>
               <span class="badge bg-${statusColor(i.status)} badge-status">${i.status}</span>
             </div>`;
-          div.onclick = () => i.location && map.setView([i.location.lat, i.location.lng], 15);
-          reportList.appendChild(div);
+          card.onclick = () => i.location && map.setView([i.location.lat, i.location.lng], 15);
+          reportList.appendChild(card);
 
           if (i.location) {
             bounds.push([i.location.lat, i.location.lng]);
@@ -304,11 +308,8 @@
           }
         });
 
-        if (bounds.length) {
-          map.fitBounds(L.latLngBounds(bounds).pad(0.2));
-        } else {
-          map.setView([31.95, 35.93], 7);
-        }
+        if (bounds.length) map.fitBounds(L.latLngBounds(bounds).pad(0.2));
+        else map.setView([31.95, 35.93], 7);
         setTimeout(() => map.invalidateSize(), 200);
       }
 
@@ -321,8 +322,8 @@
         }
       }
 
-      function iconFor(category) {
-        switch ((category || '').toLowerCase()) {
+      function iconFor(cat) {
+        switch ((cat || '').toLowerCase()) {
           case 'traffic light failure': return 'traffic-light';
           case 'water leak': return 'droplet';
           case 'signage': return 'signpost';

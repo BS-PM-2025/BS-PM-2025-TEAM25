@@ -18,13 +18,14 @@
 
 <body>
 
-
-  <!-- 1) NAVBAR immediately after <body> -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
-    <div class="container-fluid px-4">
-      <a class="navbar-brand fw-bold" href="{{ url_for('main.home') }}">InfraReport</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
-        aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('main.home') }}">
+        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
+          class="d-inline-block align-text-top">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navMenu">
@@ -39,6 +40,7 @@
       </div>
     </div>
   </nav>
+
 
   <div class="container" id="container">
     <!-- Registration Form -->

@@ -89,7 +89,7 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url_for('main.home') }}">
+      <a class="navbar-brand" href="{{ url_for('main.home') }}">
         <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
           class="d-inline-block align-text-top">
       </a>
@@ -157,10 +157,11 @@
             <td>{{ issue.reporter_email }}</td>
             <td><a href="#" data-bs-toggle="modal" data-bs-target="#descModal{{ issue._id }}">{{ issue.description[:30]
                 }}{{ '...' if issue.description|length>30 }}</a></td>
-            <td>{% if issue.location %}<a href="#" data-bs-toggle="modal" data-bs-target="#locModal{{ issue._id }}">View
+            <td>{% if issue.location %}<a href="#" data-bs-toggle="modal" data-bs_target="#locModal{{ issue._id }}">View
                 Map</a>{% else %}&mdash;{% endif %}</td>
-            <td>{% if issue.image_path %}<img src="{{ url_for('static', filename=issue.image_path) }}"
-                class="image-thumb-admin" data-bs-toggle="modal" data-bs-target="#imageModal{{ issue._id }}">{% else
+            <td>{% if issue.image_file_id %}<img
+                src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" class="image-thumb-admin"
+                data-bs-toggle="modal" data-bs-target="#imageModal{{ issue._id }}">{% else
               %}&mdash;{% endif %}</td>
             <td><span
                 class="badge badge-status {% if issue.status=='pending' %}bg-warning text-dark{% elif issue.status=='approved' %}bg-info text-dark{% elif issue.status=='in progress' %}bg-primary{% else %}bg-success{% endif %}">{{
@@ -192,12 +193,13 @@
   </div>
 
   <!-- IMAGE MODALS -->
-  {% for issue in issues if issue.image_path %}
+  {% for issue in issues if issue.image_file_id %}
   <div class="modal fade" id="imageModal{{ issue._id }}" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body text-center">
-          <img src="{{ url_for('static', filename=issue.image_path) }}" class="img-fluid" alt="Issue image">
+          <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" class="img-fluid"
+            alt="Issue image">
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

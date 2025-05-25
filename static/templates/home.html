@@ -43,7 +43,6 @@
       color: var(--primary-500);
     }
 
-    /* Helpers for full-width sections */
     .section-fluid {
       width: 100vw;
       position: relative;
@@ -53,7 +52,6 @@
       margin-right: -50vw;
     }
 
-    /* HERO */
     #hero {
       background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
       position: relative;
@@ -118,7 +116,6 @@
       z-index: 1;
     }
 
-    /* Cards */
     .card {
       background: #fff;
       border: none;
@@ -132,13 +129,11 @@
       box-shadow: var(--shadow-lg);
     }
 
-    /* Stats numbers */
     .stats-number {
       font-size: 1.6rem;
       color: var(--dark-900);
     }
 
-    /* Thumbnail list for done reports */
     .recent-list {
       max-height: 270px;
       overflow-y: auto;
@@ -152,12 +147,10 @@
       margin-right: .75rem;
     }
 
-    /* Recent reports table card */
     .recent-card {
       border-radius: 1rem;
     }
 
-    /* Map styling */
     #map {
       width: 100%;
       height: 55vh;
@@ -218,7 +211,6 @@
     </div>
   </nav>
 
-
   <!-- HERO SECTION -->
   <section id="hero" class="section-fluid text-center position-relative">
     <div class="container px-4">
@@ -240,10 +232,8 @@
   <div class="section-fluid bg-white py-5">
     <div class="container">
       <div class="row g-4">
-        <!-- How-to -->
         <div class="col-lg-6">
           <div class="card h-100">
-            <!-- HOW-TO CARD BODY (with icons) -->
             <div class="card-body">
               <h5 class="card-title mb-3">How to report a problem</h5>
               <ol class="list-group list-group-numbered mb-4">
@@ -284,7 +274,6 @@
             </div>
           </div>
         </div>
-        <!-- Recent Reports -->
         <div class="col-lg-6">
           <div class="card recent-card h-100 p-4">
             <h5 class="card-title mb-3">Recent reports</h5>
@@ -367,7 +356,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const DETAIL_BASE = "{{ url_for('reports.report_detail', issue_id='') }}";
+    const DETAIL_BASE = "{{ url_for('reports.report_detail', issue_id='') }}",
+      DONE_UPLOAD_URL = "{{ url_for('done_reports.serve_done_upload', file_id='') }}";
     (function () {
       const recentTbody = document.getElementById('recentReports'),
         doneList = document.getElementById('doneReports'),
@@ -381,15 +371,13 @@
 
       const cleanDate = iso => new Date(iso.includes('.') ? iso.split('.')[0] : iso).getTime();
 
-      // Load issues for stats, recent, and map
       fetch('/api/issues').then(r => r.json()).then(({ issues }) => {
         issues.sort((a, b) => cleanDate(b.timestamp) - cleanDate(a.timestamp));
         const now = Date.now();
         weekEl.textContent = issues.filter(i => now - cleanDate(i.timestamp) < 7 * 864e5).length;
-        monthEl.textContent = issues.filter(i => i.status === 'resolved' && now - cleanDate(i.timestamp) < 30 * 864e5).length;
+        monthEl.textContent = issues.filter(i => i.status === 'done' && now - cleanDate(i.timestamp) < 30 * 864e5).length;
         totalEl.textContent = issues.length.toLocaleString();
 
-        // Recent reports table
         issues.slice(0, 6).forEach(i => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
@@ -400,12 +388,10 @@
           recentTbody.appendChild(tr);
           if (i.location) L.marker([i.location.lat, i.location.lng]).addTo(map).bindPopup(i.description);
         });
-        // Fit map bounds
         const coords = issues.filter(i => i.location).map(i => [i.location.lat, i.location.lng]);
         coords.length ? map.fitBounds(L.latLngBounds(coords).pad(0.2)) : map.setView([31.95, 35.93], 7);
       }).catch(console.error);
 
-      // Load done reports
       fetch('/api/done_reports').then(r => r.json()).then(({ done_reports }) => {
         if (!done_reports.length) {
           const li = document.createElement('li');
@@ -418,8 +404,8 @@
           const li = document.createElement('li');
           li.className = 'list-group-item d-flex align-items-center py-3';
           li.innerHTML = `
-            ${dr.before_image ? `<img src="/static/${dr.before_image}" class="thumb me-3" alt="Before">` : ''}
-            ${dr.after_image ? `<img src="/static/${dr.after_image}" class="thumb me-3" alt="After">` : ''}
+            ${dr.before_file_id ? `<img src="${DONE_UPLOAD_URL}${dr.before_file_id}" class="thumb me-3" alt="Before">` : ''}
+            ${dr.after_file_id ? `<img src="${DONE_UPLOAD_URL}${dr.after_file_id}"  class="thumb me-3" alt="After">` : ''}
             <div class="ms-3">
               <p class="mb-1">${dr.completion_description}</p>
               <small class="text-muted">${dr.timestamp.slice(0, 10)} • ${dr.timestamp.slice(11, 19)}</small>
@@ -432,13 +418,12 @@
 
       function statusColor(st) {
         switch ((st || '').toLowerCase()) {
-          case 'done': return 'success';      // green
-          case 'in progress': return 'info';      // light blue
-          case 'approved': return 'primary';      // blue
-          case 'assigned': return 'warning';      // yellow/orange
-          case 'pending': return 'warning';       // yellow/orange
-          case 'rejected': return 'danger';       // red
-          default: return 'secondary';            // grey
+          case 'done': return 'success';
+          case 'in progress': return 'info';
+          case 'assigned': return 'warning';
+          case 'pending': return 'warning';
+          case 'rejected': return 'danger';
+          default: return 'secondary';
         }
       }
     })();

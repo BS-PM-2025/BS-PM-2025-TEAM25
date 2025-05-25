@@ -1,4 +1,5 @@
-
+<!-- templates/maintenance_dashboard.html -->
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -105,7 +106,9 @@
       color: #fff;
     }
 
-    .badge-completed, .badge-pending, .badge-awaiting {
+    .badge-completed,
+    .badge-pending,
+    .badge-awaiting {
       background: var(--badge-bg);
       color: #fff;
       border-radius: 1rem;
@@ -160,7 +163,8 @@
       align-items: start;
     }
 
-    .map-item, .img-item {
+    .map-item,
+    .img-item {
       background: #fff;
       border-radius: .5rem;
       overflow: hidden;
@@ -204,6 +208,7 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
@@ -231,7 +236,7 @@
     </div>
   </nav>
 
-<!-- Header -->
+  <!-- Header -->
   <section class="header-banner">
     <h1>Welcome, {{ user.name }}!</h1>
     <p>Your Assigned Issues</p>
@@ -262,7 +267,6 @@
       {% elif issue.status=='done' %}
       <span class="badge-completed">Completed</span>
       {% else %}
-      <!-- status update form -->
       <form class="status-form" action="{{ url_for('reports.maintenance_update_status', issue_id=issue._id) }}"
         method="POST">
         <div class="input-group">
@@ -278,37 +282,37 @@
     {% endfor %}
   </section>
 
-  <!-- Completion Modals - now outside the cards/grid! -->
+  <!-- Completion Modals -->
   {% for issue in issues %}
-    <div class="modal fade" id="completionModal{{ issue._id }}" tabindex="-1">
-      <div class="modal-dialog">
-        <form action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}" method="POST"
-          enctype="multipart/form-data" class="modal-content">
-          <div class="modal-header bg-dark text-white">
-            <h5 class="modal-title">Work Completion Report</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+  <div class="modal fade" id="completionModal{{ issue._id }}" tabindex="-1">
+    <div class="modal-dialog">
+      <form action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}" method="POST"
+        enctype="multipart/form-data" class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title">Work Completion Report</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-start">
+          <div class="mb-3">
+            <label class="form-label">Detailed Description</label>
+            <textarea name="completion_description" class="form-control" rows="4" required></textarea>
           </div>
-          <div class="modal-body text-start">
-            <div class="mb-3">
-              <label class="form-label">Detailed Description</label>
-              <textarea name="completion_description" class="form-control" rows="4" required></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Before Photo</label>
-              <input type="file" name="before_image" accept="image/*" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">After Photo</label>
-              <input type="file" name="after_image" accept="image/*" class="form-control" required>
-            </div>
+          <div class="mb-3">
+            <label class="form-label">Before Photo</label>
+            <input type="file" name="before_image" accept="image/*" class="form-control" required>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
+          <div class="mb-3">
+            <label class="form-label">After Photo</label>
+            <input type="file" name="after_image" accept="image/*" class="form-control" required>
           </div>
-        </form>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
     </div>
+  </div>
   {% endfor %}
 
   <!-- Detail Modals -->
@@ -334,15 +338,16 @@
               <a href="https://maps.google.com/?q={{ issue.location.lat }},{{ issue.location.lng }}"
                 target="_blank">View on Map</a>
             </div>
-            {% if issue.image_path %}
+            {% if issue.image_file_id %}
             <div class="img-item">
-              <img src="{{ url_for('static', filename=issue.image_path) }}" alt="Problem Image" />
+              <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Problem Image" />
               <div class="detail-item-label">Problem</div>
             </div>
             {% endif %}
           </div>
           <div class="text-end mt-4"><button class="close-btn" data-bs-dismiss="modal">Close</button></div>
         </div>
+
       </div>
     </div>
   </div>
@@ -351,7 +356,7 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
- <script>
+  <script>
     // configure Leaflet icons
     delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({

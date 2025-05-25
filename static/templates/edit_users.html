@@ -95,7 +95,7 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-       <a class="navbar-brand" href="{{ url_for('main.home') }}">
+      <a class="navbar-brand" href="{{ url_for('main.home') }}">
         <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
           class="d-inline-block align-text-top">
       </a>
@@ -104,12 +104,14 @@
       </button>
       <div class="collapse navbar-collapse" id="navMenu">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}"><i
-                class="bi bi-speedometer2"></i> Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}"><i class="bi bi-house"></i>
-              Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}"><i
-                class="bi bi-box-arrow-right"></i> Logout</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}"><i
+              class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}"><i class="bi bi-house"></i>
+            Home</a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}"><i
+              class="bi bi-box-arrow-right"></i> Logout</a></li>
         </ul>
       </div>
     </div>
@@ -148,7 +150,7 @@
           <tr>
             <td><strong>{{ u.name }}</strong></td>
             <td class="text-muted">{{ u.email }}</td>
-            <td ><strong>{{ u.role }}</strong></td>
+            <td><strong>{{ u.role }}</strong></td>
 
             <!-- Role form -->
             <td>
