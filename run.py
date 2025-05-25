@@ -11,22 +11,17 @@ import os
 import atexit
 from dotenv import load_dotenv
 
-
-
-
-
-# after other blueprints...
+# NEW imports for browser-auto-open
+import webbrowser
+from threading import Timer
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-
 raw_username = os.getenv("raw_username")
 raw_password = os.getenv("raw_password")
-print("USERNAME VALUE:", raw_username)
-print("RAW_PASSWORD:", raw_password)
 username = urllib.parse.quote_plus(raw_username)
 password = urllib.parse.quote_plus(raw_password)
 
@@ -46,13 +41,19 @@ app.register_blueprint(auth_bp,  url_prefix="/auth")
 app.register_blueprint(main_bp)
 app.register_blueprint(reports_bp)
 
-
-
-
-# Graceful shutdown log (no session logic!)
 @atexit.register
 def on_shutdown():
     print("Server is shutting down.")
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False)
+    # determine host & port
+    host = os.environ.get("FLASK_RUN_HOST", "127.0.0.1")
+    port = int(os.environ.get("FLASK_RUN_PORT", 5000))
+
+    # schedule the browser to open after a short delay
+    def _open_browser():
+        webbrowser.open_new(f"http://{host}:{port}/")
+    Timer(1, _open_browser).start()
+
+    # start the Flask development server
+    app.run(host=host, port=port, debug=True, use_reloader=False)
