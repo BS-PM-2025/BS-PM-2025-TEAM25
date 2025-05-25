@@ -231,8 +231,7 @@
     </div>
   </nav>
 
-  <!-- Header -->
-  <!-- Header -->
+<!-- Header -->
   <section class="header-banner">
     <h1>Welcome, {{ user.name }}!</h1>
     <p>Your Assigned Issues</p>
@@ -275,41 +274,42 @@
         </div>
       </form>
       {% endif %}
-
-      <!-- Completion Modal -->
-      <div class="modal fade" id="completionModal{{ issue._id }}" tabindex="-1">
-        <div class="modal-dialog">
-          <form action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}" method="POST"
-            enctype="multipart/form-data" class="modal-content">
-            <div class="modal-header bg-dark text-white">
-              <h5 class="modal-title">Work Completion Report</h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-start">
-              <div class="mb-3">
-                <label class="form-label">Detailed Description</label>
-                <textarea name="completion_description" class="form-control" rows="4" required></textarea>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Before Photo</label>
-                <input type="file" name="before_image" accept="image/*" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">After Photo</label>
-                <input type="file" name="after_image" accept="image/*" class="form-control" required>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Submit</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
     </div>
     {% endfor %}
   </section>
+
+  <!-- Completion Modals - now outside the cards/grid! -->
+  {% for issue in issues %}
+    <div class="modal fade" id="completionModal{{ issue._id }}" tabindex="-1">
+      <div class="modal-dialog">
+        <form action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}" method="POST"
+          enctype="multipart/form-data" class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title">Work Completion Report</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body text-start">
+            <div class="mb-3">
+              <label class="form-label">Detailed Description</label>
+              <textarea name="completion_description" class="form-control" rows="4" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Before Photo</label>
+              <input type="file" name="before_image" accept="image/*" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">After Photo</label>
+              <input type="file" name="after_image" accept="image/*" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {% endfor %}
 
   <!-- Detail Modals -->
   {% for issue in issues %}
