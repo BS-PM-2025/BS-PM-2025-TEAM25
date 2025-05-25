@@ -20,7 +20,21 @@
       margin: 0;
       font-family: Arial, sans-serif;
     }
+ /* Navbar styling */
+ .navbar {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
+.navbar .nav-link {
+  color: #333;
+  transition: color .2s;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+  color: #1effe1;
+}
     /* Gradient banner */
     .header-banner {
       background: linear-gradient(to right, #2efef1, #ffffff);
@@ -115,8 +129,7 @@
                 }}</span></a></li>
         </ul>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}"><i class="bi bi-house-door"></i>
-              Home</a></li>
+
           <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}"><i
                 class="bi bi-box-arrow-right"></i> Logout</a></li>
         </ul>
