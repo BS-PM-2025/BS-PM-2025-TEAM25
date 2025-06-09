@@ -2,124 +2,755 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auth Page</title>
-
-  <!-- Bootstrap CSS (for navbar) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-  <!-- Your CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/auth.css') }}" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Sign In - CityFix</title>
+  <meta name="description" content="Sign in to CityFix to report and track infrastructure issues in your city.">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/auth.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/auth.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#3b82f6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 
 <body>
+  <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
 
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
-          class="d-inline-block align-text-top">
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('main.home') }}">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/about">About</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <!-- Floating Background Shapes -->
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
 
-
-  <div class="container" id="container">
-    <!-- Registration Form -->
-    <div class="form-container sign-up-container">
-      <form action="{{ url_for('auth.register') }}" method="POST">
-        <h1>Create Account</h1>
-        <input type="text" name="name" placeholder="Name" required />
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <select name="role" required>
-          <option value="">Select Role</option>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-          <option value="maintenance">Maintenance</option>
-        </select>
-        <button type="submit">Sign Up</button>
-      </form>
-    </div>
-
-    <!-- Login Form -->
-    <div class="form-container sign-in-container">
-      <form action="{{ url_for('auth.login') }}" method="POST">
-        <h1>Sign In</h1>
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <a href="#">Forgot your password?</a>
-        <button type="submit">Sign In</button>
-      </form>
-    </div>
-
-    <!-- Overlay -->
-    <div class="overlay-container">
-      <div class="overlay">
-        <div class="overlay-panel overlay-left">
-          <h1>Welcome Back!</h1>
-          <p>To keep connected with us please login with your personal info</p>
-          <button class="ghost" id="signIn">Sign In</button>
+  <div class="auth-container">
+    <div class="auth-wrapper">
+      <div class="auth-card scale-in">
+        <!-- Header -->
+        <div class="auth-header">
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+          <h1 class="auth-title">Welcome to CityFix</h1>
+          <p class="auth-subtitle">
+            Join thousands making their cities better
+          </p>
         </div>
-        <div class="overlay-panel overlay-right">
-          <h1>Hello, Friend!</h1>
-          <p>Enter your personal details and start your journey with us</p>
-          <button class="ghost" id="signUp">Sign Up</button>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="px-8">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }} mb-4">
+            <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' if category == 'info' else 'x-circle' }}"
+              aria-hidden="true"></i>
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Body -->
+        <div class="auth-body">
+          <!-- Tab Navigation -->
+          <div class="auth-tabs">
+            <button type="button" class="auth-tab active" onclick="switchTab('signin')">
+              Sign In
+            </button>
+            <button type="button" class="auth-tab" onclick="switchTab('signup')">
+              Sign Up
+            </button>
+          </div>
+
+          <!-- Sign In Form -->
+          <form id="signin-form" class="auth-form active" action="{{ url_for('auth.login') }}" method="POST">
+            <div class="form-group">
+              <label for="signin-email" class="form-label">
+                <i class="bi bi-envelope me-2" aria-hidden="true"></i>
+                Email Address
+              </label>
+              <input type="email" id="signin-email" name="email" class="form-control" placeholder="Enter your email"
+                required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label for="signin-password" class="form-label">
+                <i class="bi bi-lock me-2" aria-hidden="true"></i>
+                Password
+              </label>
+              <div class="password-input-container">
+                <input type="password" id="signin-password" name="password" class="form-control"
+                  placeholder="Enter your password" required autocomplete="current-password">
+                <button type="button" class="password-toggle" onclick="togglePassword('signin-password')">
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-auth">
+              <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>
+              Sign In
+            </button>
+          </form>
+
+          <!-- Sign Up Form -->
+          <form id="signup-form" class="auth-form" action="{{ url_for('auth.register') }}" method="POST">
+            <div class="form-group">
+              <label for="signup-name" class="form-label">
+                <i class="bi bi-person me-2" aria-hidden="true"></i>
+                Full Name
+              </label>
+              <input type="text" id="signup-name" name="name" class="form-control" placeholder="Enter your full name"
+                required autocomplete="name">
+            </div>
+
+            <div class="form-group">
+              <label for="signup-email" class="form-label">
+                <i class="bi bi-envelope me-2" aria-hidden="true"></i>
+                Email Address
+              </label>
+              <input type="email" id="signup-email" name="email" class="form-control" placeholder="Enter your email"
+                required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label for="signup-password" class="form-label">
+                <i class="bi bi-lock me-2" aria-hidden="true"></i>
+                Password
+              </label>
+              <div class="password-input-container">
+                <input type="password" id="signup-password" name="password" class="form-control"
+                  placeholder="Create a strong password" required autocomplete="new-password">
+                <button type="button" class="password-toggle" onclick="togglePassword('signup-password')">
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="password-strength" id="password-strength">
+                <div class="strength-bar">
+                  <div class="strength-fill" id="strength-fill"></div>
+                </div>
+                <span class="strength-text" id="strength-text">Password strength</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="signup-role" class="form-label">
+                <i class="bi bi-person-badge me-2" aria-hidden="true"></i>
+                Account Type
+              </label>
+              <select id="signup-role" name="role" class="form-select" required>
+                <option value="">Select your role</option>
+                <option value="user">Citizen</option>
+                <option value="admin">Admin</option>
+                <option value="maintenance">Maintenance Technician</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-auth">
+              <i class="bi bi-person-plus me-2" aria-hidden="true"></i>
+              Create Account
+            </button>
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="auth-footer">
+          <p>
+            By continuing, you agree to our
+            <a href="#" target="_blank">Terms of Service</a> and
+            <a href="#" target="_blank">Privacy Policy</a>
+          </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Toggle between Sign In / Sign Up -->
+  <!-- Toast Container for Mobile -->
+  <div id="toastContainer" class="toast-mobile"></div>
+
   <script>
-    const signUpButton = document.getElementById('signUp');
-    const signInButton = document.getElementById('signIn');
-    const container = document.getElementById('container');
-    signUpButton.addEventListener('click', () => container.classList.add("right-panel-active"));
-    signInButton.addEventListener('click', () => container.classList.remove("right-panel-active"));
+    // Set proper viewport height for mobile
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+    window.addEventListener('resize', () => {
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    });
+
+    // Show mobile toast
+    function showMobileToast(type, title, message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast-mobile show ${type}`;
+      
+      toast.innerHTML = `
+        <div class="toast-content">
+          <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info-circle'}" aria-hidden="true"></i>
+          <div>
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+          </div>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Tab switching functionality
+    function switchTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.auth-tab').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Update forms
+      document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+      document.getElementById(tab + (tab === 'signin' ? '-form' : '-form')).classList.add('active');
+    }
+
+    // Password toggle functionality
+    function togglePassword(inputId) {
+      const input = document.getElementById(inputId);
+      const button = input.nextElementSibling;
+      const icon = button.querySelector('i');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+      }
+    }
+
+    // Password strength checker
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      let feedback = [];
+
+      if (password.length >= 8) {
+        strength += 20;
+      } else {
+        feedback.push('At least 8 characters');
+      }
+
+      if (/[a-z]/.test(password)) {
+        strength += 20;
+      } else {
+        feedback.push('Lowercase letter');
+      }
+
+      if (/[A-Z]/.test(password)) {
+        strength += 20;
+      } else {
+        feedback.push('Uppercase letter');
+      }
+
+      if (/[0-9]/.test(password)) {
+        strength += 20;
+      } else {
+        feedback.push('Number');
+      }
+
+      if (/[^A-Za-z0-9]/.test(password)) {
+        strength += 20;
+      } else {
+        feedback.push('Special character');
+      }
+
+      return { strength, feedback };
+    }
+
+    function updatePasswordStrength(password) {
+      const { strength, feedback } = checkPasswordStrength(password);
+      const strengthFill = document.getElementById('strength-fill');
+      const strengthText = document.getElementById('strength-text');
+      
+      if (!strengthFill || !strengthText) return;
+
+      strengthFill.style.width = `${strength}%`;
+      
+      if (strength < 40) {
+        strengthFill.className = 'strength-fill weak';
+        strengthText.textContent = 'Weak password';
+        strengthText.className = 'strength-text weak';
+      } else if (strength < 80) {
+        strengthFill.className = 'strength-fill medium';
+        strengthText.textContent = 'Medium password';
+        strengthText.className = 'strength-text medium';
+      } else {
+        strengthFill.className = 'strength-fill strong';
+        strengthText.textContent = 'Strong password';
+        strengthText.className = 'strength-text strong';
+      }
+    }
+
+    // Auto-dismiss flash messages
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+          alert.style.transition = 'opacity 0.5s ease';
+          alert.style.opacity = '0';
+          setTimeout(() => alert.remove(), 500);
+        });
+      }, 5000);
+
+      // Form validation enhancements
+      document.querySelectorAll('.form-control, .form-select').forEach(input => {
+        input.addEventListener('blur', function () {
+          if (this.checkValidity()) {
+            this.classList.add('is-valid');
+            this.classList.remove('is-invalid');
+          } else {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+          }
+        });
+      });
+
+      // Password strength indicator
+      const signupPassword = document.getElementById('signup-password');
+      if (signupPassword) {
+        signupPassword.addEventListener('input', function () {
+          updatePasswordStrength(this.value);
+        });
+      }
+
+      // Form submission handling
+      document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+          const submitBtn = this.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Processing...';
+
+            // Re-enable after timeout (fallback)
+            setTimeout(() => {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalContent;
+            }, 5000);
+          }
+        });
+      });
+
+      // Email validation
+      document.querySelectorAll('input[type="email"]').forEach(input => {
+        input.addEventListener('input', function () {
+          const email = this.value;
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          
+          if (email && !emailRegex.test(email)) {
+            this.setCustomValidity('Please enter a valid email address');
+          } else {
+            this.setCustomValidity('');
+          }
+        });
+      });
+
+      // Role selection enhancement
+      const roleSelect = document.getElementById('signup-role');
+      if (roleSelect) {
+        roleSelect.addEventListener('change', function () {
+          if (this.value === 'admin') {
+            if (!confirm('Admin accounts have full system access. Are you sure you want to create an admin account?')) {
+              this.value = '';
+            }
+          }
+        });
+      }
+
+      // Auto-focus first input
+      const activeForm = document.querySelector('.auth-form.active');
+      if (activeForm) {
+        const firstInput = activeForm.querySelector('input');
+        if (firstInput) {
+          setTimeout(() => firstInput.focus(), 100);
+        }
+      }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function (e) {
+      // Tab switching with Alt + 1/2
+      if (e.altKey) {
+        if (e.key === '1') {
+          e.preventDefault();
+          switchTab('signin');
+        } else if (e.key === '2') {
+          e.preventDefault();
+          switchTab('signup');
+        }
+      }
+    });
+
+    // Accessibility improvements
+    document.addEventListener('focusin', function (e) {
+      if (e.target.matches('.form-control, .form-select')) {
+        e.target.parentElement.classList.add('focused');
+      }
+    });
+
+    document.addEventListener('focusout', function (e) {
+      if (e.target.matches('.form-control, .form-select')) {
+        e.target.parentElement.classList.remove('focused');
+      }
+    });
+
+    // Progressive enhancement for touch devices
+    if ('ontouchstart' in window) {
+      document.body.classList.add('touch-device');
+      
+      // Add touch feedback to buttons
+      document.querySelectorAll('.btn-auth, .auth-tab').forEach(button => {
+        button.classList.add('touch-feedback');
+      });
+    }
+
+    // Network status handling
+    window.addEventListener('online', function () {
+      showMobileToast('success', 'Connection Restored', 'You are back online');
+    });
+
+    window.addEventListener('offline', function () {
+      showMobileToast('warning', 'Connection Lost', 'Please check your internet connection');
+    });
   </script>
 
-  <!-- Flash Messages -->
-  <div class="flash-messages">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-  </div>
+  <style>
+    /* Mobile-specific auth styles */
+    @media (max-width: 768px) {
+      .auth-container {
+        padding: var(--space-4);
+        min-height: 100vh;
+        min-height: calc(var(--vh, 1vh) * 100);
+      }
 
-  <!-- Auto-hide flash after 3s -->
-  <script>
-    setTimeout(() => {
-      document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
-    }, 3000);
-  </script>
+      .auth-card {
+        max-width: 100%;
+        margin: 0;
+        border-radius: var(--mobile-border-radius);
+        padding: var(--space-6);
+      }
 
-  <!-- Bootstrap JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      .auth-title {
+        font-size: 1.75rem;
+        margin-bottom: var(--space-2);
+      }
+
+      .auth-subtitle {
+        font-size: 1rem;
+        margin-bottom: var(--space-6);
+      }
+
+      .auth-tabs {
+        display: flex;
+        background: var(--gray-100);
+        border-radius: var(--mobile-border-radius);
+        padding: 4px;
+        margin-bottom: var(--space-6);
+      }
+
+      .auth-tab {
+        flex: 1;
+        padding: var(--space-3);
+        border: none;
+        background: transparent;
+        border-radius: calc(var(--mobile-border-radius) - 4px);
+        font-weight: 500;
+        transition: var(--mobile-transition);
+        color: var(--text-secondary);
+      }
+
+      .auth-tab.active {
+        background: white;
+        color: var(--primary-600);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .form-group {
+        margin-bottom: var(--space-5);
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: var(--space-2);
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .form-control,
+      .form-select {
+        width: 100%;
+        padding: var(--space-4);
+        border: 2px solid var(--gray-200);
+        border-radius: var(--mobile-border-radius);
+        font-size: 16px; /* Prevent zoom on iOS */
+        transition: var(--mobile-transition);
+        background: white;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px var(--primary-100);
+      }
+
+      .form-control.is-valid {
+        border-color: var(--emerald-500);
+      }
+
+      .form-control.is-invalid {
+        border-color: var(--red-500);
+      }
+
+      .password-input-container {
+        position: relative;
+      }
+
+      .password-toggle {
+        position: absolute;
+        right: var(--space-3);
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: var(--space-2);
+        border-radius: var(--radius-md);
+        transition: var(--mobile-transition);
+      }
+
+      .password-toggle:hover {
+        color: var(--primary-600);
+        background: var(--primary-50);
+      }
+
+      .password-strength {
+        margin-top: var(--space-2);
+      }
+
+      .strength-bar {
+        width: 100%;
+        height: 4px;
+        background: var(--gray-200);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .strength-fill {
+        height: 100%;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+      }
+
+      .strength-fill.weak {
+        background: var(--red-500);
+      }
+
+      .strength-fill.medium {
+        background: var(--orange-500);
+      }
+
+      .strength-fill.strong {
+        background: var(--emerald-500);
+      }
+
+      .strength-text {
+        display: block;
+        font-size: var(--text-xs);
+        margin-top: var(--space-1);
+        font-weight: 500;
+      }
+
+      .strength-text.weak {
+        color: var(--red-600);
+      }
+
+      .strength-text.medium {
+        color: var(--orange-600);
+      }
+
+      .strength-text.strong {
+        color: var(--emerald-600);
+      }
+
+      .btn-auth {
+        width: 100%;
+        padding: var(--space-4);
+        background: var(--primary-500);
+        color: white;
+        border: none;
+        border-radius: var(--mobile-border-radius);
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--mobile-transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        min-height: 52px;
+      }
+
+      .btn-auth:hover:not(:disabled) {
+        background: var(--primary-600);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .btn-auth:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .auth-footer {
+        text-align: center;
+        margin-top: var(--space-6);
+        padding-top: var(--space-4);
+        border-top: 1px solid var(--gray-200);
+        font-size: var(--text-sm);
+        color: var(--text-secondary);
+      }
+
+      .auth-footer a {
+        color: var(--primary-600);
+        text-decoration: none;
+      }
+
+      .auth-footer a:hover {
+        text-decoration: underline;
+      }
+
+      .back-link {
+        position: fixed;
+        top: var(--space-4);
+        left: var(--space-4);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        color: var(--text-primary);
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: var(--space-2) var(--space-3);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-md);
+        z-index: 1000;
+        transition: var(--mobile-transition);
+      }
+
+      .back-link:hover {
+        background: white;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      /* Form animations */
+      .auth-form {
+        display: none;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .auth-form.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Touch feedback */
+      .touch-feedback {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .touch-feedback::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.3s, height 0.3s;
+      }
+
+      .touch-feedback:active::after {
+        width: 200px;
+        height: 200px;
+      }
+
+      /* Focus states for accessibility */
+      .form-control:focus,
+      .form-select:focus,
+      .btn-auth:focus,
+      .auth-tab:focus {
+        outline: 2px solid var(--primary-500);
+        outline-offset: 2px;
+      }
+
+      /* High contrast mode support */
+      @media (prefers-contrast: high) {
+        .form-control,
+        .form-select {
+          border-width: 2px;
+        }
+
+        .btn-auth {
+          border: 2px solid var(--primary-700);
+        }
+      }
+
+      /* Reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    }
+  </style>
 </body>
 
 </html>

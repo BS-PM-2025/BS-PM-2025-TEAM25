@@ -2,118 +2,540 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/user.png') }}" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>My Profile - CityFix</title>
+  <meta name="description" content="Manage your CityFix profile and account settings.">
 
-  <!-- Bootstrap + Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
 
-  <!-- Shared dashboard styles & profile overrides -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/profile.css') }}" />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/profile.css') }}">
 </head>
 
-<body class="hm-gradient">
-  <div class="page-wrapper">
+<body>
+   <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-content">
+      <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
 
-     <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
-          class="d-inline-block align-text-top">
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.my_reports') }}">My Reports</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}">Report Issue</a></li>
-        </ul>
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
-        </ul>
-      </div>
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+            <span>Report Issue</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('done_reports.done_issue') }}" class="nav-link">
+            <i class="bi bi-check2-all" aria-hidden="true"></i>
+            <span>Done Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('user_roles.edit_user_roles') }}" class="nav-link">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <span>Manage Users</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
+            <i class="bi bi-journal-text" aria-hidden="true"></i>
+            <span>My Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('main.profile') }}" class="nav-link">
+            <i class="bi bi-person-circle" aria-hidden="true"></i>
+            <span>{{ user.name }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
     </div>
   </nav>
 
-    <!-- PROFILE CARD -->
-    <div class="container my-4">
-      <div class="card shadow-sm">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <h5 class="card-title mb-1">Your Profile</h5>
-            <p class="card-text mb-0"><strong>Name:</strong> {{ user.name }}</p>
-            <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
-          </div>
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('done_reports.done_issue') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-check2-all"></i>
+          <span>Done reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('user_roles.edit_user_roles') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-people"></i>
+          <span>Users</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
 
-          <!-- Edit button -->
-          <button class="btn btn-primary me-2" id="editProfileBtn">
-            <i class="bi bi-pencil-square me-1"></i>Edit Profile
-          </button>
-
-          <!-- Delete form/button -->
-          <form method="POST" action="{{ url_for('main.delete_my_account') }}"
-            onsubmit="return confirm('Are you sure you want to delete your account?');" class="d-inline">
-            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete my account">
-              <i class="bi bi-trash-fill me-1"></i>
-              Delete My Account
-            </button>
-          </form>
+  <!-- Profile Hero -->
+  <section class="profile-hero">
+    <div class="container">
+      <div class="profile-info">
+        <div class="profile-avatar">
+          {{ user.name[0].upper() if user.name else 'U' }}
         </div>
+        <h1 class="profile-name">{{ user.name or 'User' }}</h1>
+        <p class="profile-email">{{ user.email }}</p>
+
+       
       </div>
     </div>
+  </section>
 
-
-    <!-- EDIT PANEL -->
-    <div class="edit-panel hidden" id="editPanel">
-      <form action="{{ url_for('main.update_profile') }}" method="POST">
-        <h2>Edit Your Information</h2>
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" class="form-control" placeholder="Enter new name" />
-        <label for="password" class="mt-3">Password</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••" />
-        <button type="submit" class="btn btn-success mt-4">Save Changes</button>
-      </form>
-    </div>
-
-    <!-- FLASH MESSAGES -->
-    <div class="flash-messages">
+  <!-- Profile Content -->
+  <main class="profile-content">
+    <div class="container">
+      <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
       {% for category, message in messages %}
-      <div class="alert alert-{{ category }}">
+      <div class="alert alert-{{ category }} mb-6">
+        <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' if category == 'info' else 'x-circle' }}"
+          aria-hidden="true"></i>
         {{ message }}
       </div>
       {% endfor %}
       {% endif %}
       {% endwith %}
+
+      <!-- Profile Navigation -->
+      <nav class="profile-nav">
+        <ul class="profile-nav-list">
+          <li class="profile-nav-item">
+            <a href="#" class="profile-nav-link active" onclick="showSection('general')">
+              <i class="bi bi-person-gear" aria-hidden="true"></i>
+              <span>General</span>
+            </a>
+          </li>
+          <li class="profile-nav-item">
+            <a href="#" class="profile-nav-link" onclick="showSection('security')">
+              <i class="bi bi-shield-check" aria-hidden="true"></i>
+              <span>Security</span>
+            </a>
+          </li>
+          <li class="profile-nav-item">
+            <a href="#" class="profile-nav-link" onclick="showSection('activity')">
+              <i class="bi bi-clock-history" aria-hidden="true"></i>
+              <span>Activity</span>
+            </a>
+          </li>
+          <li class="profile-nav-item">
+            <a href="#" class="profile-nav-link" onclick="showSection('preferences')">
+              <i class="bi bi-sliders" aria-hidden="true"></i>
+              <span>Preferences</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- General Settings -->
+      <section id="general" class="profile-section active">
+        <div class="settings-grid">
+          <!-- Profile Information -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h2 class="settings-card-title">
+                <i class="bi bi-person-circle" aria-hidden="true"></i>
+                Profile Information
+              </h2>
+              <p class="settings-card-description">
+                Update your personal information and contact details.
+              </p>
+            </div>
+            <div class="settings-card-body">
+              <form action="{{ url_for('main.update_profile') }}" method="POST">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="name" class="form-label">Full Name</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ user.name or '' }}"
+                      placeholder="Enter your full name">
+                  </div>
+                  <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" class="form-control" value="{{ user.email }}" disabled
+                      title="Email cannot be changed">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="role" class="form-label">Account Type</label>
+                  <input type="text" id="role" class="form-control" value="{{ user.role|title }}" disabled
+                    title="Role cannot be changed">
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-check-circle" aria-hidden="true"></i>
+                  Save Changes
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Account Status -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h2 class="settings-card-title">
+                <i class="bi bi-shield-check" aria-hidden="true"></i>
+                Account Status
+              </h2>
+              <p class="settings-card-description">
+                Your account information and verification status.
+              </p>
+            </div>
+            <div class="settings-card-body">
+              <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                  <div class="flex items-center gap-3">
+                    <i class="bi bi-check-circle-fill text-emerald-600" aria-hidden="true"></i>
+                    <div>
+                      <div class="font-semibold text-emerald-800">Email Verified</div>
+                      <div class="text-sm text-emerald-600">Your email is verified and secure</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <div class="flex items-center gap-3">
+                    <i class="bi bi-person-check-fill text-blue-600" aria-hidden="true"></i>
+                    <div>
+                      <div class="font-semibold text-blue-800">Account Active</div>
+                      <div class="text-sm text-blue-600">Member since {{ user.created_at or 'Recently' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Security Settings -->
+      <section id="security" class="profile-section">
+        <div class="settings-grid">
+          <!-- Change Password -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h2 class="settings-card-title">
+                <i class="bi bi-key" aria-hidden="true"></i>
+                Change Password
+              </h2>
+              <p class="settings-card-description">
+                Keep your account secure with a strong password.
+              </p>
+            </div>
+            <div class="settings-card-body">
+              <form action="{{ url_for('main.update_profile') }}" method="POST">
+                <div class="form-group">
+                  <label for="current-password" class="form-label">Current Password</label>
+                  <input type="password" id="current-password" name="current_password" class="form-control"
+                    placeholder="Enter your current password">
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="new-password" class="form-label">New Password</label>
+                    <input type="password" id="new-password" name="password" class="form-control"
+                      placeholder="Enter new password">
+                  </div>
+                  <div class="form-group">
+                    <label for="confirm-password" class="form-label">Confirm Password</label>
+                    <input type="password" id="confirm-password" name="confirm_password" class="form-control"
+                      placeholder="Confirm new password">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-lock" aria-hidden="true"></i>
+                  Update Password
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Security Tips -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h2 class="settings-card-title">
+                <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+                Security Tips
+              </h2>
+              <p class="settings-card-description">
+                Best practices to keep your account secure.
+              </p>
+            </div>
+            <div class="settings-card-body">
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <i class="bi bi-check-circle text-emerald-500 mt-1" aria-hidden="true"></i>
+                  <div class="text-sm">
+                    <strong>Use a strong password</strong> with at least 8 characters, including letters, numbers, and
+                    symbols.
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <i class="bi bi-check-circle text-emerald-500 mt-1" aria-hidden="true"></i>
+                  <div class="text-sm">
+                    <strong>Don't share your password</strong> with anyone or use the same password on multiple sites.
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <i class="bi bi-check-circle text-emerald-500 mt-1" aria-hidden="true"></i>
+                  <div class="text-sm">
+                    <strong>Log out from public devices</strong> and always check for secure connections (HTTPS).
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Activity History -->
+      <section id="activity" class="profile-section">
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h2 class="settings-card-title">
+              <i class="bi bi-activity" aria-hidden="true"></i>
+              Recent Activity
+            </h2>
+            <p class="settings-card-description">
+              Your recent actions and account activity.
+            </p>
+          </div>
+          <div class="settings-card-body">
+            <div class="space-y-1">
+              <div class="activity-item">
+                <div class="activity-icon activity-icon-success">
+                  <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Reported a pothole on Main Street</div>
+                  <div class="activity-time">2 hours ago</div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon activity-icon-info">
+                  <i class="bi bi-pencil" aria-hidden="true"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Updated profile information</div>
+                  <div class="activity-time">1 day ago</div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon activity-icon-warning">
+                  <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Report status changed to "In Progress"</div>
+                  <div class="activity-time">3 days ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Preferences -->
+      <section id="preferences" class="profile-section">
+        <div class="settings-grid">
+          <!-- Notification Settings -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h2 class="settings-card-title">
+                <i class="bi bi-bell" aria-hidden="true"></i>
+                Notifications
+              </h2>
+              <p class="settings-card-description">
+                Choose how you want to be notified about updates.
+              </p>
+            </div>
+            <div class="settings-card-body">
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold">Email Notifications</div>
+                    <div class="text-sm text-secondary">Receive updates via email</div>
+                  </div>
+                  <input type="checkbox" class="form-check-input" checked>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold">Report Status Updates</div>
+                    <div class="text-sm text-secondary">Get notified when report status changes</div>
+                  </div>
+                  <input type="checkbox" class="form-check-input" checked>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold">Weekly Summary</div>
+                    <div class="text-sm text-secondary">Receive weekly activity summary</div>
+                  </div>
+                  <input type="checkbox" class="form-check-input">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Privacy Settings -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h2 class="settings-card-title">
+                <i class="bi bi-eye-slash" aria-hidden="true"></i>
+                Privacy
+              </h2>
+              <p class="settings-card-description">
+                Control your privacy and data sharing preferences.
+              </p>
+            </div>
+            <div class="settings-card-body">
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold">Public Profile</div>
+                    <div class="text-sm text-secondary">Make your profile visible to others</div>
+                  </div>
+                  <input type="checkbox" class="form-check-input">
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold">Show Activity</div>
+                    <div class="text-sm text-secondary">Display your recent reports publicly</div>
+                  </div>
+                  <input type="checkbox" class="form-check-input">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Danger Zone -->
+      <div class="danger-zone">
+        <h3 class="danger-zone-title">
+          <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+          Danger Zone
+        </h3>
+        <p class="danger-zone-description">
+          These actions are permanent and cannot be undone. Please proceed with caution.
+        </p>
+        <form method="POST" action="{{ url_for('main.delete_my_account') }}"
+          onsubmit="return confirm('Are you absolutely sure? This action cannot be undone and will permanently delete your account and all associated data.');">
+          <button type="submit" class="btn-danger">
+            <i class="bi bi-trash" aria-hidden="true"></i>
+            Delete Account
+          </button>
+        </form>
+      </div>
     </div>
+  </main>
 
-  </div>
-
-  <!-- Bootstrap JS bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Toggle edit panel
-    document.getElementById('editProfileBtn')
-      .addEventListener('click', () =>
-        document.getElementById('editPanel').classList.toggle('hidden')
-      );
+    // Tab switching functionality
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.profile-section').forEach(section => {
+        section.classList.remove('active');
+      });
 
-    // Auto-dismiss flash
-    setTimeout(() =>
-      document.querySelectorAll('.alert').forEach(a => {
-        a.style.transition = 'opacity 1s ease';
-        a.style.opacity = '0';
-        setTimeout(() => a.remove(), 1000);
-      }), 3000
-    );
+      // Remove active class from all nav links
+      document.querySelectorAll('.profile-nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+
+      // Show selected section
+      document.getElementById(sectionId).classList.add('active');
+
+      // Add active class to clicked nav link
+      event.target.closest('.profile-nav-link').classList.add('active');
+    }
+
+    // Auto-dismiss flash messages
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+          alert.style.transition = 'opacity 0.5s ease';
+          alert.style.opacity = '0';
+          setTimeout(() => alert.remove(), 500);
+        });
+      }, 5000);
+    });
+
+    // Password confirmation validation
+    const newPassword = document.getElementById('new-password');
+    const confirmPassword = document.getElementById('confirm-password');
+
+    if (newPassword && confirmPassword) {
+      confirmPassword.addEventListener('input', function () {
+        if (this.value !== newPassword.value) {
+          this.setCustomValidity('Passwords do not match');
+        } else {
+          this.setCustomValidity('');
+        }
+      });
+    }
+
+    // Form validation
+    document.querySelectorAll('.form-control').forEach(input => {
+      input.addEventListener('blur', function () {
+        if (this.checkValidity()) {
+          this.classList.add('is-valid');
+          this.classList.remove('is-invalid');
+        } else {
+          this.classList.add('is-invalid');
+          this.classList.remove('is-valid');
+        }
+      });
+    });
   </script>
 </body>
 

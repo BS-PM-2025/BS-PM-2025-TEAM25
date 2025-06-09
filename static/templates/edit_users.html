@@ -2,218 +2,406 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Edit Users Information</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/home (3).png') }}" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Manage Users - CityFix</title>
+  <meta name="description" content="Manage user accounts, roles, and permissions in CityFix.">
 
-  <!-- Google Font: Noto Sans -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
 
-  <!-- Bootstrap 5 & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Noto Sans', sans-serif;
-    }
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    /* Navbar */
-    .navbar {
-      background: #fff;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/edit_users.css') }}">
 
-    .navbar .nav-link {
-      color: #000;
-      font-weight: 500;
-    }
-
-    .navbar .nav-link:hover {
-      color: #0ef;
-    }
-
-    /* Banner & Search */
-    .header-banner {
-      background: linear-gradient(to right, #2efef1, #fff);
-      padding: 3rem 1rem;
-      text-align: center;
-    }
-
-    .header-banner h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: .5rem;
-    }
-
-    .search-box {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .search-box .form-control {
-      border-radius: 2rem;
-      padding: 1rem 1.5rem;
-      border: 1px solid #ccc;
-    }
-
-    .search-box .input-group-text {
-      background: transparent;
-      border: none;
-    }
-
-    /* Table */
-    .edit-users-table thead {
-      background: linear-gradient(to right, #2efef1, #fff);
-    }
-
-    .edit-users-table thead th {
-      color: #000;
-      font-weight: 600;
-      border: none;
-    }
-
-    .edit-users-table tbody tr:hover {
-      background: #f1fdfd;
-    }
-
-    .form-select-sm,
-    .form-control-sm {
-      font-size: .875rem;
-    }
-
-    .btn-outline-primary,
-    .btn-outline-danger {
-      border-width: 2px;
-    }
-  </style>
 </head>
 
 <body>
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
-          class="d-inline-block align-text-top">
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}"><i
-              class="bi bi-speedometer2"></i> Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}"><i class="bi bi-house"></i>
-            Home</a></li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}"><i
-              class="bi bi-box-arrow-right"></i> Logout</a></li>
+   <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="{{ url_for('main.home') }}" class="navbar-brand">
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+        </a>
+
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('done_reports.done_issue') }}" class="nav-link">
+              <i class="bi bi-check2-all" aria-hidden="true"></i>
+              <span>Done Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}" class="nav-link">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- Banner + Search -->
-  <section class="header-banner">
-    <h1>Edit Users Information</h1>
-    <p class="mb-4">Search for a user to update roles or passwords</p>
-    <div class="search-box">
-      <div class="input-group">
-        <input id="searchInput" type="text" class="form-control" placeholder="Search users..." />
-        <span class="input-group-text"><i class="bi bi-search"></i></span>
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('done_reports.done_issue') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-check2-all"></i>
+          <span>Done</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('user_roles.edit_user_roles') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-people"></i>
+          <span>Users</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Users Hero -->
+  <section class="users-hero">
+    <div class="container">
+      <div class="users-content">
+        <h1 class="users-title">User Management</h1>
+        <p class="users-subtitle">
+          Manage user accounts, roles, and permissions.
+          Keep your CityFix community organized and secure.
+        </p>
+
+        <div class="search-section">
+          <div class="search-box">
+            <i class="bi bi-search search-icon" aria-hidden="true"></i>
+            <input type="text" id="search-input" class="search-input" placeholder="Search users by name or email..."
+              onkeyup="filterUsers()">
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Users Table -->
-  <div class="container-fluid py-4">
-    <div class="table-responsive">
-      <table class="table edit-users-table align-middle" id="usersTable">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Current Role</th>
-            <th>New Role</th>
-            <th>Update Role</th>
-            <th>New Password</th>
-            <th>Update Password</th>
-            <th>Delete User</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for u in users %}
-          <tr>
-            <td><strong>{{ u.name }}</strong></td>
-            <td class="text-muted">{{ u.email }}</td>
-            <td><strong>{{ u.role }}</strong></td>
+  <!-- Users Container -->
+  <main class="container">
+    <div class="users-container">
+      <div class="users-card">
+        <!-- Users Header -->
+        <div class="users-header">
+          <div class="users-header-content">
+            <h2 class="users-header-title">
+              <i class="bi bi-people-fill" aria-hidden="true"></i>
+              All Users
+            </h2>
 
-            <!-- Role form -->
-            <td>
-              <form method="POST" action="{{ url_for('user_roles.edit_user_roles') }}">
-                <input type="hidden" name="user_id" value="{{ u._id }}" />
-                <select name="role" class="form-select form-select-sm">
-                  <option value="">Unchanged</option>
-                  <option value="user">User</option>
-                  <option value="maintenance">Maintenance</option>
-                  <option value="admin">Admin</option>
-                </select>
-            </td>
-            <td>
-              <button type="submit" class="btn btn-outline-primary btn-sm ms-2">
-                <i class="bi bi-pencil-fill"></i> Edit
-              </button>
-              </form>
-            </td>
+            <div class="users-stats">
+              <div class="users-stat">
+                <div class="users-stat-number">{{ users|selectattr('role', 'equalto', 'user')|list|length }}</div>
+                <div class="users-stat-label">Citizens</div>
+              </div>
+              <div class="users-stat">
+                <div class="users-stat-number">{{ users|selectattr('role', 'equalto', 'maintenance')|list|length }}
+                </div>
+                <div class="users-stat-label">Maintenance</div>
+              </div>
+              <div class="users-stat">
+                <div class="users-stat-number">{{ users|selectattr('role', 'equalto', 'admin')|list|length }}</div>
+                <div class="users-stat-label">Admins</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            <!-- Password form -->
-            <td>
-              <form method="POST" action="{{ url_for('user_roles.edit_user_roles') }}">
-                <input type="hidden" name="user_id" value="{{ u._id }}" />
-                <input type="password" name="password" class="form-control form-control-sm" placeholder="••••••" />
-            </td>
-            <td>
-              <button type="submit" class="btn btn-outline-primary btn-sm ms-2">
-                <i class="bi bi-pencil-fill"></i> Edit
-              </button>
-              </form>
-            </td>
+        <!-- Users Table -->
+        <div class="users-table-container">
+          {% if users %}
+          <table class="users-table" id="users-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Current Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+              <tr>
+                <td data-label="User">
+                  <div class="user-info">
+                    <div class="user-avatar">
+                      {{ user.name[0]|upper if user.name else user.email[0]|upper }}
+                    </div>
+                    <div class="user-details">
+                      <div class="user-name">{{ user.name or 'No Name' }}</div>
+                      <div class="user-email">{{ user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Current Role">
+                  <span class="role-badge role-{{ user.role }}">
+                    <i class="bi bi-{{ 'person' if user.role == 'user' else 'shield-check' if user.role == 'admin' else 'tools' }}"
+                      aria-hidden="true"></i>
+                    {{ user.role|title }}
+                  </span>
+                </td>
+                <td data-label="Actions">
+                  <div class="actions-cell">
+                    <!-- Role Update -->
+                    <div class="action-row">
+                      <span class="action-label">Role</span>
+                      <form method="POST" action="{{ url_for('user_roles.edit_user_roles') }}" class="edit-form">
+                        <input type="hidden" name="user_id" value="{{ user._id }}">
+                        <select name="role" class="edit-select">
+                          <option value="">Unchanged</option>
+                          <option value="user" {{ 'selected' if user.role=='user' }}>Citizen</option>
+                          <option value="maintenance" {{ 'selected' if user.role=='maintenance' }}>Maintenance</option>
+                          <option value="admin" {{ 'selected' if user.role=='admin' }}>Admin</option>
+                        </select>
+                        <button type="submit" class="edit-btn">
+                          <i class="bi bi-check" aria-hidden="true"></i>
+                          Update
+                        </button>
+                      </form>
+                    </div>
 
-            <!-- Delete form -->
-            <td>
-              <form method="POST" action="{{ url_for('user_roles.delete_user', user_id=u._id) }}"
-                onsubmit="return confirm('Delete this user?');">
-                <button type="submit" class="btn btn-outline-danger btn-sm">
-                  <i class="bi bi-trash-fill"></i>
-                </button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+                    <!-- Password Update -->
+                    <div class="action-row">
+                      <span class="action-label">Password</span>
+                      <form method="POST" action="{{ url_for('user_roles.edit_user_roles') }}" class="edit-form">
+                        <input type="hidden" name="user_id" value="{{ user._id }}">
+                        <input type="password" name="password" class="edit-input" placeholder="New password">
+                        <button type="submit" class="edit-btn">
+                          <i class="bi bi-key" aria-hidden="true"></i>
+                          Reset
+                        </button>
+                      </form>
+                    </div>
+
+                    <!-- Delete User -->
+                    <div class="action-row">
+                      <span class="action-label">Delete</span>
+                      <form method="POST" action="{{ url_for('user_roles.delete_user', user_id=user._id) }}"
+                        onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');"
+                        style="margin-left: auto;">
+                        <button type="submit" class="delete-btn" title="Delete User">
+                          <i class="bi bi-trash" aria-hidden="true"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <h3>No Users Found</h3>
+            <p>There are no user accounts to manage at this time.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Users Footer -->
+        <div class="users-footer">
+          <div class="users-count">
+            Showing <strong>{{ users|length }}</strong> user{{ 's' if users|length != 1 else '' }}
+          </div>
+        </div>
+      </div>
     </div>
+  </main>
 
-    <!-- Footer -->
-    <div class="text-center mt-3">
-      <small>Showing <strong>{{ users|length }}</strong> user{{ users|length != 1 and 's' }}</small>
-    </div>
-  </div>
+  <!-- Toast Notifications -->
+  <div id="toast-container"></div>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Live search
-    document.getElementById('searchInput').addEventListener('keyup', function () {
-      const term = this.value.toLowerCase();
-      document.querySelectorAll('#usersTable tbody tr').forEach(row => {
-        row.style.display = Array.from(row.cells).some(cell =>
-          cell.textContent.toLowerCase().includes(term)
-        ) ? '' : 'none';
+    // Search functionality
+    function filterUsers() {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const table = document.getElementById('users-table');
+
+      if (!table) return;
+
+      const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+      let visibleCount = 0;
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const text = row.textContent.toLowerCase();
+        const isVisible = text.includes(searchTerm);
+        row.style.display = isVisible ? '' : 'none';
+        if (isVisible) visibleCount++;
+      }
+
+      // Update footer count
+      const footer = document.querySelector('.users-count');
+      if (footer) {
+        footer.innerHTML = `Showing <strong>${visibleCount}</strong> user${visibleCount !== 1 ? 's' : ''}`;
+      }
+    }
+
+    // Toast notification system
+    function showToast(type, title, message) {
+      const toastContainer = document.getElementById('toast-container');
+
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}" aria-hidden="true"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+
+      toastContainer.appendChild(toast);
+
+      // Trigger animation
+      setTimeout(() => toast.classList.add('show'), 100);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
+
+    // Form submission handling
+    document.addEventListener('DOMContentLoaded', function () {
+      // Add loading states to forms
+      document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+          const submitBtn = this.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i>';
+
+            // Re-enable after 3 seconds if form doesn't redirect
+            setTimeout(() => {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalContent;
+            }, 3000);
+          }
+        });
+      });
+
+      // Show success message if needed
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('success') === 'true') {
+        showToast('success', 'Success!', 'User has been updated successfully.');
+      }
+
+      // Enhanced form validation
+      document.querySelectorAll('input[type="password"]').forEach(input => {
+        input.addEventListener('input', function () {
+          const submitBtn = this.closest('form').querySelector('button[type="submit"]');
+          if (this.value.length > 0 && this.value.length < 6) {
+            this.style.borderColor = 'var(--red-500)';
+            submitBtn.disabled = true;
+          } else {
+            this.style.borderColor = 'var(--gray-300)';
+            submitBtn.disabled = false;
+          }
+        });
+      });
+
+      // Role change confirmation
+      document.querySelectorAll('select[name="role"]').forEach(select => {
+        select.addEventListener('change', function () {
+          if (this.value === 'admin') {
+            if (!confirm('Are you sure you want to make this user an admin? This will give them full system access.')) {
+              this.value = '';
+            }
+          }
+        });
+      });
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function (e) {
+      // Ctrl/Cmd + F to focus search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        document.getElementById('search-input').focus();
+      }
+    });
+
+    // Auto-save search term in session storage
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('input', function () {
+      sessionStorage.setItem('userSearchTerm', this.value);
+    });
+
+    // Restore search term on page load
+    window.addEventListener('load', function () {
+      const savedSearch = sessionStorage.getItem('userSearchTerm');
+      if (savedSearch) {
+        searchInput.value = savedSearch;
+        filterUsers();
+      }
+    });
+
+    // Add tooltips for better UX
+    document.querySelectorAll('[title]').forEach(element => {
+      element.addEventListener('mouseenter', function () {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.textContent = this.getAttribute('title');
+        // You can add tooltip positioning logic here
       });
     });
   </script>

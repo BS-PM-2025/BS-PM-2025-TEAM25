@@ -3,238 +3,491 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Report {{ issue._id }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Report Details - CityFix</title>
+  <meta name="description" content="View detailed information about this infrastructure report.">
 
-  <!-- Bootstrap & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <style>
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-    }
-
-    body {
-      background: #f8f9fa;
-    }
-
-    .navbar {
-      background-color: #fff !important;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .navbar-brand {
-      font-weight: bold;
-      color: #000;
-    }
-
-    .navbar .nav-link {
-      color: #000 !important;
-      font-weight: 500;
-    }
-
-    .navbar .nav-link:hover {
-      color: #0ef !important;
-    }
-
-    .back-nav {
-      background: #fff;
-      padding: .5rem 1rem;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .back-nav .nav-link {
-      color: #333;
-      font-weight: 500;
-    }
-
-    .d-flex-full {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .main-content {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-
-    .sidebar {
-      width: 360px;
-      background: #fff;
-      padding: 2rem 1.5rem;
-      overflow-y: auto;
-    }
-
-    .sidebar h2 {
-      font-size: 1.75rem;
-      margin-bottom: .5rem;
-    }
-
-    .badge-status {
-      display: inline-block;
-      font-size: .75rem;
-      text-transform: uppercase;
-      padding: .4em .8em;
-      border-radius: .25rem;
-      margin-bottom: 1rem;
-    }
-
-    /* badge colors omitted for brevity */
-    .status-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    .info-list {
-      list-style: none;
-      padding: 0;
-      margin-bottom: 1.25rem;
-    }
-
-    .info-list li {
-      margin-bottom: .5rem;
-      font-size: .9rem;
-      color: #555;
-    }
-
-    .info-list li strong {
-      color: #000;
-    }
-
-    .description-title {
-      font-weight: 600;
-      margin-top: 1rem;
-      margin-bottom: .5rem;
-    }
-
-    .description-text {
-      font-size: .95rem;
-      line-height: 1.5;
-      color: #333;
-    }
-
-    .image-card {
-      margin-top: 1.5rem;
-      border-radius: .5rem;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .image-card img {
-      width: 100%;
-      display: block;
-    }
-
-    #detailMap {
-      flex: 1;
-    }
-  </style>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/report_detail.css') }}">
 </head>
 
-<body class="d-flex-full">
-  <!-- Main Navbar -->
-  <nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" width="30" height="30" alt="CityFix"
-          class="d-inline-block align-text-top">
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.my_reports') }}">My Reports</a></li>
-          <li class="nav-item"><a class="nav-link active" href="{{ url_for('reports.report_issue') }}">Report Issue</a>
+<body>
+   <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+        <ul class="navbar-nav">
+          {% if user %}
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
           </li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">Profile</a></li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}" class="nav-link">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a href="{{ url_for('main.about') }}" class="nav-link">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <span>About</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="nav-link">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              <span>Sign Up</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+              <span>Login</span>
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- Back to all reports -->
-  <div class="back-nav">
-    <a class="nav-link" href="{{ url_for('reports.public_reports') }}">
-      <i class="bi bi-arrow-left me-1"></i> Back to All Reports
-    </a>
-  </div>
-
-  <div class="main-content">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <h2>{{ issue.city_street or issue.category or 'Report' }}</h2>
-
-      {# Status badge #}
-      {% set st = issue.status|lower %}
-      {% set badge_class = 'secondary' %}
-      {% if st in ['done','completed'] %}{% set badge_class='success' %}
-      {% elif st=='in progress' %}{% set badge_class='info' %}
-      {% elif st=='approved' %}{% set badge_class='primary' %}
-      {% elif st in ['assigned','pending'] %}{% set badge_class='warning' %}
-      {% elif st=='rejected' %}{% set badge_class='danger' %}{% endif %}
-      <span class="badge bg-{{ badge_class }} text-capitalize mb-2">{{ issue.status }}</span>
-
-      {# Category icon #}
-      {% set cat = issue.category|lower %}
-      {% if cat=='traffic light failure' %}{% set icon='traffic-light' %}
-      {% elif cat=='water leak' %}{% set icon='droplet' %}
-      {% elif cat=='signage' %}{% set icon='signpost' %}
-      {% else %}{% set icon='exclamation-circle' %}{% endif %}
-      <div class="status-icon text-{{ badge_class }} mb-3">
-        <i class="bi bi-{{ icon }}-fill"></i>
-      </div>
-
-      <ul class="info-list">
-        <li><strong>Reported by:</strong> {{ issue.reporter_email }}</li>
-        <li><strong>Date:</strong> {{ issue.timestamp }}</li>
-        <li><strong>Location:</strong> {{ issue.location_address or issue.city_street }}</li>
-      </ul>
-
-      <div class="description">
-        <div class="description-title">Description of the Issue:</div>
-        <div class="description-text">{{ issue.description }}</div>
-      </div>
-
-      {% if issue.image_file_id %}
-      <div class="image-card">
-        <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue Image">
-      </div>
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      {% if user %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-person-plus"></i>
+          <span>Join</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.about') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-info-circle"></i>
+          <span>About</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
+          <span>Login</span>
+        </a>
+      </li>
       {% endif %}
-    </aside>
+    </ul>
+  </nav>
+  <!-- Detail Hero -->
+  <section class="detail-hero">
+    <div class="container">
+      <div class="detail-content">
+        <div class="detail-breadcrumb">
+          <a href="{{ url_for('reports.public_reports') }}">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            Back to All Reports
+          </a>
+          <span>/</span>
+          <span>Report Details</span>
+        </div>
 
-    <!-- Map -->
-    <div id="detailMap" data-lat="{{ issue.location.lat if issue.location }}"
-      data-lng="{{ issue.location.lng if issue.location }}"></div>
+        <h1 class="detail-title">{{ issue.city_street or issue.category or 'Infrastructure Report' }}</h1>
+        <p class="detail-subtitle">
+          Reported on {{ issue.timestamp }} by {{ issue.reporter_email.split('@')[0]|title }}
+        </p>
+
+        <div class="report-status-bar">
+          <div class="status-step {{ 'completed' if issue.status != 'pending' else 'active' }}">
+            <div class="status-icon">
+              <i class="bi bi-{{ 'check' if issue.status != 'pending' else '1' }}" aria-hidden="true"></i>
+            </div>
+            <span>Reported</span>
+          </div>
+          <div
+            class="status-step {{ 'completed' if issue.status in ['in progress', 'done'] else 'active' if issue.status == 'approved' else '' }}">
+            <div class="status-icon">
+              <i class="bi bi-{{ 'check' if issue.status in ['in progress', 'done'] else '2' }}" aria-hidden="true"></i>
+            </div>
+            <span>Approved</span>
+          </div>
+          <div
+            class="status-step {{ 'completed' if issue.status == 'done' else 'active' if issue.status == 'in progress' else '' }}">
+            <div class="status-icon">
+              <i class="bi bi-{{ 'check' if issue.status == 'done' else '3' }}" aria-hidden="true"></i>
+            </div>
+            <span>In Progress</span>
+          </div>
+          <div class="status-step {{ 'completed' if issue.status == 'done' else '' }}">
+            <div class="status-icon">
+              <i class="bi bi-{{ 'check' if issue.status == 'done' else '4' }}" aria-hidden="true"></i>
+            </div>
+            <span>Completed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Detail Container -->
+  <main class="container">
+    <div class="detail-container">
+      <div class="detail-layout">
+        <!-- Main Content -->
+        <div class="detail-main">
+          <!-- Image Section -->
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <h2 class="detail-card-title">
+                <i class="bi bi-camera" aria-hidden="true"></i>
+                Issue Documentation
+              </h2>
+              <p class="detail-card-subtitle">Visual evidence of the reported problem</p>
+            </div>
+            <div class="detail-card-body">
+              <div class="image-showcase">
+                {% if issue.image_file_id %}
+                <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue Image"
+                  class="main-image"onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
+                {% else %}
+                <div class="no-image-placeholder">
+                  <i class="bi bi-image no-image-icon" aria-hidden="true"></i>
+                  <span class="no-image-text">No Image Available</span>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Description Section -->
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <h2 class="detail-card-title">
+                <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                Issue Description
+              </h2>
+              <p class="detail-card-subtitle">Detailed information about the problem</p>
+            </div>
+            <div class="detail-card-body">
+              <div class="description-content">
+                {{ issue.description }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Location Section -->
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <h2 class="detail-card-title">
+                <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                Location Details
+              </h2>
+              <p class="detail-card-subtitle">Exact location of the reported issue</p>
+            </div>
+            <div class="detail-card-body">
+              <div class="map-container">
+                <div class="map-overlay">
+                  <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                  {{ issue.location_address or issue.city_street }}
+                </div>
+                <div id="detailMap" data-lat="{{ issue.location.lat if issue.location }}"
+                  data-lng="{{ issue.location.lng if issue.location }}" style="height: 100%; width: 100%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="detail-sidebar">
+          <!-- Status Card -->
+          <div class="info-card">
+            <div class="info-header">
+              <div class="info-icon"style="background: var(--{{ 'emerald' if issue.status == 'done' else 'blue' if issue.status == 'in progress' else 'orange' if issue.status == 'approved' else 'gray' }}-100); color: var(--{{ 'emerald' if issue.status == 'done' else 'blue' if issue.status == 'in progress' else 'orange' if issue.status == 'approved' else 'gray' }}-600);">
+                <i class="bi bi-{{ 'check-circle' if issue.status == 'done' else 'hourglass-split' if issue.status == 'in progress' else 'person-check' if issue.status == 'approved' else 'clock' }}"
+                  aria-hidden="true"></i>
+              </div>
+              <div class="info-title">Current Status</div>
+            </div>
+            <div class="status-badge status-{{ issue.status.replace(' ', '-') if issue.status else 'pending' }}">
+              <i class="bi bi-{{ 'check-circle' if issue.status == 'done' else 'hourglass-split' if issue.status == 'in progress' else 'person-check' if issue.status == 'approved' else 'clock' }}"
+                aria-hidden="true"></i>
+              {{ issue.status.title() if issue.status else 'Pending' }}
+            </div>
+          </div>
+
+          <!-- Report Information -->
+          <div class="info-card">
+            <div class="info-header">
+              <div class="info-icon" style="background: var(--primary-100); color: var(--primary-600);">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+              </div>
+              <div class="info-title">Report Information</div>
+            </div>
+            <ul class="info-list">
+              <li class="info-item">
+                <i class="bi bi-person info-item-icon" aria-hidden="true"></i>
+                <div class="info-item-content">
+                  <div class="info-item-label">Reported By</div>
+                  <div class="info-item-value">{{ issue.reporter_email }}</div>
+                </div>
+              </li>
+              <li class="info-item">
+                <i class="bi bi-calendar3 info-item-icon" aria-hidden="true"></i>
+                <div class="info-item-content">
+                  <div class="info-item-label">Date Reported</div>
+                  <div class="info-item-value">{{ issue.timestamp }}</div>
+                </div>
+              </li>
+              <li class="info-item">
+                <i class="bi bi-tag info-item-icon" aria-hidden="true"></i>
+                <div class="info-item-content">
+                  <div class="info-item-label">Category</div>
+                  <div class="info-item-value">
+                    {% set cat = issue.category|lower %}
+                    <div class="category-badge">
+                      <i class="bi bi-{{ 'traffic-light' if cat == 'traffic light failure' else 'droplet' if cat == 'water leak' else 'signpost' if cat == 'signage' else 'exclamation-circle' }}"
+                        aria-hidden="true"></i>
+                      {{ issue.category.replace('_', ' ').title() if issue.category else 'General Issue' }}
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li class="info-item">
+                <i class="bi bi-geo-alt info-item-icon" aria-hidden="true"></i>
+                <div class="info-item-content">
+                  <div class="info-item-label">Location</div>
+                  <div class="info-item-value">{{ issue.location_address or issue.city_street }}</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Actions -->
+          <div class="info-card">
+            <div class="info-header">
+              <div class="info-icon" style="background: var(--emerald-100); color: var(--emerald-600);">
+                <i class="bi bi-lightning" aria-hidden="true"></i>
+              </div>
+              <div class="info-title">Quick Actions</div>
+            </div>
+            <div class="action-buttons">
+              <a href="{{ url_for('reports.public_reports') }}" class="action-btn btn-primary-action">
+                <i class="bi bi-map" aria-hidden="true"></i>
+                View All Reports
+              </a>
+              <a href="{{ url_for('reports.report_issue') }}" class="action-btn btn-success-action">
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                Report New Issue
+              </a>
+              <button class="action-btn btn-secondary-action" onclick="shareReport()">
+                <i class="bi bi-share" aria-hidden="true"></i>
+                Share Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal-backdrop" onclick="closeImageModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Issue Image</h3>
+        <button class="btn-close" onclick="closeImageModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="Issue image">
+      </div>
+    </div>
   </div>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const map = L.map('detailMap');
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-    const el = document.getElementById('detailMap');
-    const lat = parseFloat(el.dataset.lat), lng = parseFloat(el.dataset.lng);
-    if (!isNaN(lat) && !isNaN(lng)) {
-      map.setView([lat, lng], 15);
-      L.marker([lat, lng]).addTo(map);
-    } else {
-      map.setView([31.95, 35.93], 7);
+    let map;
+
+    // Initialize map
+    document.addEventListener('DOMContentLoaded', function () {
+      initializeMap();
+      initializeAnimations();
+    });
+
+    function initializeMap() {
+      const mapElement = document.getElementById('detailMap');
+      const lat = parseFloat(mapElement.dataset.lat);
+      const lng = parseFloat(mapElement.dataset.lng);
+
+      if (!isNaN(lat) && !isNaN(lng)) {
+        map = L.map('detailMap').setView([lat, lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        L.marker([lat, lng]).addTo(map);
+      } else {
+        // Default view if no coordinates
+        map = L.map('detailMap').setView([31.95, 35.93], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+      }
+
+      // Ensure map renders properly
+      setTimeout(() => map.invalidateSize(), 200);
     }
-    setTimeout(() => map.invalidateSize(), 200);
+
+    function initializeAnimations() {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, observerOptions);
+
+      // Observe cards
+      document.querySelectorAll('.detail-card, .info-card').forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+        observer.observe(el);
+      });
+    }
+
+    // Image modal functions
+    function showImageModal(src) {
+      const modal = document.getElementById('image-modal');
+      const modalImage = document.getElementById('modal-image');
+
+      modalImage.src = src;
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('image-modal');
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+
+      setTimeout(() => {
+        document.getElementById('modal-image').src = '';
+      }, 300);
+    }
+
+    // Share function
+    function shareReport() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'CityFix Report',
+          text: 'Check out this infrastructure report',
+          url: window.location.href
+        });
+      } else {
+        // Fallback to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          alert('Report link copied to clipboard!');
+        });
+      }
+    }
+
+    // Handle escape key for modals
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    });
   </script>
 </body>
 

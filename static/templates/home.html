@@ -2,431 +2,1083 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InfraReport – Home</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/aa.png') }}" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>CityFix - Modern Infrastructure Reporting Platform</title>
+  <meta name="description"
+    content="Report, track, and resolve infrastructure issues in your city. Modern platform connecting citizens, officials, and maintenance teams.">
 
-  <!-- Bootstrap & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-  <style>
-    :root {
-      --primary-500: #1effe1;
-      --primary-700: #ffffff;
-      --dark-900: #0d1117;
-      --gray-200: #f5f6f7;
-      --shadow-sm: 0 2px 4px rgba(0, 0, 0, .08);
-      --shadow-lg: 0 8px 20px rgba(0, 0, 0, .986);
-    }
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/home.css') }}">
 
-    body {
-      background: var(--gray-200);
-      font-family: 'Inter', sans-serif;
-    }
+  <!-- OpenGraph Meta Tags -->
+  <meta property="og:title" content="CityFix - Modern Infrastructure Reporting">
+  <meta property="og:description"
+    content="Help keep your city safe and well-maintained with our modern reporting system.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ request.url }}">
 
-    .navbar {
-      background: #fff !important;
-      box-shadow: var(--shadow-sm);
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "CityFix",
+        "description": "Modern infrastructure reporting platform",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Web"
     }
-
-    .navbar .nav-link {
-      color: var(--dark-900);
-    }
-
-    .navbar .nav-link:hover,
-    .navbar .nav-link.active {
-      color: var(--primary-500);
-    }
-
-    .section-fluid {
-      width: 100vw;
-      position: relative;
-      left: 50%;
-      right: 50%;
-      margin-left: -50vw;
-      margin-right: -50vw;
-    }
-
-    #hero {
-      background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
-      position: relative;
-      overflow: hidden;
-      padding: 4rem 0;
-    }
-
-    #hero::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: url('https://www.transparenttextures.com/patterns/asfalt-light.png');
-      opacity: .15;
-    }
-
-    #hero h1,
-    #hero p {
-      color: var(--dark-900);
-    }
-
-    #searchForm {
-      max-width: 500px;
-      margin: 1.5rem auto 0;
-      box-shadow: var(--shadow-sm);
-    }
-
-    #searchForm .form-control {
-      border-radius: .5rem 0 0 .5rem;
-      border-color: #ddd;
-      border-right: none;
-    }
-
-    #searchForm .btn {
-      border-radius: 0 .5rem .5rem 0;
-      background: #fff;
-      border-color: #ddd;
-      color: var(--dark-900);
-    }
-
-    #searchForm .btn:hover {
-      background: var(--primary-500);
-      color: #fff;
-      border-color: var(--primary-500);
-    }
-
-    #locBtn {
-      margin-top: .75rem;
-      color: #fff;
-      border-color: #fff;
-    }
-
-    #locBtn:hover {
-      background: #fff;
-      color: var(--primary-700);
-    }
-
-    .hero-img {
-      position: absolute;
-      bottom: 0;
-      right: 2%;
-      max-height: 70%;
-      z-index: 1;
-    }
-
-    .card {
-      background: #fff;
-      border: none;
-      border-radius: .75rem;
-      box-shadow: var(--shadow-sm);
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .stats-number {
-      font-size: 1.6rem;
-      color: var(--dark-900);
-    }
-
-    .recent-list {
-      max-height: 270px;
-      overflow-y: auto;
-    }
-
-    .recent-list .thumb {
-      width: 48px;
-      height: 48px;
-      object-fit: cover;
-      border-radius: .4rem;
-      margin-right: .75rem;
-    }
-
-    .recent-card {
-      border-radius: 1rem;
-    }
-
-    #map {
-      width: 100%;
-      height: 55vh;
-      border-top: 4px solid var(--primary-500);
-      border-radius: 0 0 1rem 1rem;
-    }
-  </style>
+    </script>
 </head>
 
-<body class="d-flex flex-column min-vh-100">
+<body>
 
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white">
-    <div class="container-fluid px-4">
-      <a class="navbar-brand fw-bold" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix Logo" width="30" height="30"
-          class="d-inline-block align-text-top">
-      </a>
+  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+        <!-- Brand -->
+        <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
-        aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler" type="button" aria-label="Toggle navigation menu" aria-expanded="false"
+          aria-controls="navMenu">
+          <div class="navbar-toggler-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
 
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav me-auto">
+        <!-- Navigation Links -->
+        <ul class="navbar-nav" id="navMenu" role="menubar">
           {% if user %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a>
+          <li class="nav-item" role="none">
+            <a href="{{ url_for('auth.dashboard') }}" class="nav-link" role="menuitem">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('reports.my_reports') }}">My Reports</a>
+          <li class="nav-item" role="none">
+            <a href="{{ url_for('reports.my_reports') }}" class="nav-link" role="menuitem">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+              {% if my_issue_count > 0 %}
+              <span class="badge badge-primary">{{ my_issue_count }}</span>
+              {% endif %}
+            </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('reports.report_issue') }}">Report Issue</a>
+          <li class="nav-item" role="none">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link" role="menuitem">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('main.profile') }}">Profile</a>
+          <li class="nav-item" role="none">
+            <a href="{{ url_for('main.profile') }}" class="nav-link" role="menuitem">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary" role="menuitem">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
           </li>
           {% else %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.root') }}">Sign Up</a>
+          <li class="nav-item" role="none">
+            <a href="{{ url_for('reports.public_reports') }}" class="nav-link" role="menuitem">
+              <i class="bi bi-map" aria-hidden="true"></i>
+              <span>View Reports</span>
+            </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.root') }}">Login</a>
+          <li class="nav-item" role="none">
+            <a href="{{ url_for('main.about') }}" class="nav-link" role="menuitem">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <span>About</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="{{ url_for('auth.root') }}" class="nav-link" role="menuitem">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              <span>Sign Up</span>
+            </a>
+          </li>
+          <li class="nav-item" role="none">
+            <a href="{{ url_for('auth.root') }}" class="btn btn-primary" role="menuitem">
+              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+              <span>Login</span>
+            </a>
           </li>
           {% endif %}
         </ul>
-
-        {% if user %}
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
-          </li>
-        </ul>
-        {% endif %}
       </div>
     </div>
   </nav>
 
-  <!-- HERO SECTION -->
-  <section id="hero" class="section-fluid text-center position-relative">
-    <div class="container px-4">
-      <h1 class="display-5 fw-bold">Report, view, or discuss local problems</h1>
-      <p class="lead">Help keep your city safe and well-maintained.</p>
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      {% if user %}
+      <li class="mobile-nav-item">
+          <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+         <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item" role="none">
+         <a href="{{ url_for('auth.logout') }}" class="mobile-nav-link" role="menuitem">
+          <i class="mobile-nav-icon bi bi-box-arrow-right" aria-hidden="true"></i>
+          <span>Logout</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-person-plus"></i>
+          <span>Join</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.about') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-info-circle"></i>
+          <span>About</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
+          <span>Login</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
 
-      <form id="searchForm" class="input-group input-group-lg mx-auto">
-        <input id="searchInput" type="text" class="form-control" placeholder="Search" required>
-        <button class="btn" type="submit"><i class="bi bi-search"></i></button>
-      </form>
-      <button id="locBtn" class="btn btn-outline-light btn-sm mt-2">
-        <i class="bi bi-geo-alt-fill me-1"></i>Use my location
-      </button>
-    </div>
-    <img src="{{ url_for('static', filename='images/hero-worker.png') }}" alt="Worker" class="hero-img">
-  </section>
+  <!-- Main Content -->
+  <main id="main-content">
+    <!-- Hero Section -->
+    <section class="hero" role="banner">
+      <div class="container">
+        <div class="hero-content fade-in">
+          <h1 class="hero-title text-gradient text-balance">
+            Report, Track & Resolve
+            <br>Infrastructure Issues
+          </h1>
+          <p class="hero-subtitle text-balance">
+            Help keep your city safe and well-maintained with our modern,
+            efficient reporting system that connects citizens, officials, and maintenance teams.
+          </p>
 
-  <!-- HOW-TO & RECENT REPORTS -->
-  <div class="section-fluid bg-white py-5">
-    <div class="container">
-      <div class="row g-4">
-        <div class="col-lg-6">
-          <div class="card h-100">
-            <div class="card-body">
-              <h5 class="card-title mb-3">How to report a problem</h5>
-              <ol class="list-group list-group-numbered mb-4">
-                <li class="list-group-item">
-                  <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
-                  Enter a street name or use your location.
-                </li>
-                <li class="list-group-item">
-                  <i class="bi bi-pin-map-fill me-2 text-primary"></i>
-                  Pinpoint the problem on the map.
-                </li>
-                <li class="list-group-item">
-                  <i class="bi bi-camera me-2 text-primary"></i>
-                  Describe the issue and add a photo (optional).
-                </li>
-                <li class="list-group-item">
-                  <i class="bi bi-send-fill me-2 text-primary"></i>
-                  We forward it to the responsible team.
-                </li>
-              </ol>
-              <div class="d-flex justify-content-between pt-3 border-top">
-                <div class="text-center">
-                  <i class="bi bi-calendar-week fs-3 mb-1 text-primary"></i>
-                  <div class="stats-number" id="weekReports">—</div>
-                  <small>Reports this week</small>
-                </div>
-                <div class="text-center">
-                  <i class="bi bi-check2-circle fs-3 mb-1 text-success"></i>
-                  <div class="stats-number" id="monthFixed">—</div>
-                  <small>Fixed this month</small>
-                </div>
-                <div class="text-center">
-                  <i class="bi bi-bar-chart-line fs-3 mb-1 text-info"></i>
-                  <div class="stats-number" id="totalUpdates">—</div>
-                  <small>Total reports</small>
-                </div>
+          <!-- Search Box -->
+          <div class="search-box" role="search">
+            <label for="main-search" class="sr-only">Search reports, locations, or issues</label>
+            <div class="relative">
+              <i class="bi bi-search search-icon" aria-hidden="true"></i>
+              <input type="text" id="main-search" class="search-input"
+                placeholder="Search reports, locations, or issues..." aria-label="Search reports">
+            </div>
+          </div>
+
+          <!-- Filter Buttons -->
+          <div class="filter-group" role="group" aria-label="Report categories">
+            <button class="filter-btn active" data-category="all">All Reports</button>
+            <button class="filter-btn" data-category="traffic">Traffic Issues</button>
+            <button class="filter-btn" data-category="water">Water Leaks</button>
+            <button class="filter-btn" data-category="lighting">Street Lighting</button>
+            <button class="filter-btn" data-category="road">Road Damage</button>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex justify-center gap-4 mt-8">
+            {% if user %}
+            <a href="{{ url_for('reports.report_issue') }}" class="btn btn-primary btn-lg">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              Report New Issue
+            </a>
+            <a href="{{ url_for('reports.public_reports') }}" class="btn btn-outline btn-lg">
+              <i class="bi bi-map" aria-hidden="true"></i>
+              View All Reports
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.root') }}" class="btn btn-primary btn-lg">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              Get Started
+            </a>
+            <a href="{{ url_for('reports.public_reports') }}" class="btn btn-outline btn-lg">
+              <i class="bi bi-map" aria-hidden="true"></i>
+              Explore Reports
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section" aria-labelledby="stats-heading">
+      <div class="container">
+        <h2 id="stats-heading" class="sr-only">Platform Statistics</h2>
+        <div class="grid grid-cols-4 gap-6">
+          <div class="stat-card scale-in hover-lift" style="animation-delay: 0s">
+            <div class="flex items-center justify-center w-12 h-12 bg-primary-100 rounded-xl mb-4 mx-auto">
+              <i class="bi bi-calendar-week text-primary-600 text-xl" aria-hidden="true"></i>
+            </div>
+            <span class="stat-number" id="weekReports" aria-live="polite">—</span>
+            <span class="stat-label">Reports This Week</span>
+          </div>
+
+          <div class="stat-card scale-in hover-lift" style="animation-delay: 0.1s">
+            <div class="flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-xl mb-4 mx-auto">
+              <i class="bi bi-check2-circle text-emerald-600 text-xl" aria-hidden="true"></i>
+            </div>
+            <span class="stat-number" id="monthFixed" aria-live="polite">—</span>
+            <span class="stat-label">Fixed This Month</span>
+          </div>
+
+          <div class="stat-card scale-in hover-lift" style="animation-delay: 0.2s">
+            <div class="flex items-center justify-center w-12 h-12 bg-orange-100 rounded-xl mb-4 mx-auto">
+              <i class="bi bi-hourglass-split text-orange-600 text-xl" aria-hidden="true"></i>
+            </div>
+            <span class="stat-number" id="inProgress" aria-live="polite">—</span>
+            <span class="stat-label">In Progress</span>
+          </div>
+
+          <div class="stat-card scale-in hover-lift" style="animation-delay: 0.3s">
+            <div class="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-xl mb-4 mx-auto">
+              <i class="bi bi-bar-chart-line text-blue-600 text-xl" aria-hidden="true"></i>
+            </div>
+            <span class="stat-number" id="totalReports" aria-live="polite">—</span>
+            <span class="stat-label">Total Reports</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Reports Section -->
+    <section class="section" aria-labelledby="recent-heading">
+      <div class="container">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 id="recent-heading" class="text-3xl font-bold mb-2">Recent Reports</h2>
+            <p class="text-secondary">Latest infrastructure issues reported by the community</p>
+          </div>
+          <a href="{{ url_for('reports.public_reports') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            View All Reports
+          </a>
+        </div>
+
+        <!-- Reports Grid -->
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Recent Reports Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="text-lg font-semibold mb-0">Latest Issues</h3>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table" role="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Issue</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentReports" aria-live="polite">
+                    <!-- Dynamic content will be loaded here -->
+                    <tr>
+                      <td colspan="3" class="text-center py-8 text-muted">
+                        <div class="loading-container">
+                          <div class="loading-spinner" aria-hidden="true"></div>
+                          Loading recent reports...
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="card recent-card h-100 p-4">
-            <h5 class="card-title mb-3">Recent reports</h5>
-            <table class="table mb-0 align-middle">
-              <thead class="text-uppercase small text-muted">
-                <tr>
-                  <th>Notification</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="recentReports"></tbody>
-            </table>
-            <a href="{{ url_for('reports.public_reports') }}" class="link-secondary small float-end mt-2">View all →</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- DONE REPORTS -->
-  <div class="section-fluid py-4">
-    <div class="container">
-      <h5 class="mb-3">Done reports</h5>
-      <ul id="doneReports" class="list-group list-group-flush recent-list small"></ul>
-    </div>
-  </div>
-
-  <!-- INFO CARDS -->
-  <div class="section-fluid bg-white py-5">
-    <div class="container">
-      <div class="row g-4">
-        <div class="col-md-4">
-          <div class="card h-100 border-warning text-center">
-            <div class="card-body">
-              <i class="bi bi-person-fill fs-1 mb-2 text-warning"></i>
-              <h5 class="card-title">For Citizens</h5>
-              <p class="small">See what happens after you submit a report.</p>
-              <a href="/about#citizens" class="btn btn-outline-warning btn-sm">Learn more</a>
+          <!-- Quick Actions Card -->
+          <div class="card card-gradient">
+            <div class="card-header">
+              <h3 class="text-lg font-semibold mb-0">Quick Actions</h3>
             </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card h-100 border-info text-center">
-            <div class="card-body">
-              <i class="bi bi-building fs-1 mb-2 text-info"></i>
-              <h5 class="card-title">For Municipality</h5>
-              <p class="small">See what happens after you submit a report.</p>
-              <a href="/about#municipality" class="btn btn-outline-info btn-sm">Learn more</a>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card h-100 border-secondary text-center">
-            <div class="card-body">
-              <i class="bi bi-tools fs-1 mb-2 text-secondary"></i>
-              <h5 class="card-title">For repairer</h5>
-              <p class="small">See what happens after you submit a report.</p>
-              <a href="/about#repairer" class="btn btn-outline-secondary btn-sm">Learn more</a>
+            <div class="card-body space-y-4">
+              {% if user %}
+              <a href="{{ url_for('reports.report_issue') }}" class="btn btn-primary w-full">
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                Report New Issue
+              </a>
+              <a href="{{ url_for('reports.my_reports') }}" class="btn btn-secondary w-full">
+                <i class="bi bi-journal-text" aria-hidden="true"></i>
+                My Reports
+              </a>
+              <a href="{{ url_for('auth.dashboard') }}" class="btn btn-outline-primary w-full">
+                <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                Dashboard
+              </a>
+              {% else %}
+              <a href="{{ url_for('auth.root') }}" class="btn btn-primary w-full">
+                <i class="bi bi-person-plus" aria-hidden="true"></i>
+                Create Account
+              </a>
+              <a href="{{ url_for('auth.root') }}" class="btn btn-secondary w-full">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                Sign In
+              </a>
+              <a href="{{ url_for('reports.public_reports') }}" class="btn btn-outline-primary w-full">
+                <i class="bi bi-map" aria-hidden="true"></i>
+                Browse Reports
+              </a>
+              {% endif %}
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- MAP SECTION -->
-  <div class="section-fluid py-0">
-    <div class="container-fluid px-0">
-      <div id="map"></div>
-    </div>
-  </div>
+    <!-- How It Works Section -->
+    <section class="section bg-secondary" aria-labelledby="howto-heading">
+      <div class="container">
+        <div class="text-center mb-12">
+          <h2 id="howto-heading" class="text-3xl font-bold mb-4">How CityFix Works</h2>
+          <p class="text-secondary text-xl max-w-3xl mx-auto text-balance">
+            Our streamlined process makes it easy for citizens to report issues
+            and for authorities to track and resolve them efficiently.
+          </p>
+        </div>
 
-  <!-- FOOTER -->
-  <footer class="mt-auto border-top py-3 text-center small text-muted bg-white">
-    © {{ year }} InfraReport Team.
+        <div class="grid grid-cols-3 gap-8">
+          <!-- Step 1 -->
+          <div class="card card-gradient text-center hover-lift">
+            <div class="card-body">
+              <div class="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="bi bi-geo-alt text-white text-2xl" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">1. Report Issue</h3>
+              <p class="text-secondary">
+                Easily report infrastructure problems with photos, precise location,
+                and detailed descriptions using our intuitive interface.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="card card-gradient text-center hover-lift">
+            <div class="card-body">
+              <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="bi bi-people text-white text-2xl" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">2. Track Progress</h3>
+              <p class="text-secondary">
+                Monitor the status of your reports in real-time and receive
+                automatic updates as they move through the resolution process.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="card card-gradient text-center hover-lift">
+            <div class="card-body">
+              <div class="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="bi bi-check-circle text-white text-2xl" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">3. Get Results</h3>
+              <p class="text-secondary">
+                See your reports resolved quickly and efficiently by our
+                dedicated maintenance teams with before/after documentation.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Map Section -->
+    <section class="section" aria-labelledby="map-heading">
+      <div class="container">
+        <div class="text-center mb-8">
+          <h2 id="map-heading" class="text-3xl font-bold mb-4">Live Issue Map</h2>
+          <p class="text-secondary text-lg">
+            Explore reported issues in your area and see real-time status updates
+          </p>
+        </div>
+
+        <div class="map-container" style="height: 500px;">
+          <div id="mainMap" style="height: 100%; width: 100%;" role="application"
+            aria-label="Interactive map showing reported issues">
+          </div>
+          <div class="map-overlay">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            Click markers to view issue details
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section bg-secondary" aria-labelledby="features-heading">
+      <div class="container">
+        <div class="text-center mb-12">
+          <h2 id="features-heading" class="text-3xl font-bold mb-4">Who Benefits from CityFix</h2>
+          <p class="text-secondary text-lg max-w-2xl mx-auto">
+            Our platform serves everyone in the community ecosystem
+          </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-8">
+          <!-- Citizens -->
+          <div class="card hover-lift">
+            <div class="card-body text-center">
+              <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="bi bi-people-fill text-blue-600 text-3xl" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-4">For Citizens</h3>
+              <ul class="text-left text-secondary space-y-2 mb-6">
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Easy issue reporting with photos</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Real-time status tracking</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Automatic notifications</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Community engagement</span>
+                </li>
+              </ul>
+              <a href="{{ url_for('main.about') }}#citizens" class="btn btn-outline-primary">
+                Learn More
+              </a>
+            </div>
+          </div>
+
+          <!-- Municipality -->
+          <div class="card hover-lift">
+            <div class="card-body text-center">
+              <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="bi bi-building text-emerald-600 text-3xl" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-4">For Municipality</h3>
+              <ul class="text-left text-secondary space-y-2 mb-6">
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Centralized issue management</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Priority-based assignment</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Performance analytics</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Resource optimization</span>
+                </li>
+              </ul>
+              <a href="{{ url_for('main.about') }}#municipality" class="btn btn-outline-primary">
+                Learn More
+              </a>
+            </div>
+          </div>
+
+          <!-- Maintenance -->
+          <div class="card hover-lift">
+            <div class="card-body text-center">
+              <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="bi bi-tools text-orange-600 text-3xl" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-4">For Maintenance</h3>
+              <ul class="text-left text-secondary space-y-2 mb-6">
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Clear work assignments</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Detailed issue information</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Progress documentation</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-emerald-500 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span>Mobile-friendly interface</span>
+                </li>
+              </ul>
+              <a href="{{ url_for('main.about') }}#maintenance" class="btn btn-outline-primary">
+                Learn More
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section" aria-labelledby="cta-heading">
+      <div class="container">
+        <div class="card card-gradient text-center">
+          <div class="card-body py-12">
+            <h2 id="cta-heading" class="text-4xl font-bold mb-4 text-gradient">
+              Ready to Make a Difference?
+            </h2>
+            <p class="text-xl text-secondary mb-8 max-w-2xl mx-auto">
+              Join thousands of citizens already using CityFix to make their communities better,
+              safer, and more livable.
+            </p>
+
+            <div class="flex justify-center gap-4">
+              {% if not user %}
+              <a href="{{ url_for('auth.root') }}" class="btn btn-primary btn-xl">
+                <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
+                Get Started Free
+              </a>
+              <a href="{{ url_for('reports.public_reports') }}" class="btn btn-outline btn-xl">
+                <i class="bi bi-binoculars" aria-hidden="true"></i>
+                Explore Platform
+              </a>
+              {% else %}
+              <a href="{{ url_for('reports.report_issue') }}" class="btn btn-primary btn-xl">
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                Report Your First Issue
+              </a>
+              <a href="{{ url_for('auth.dashboard') }}" class="btn btn-outline btn-xl">
+                <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                Go to Dashboard
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-12" role="contentinfo">
+    <div class="container">
+      <div class="grid grid-cols-4 gap-8 mb-8">
+        <!-- Brand Column -->
+        <div class="col-span-1">
+          <div class="flex items-center gap-3 mb-6">
+            <h4 class="font-semibold mb-4">CityFix</h4>
+          </div>
+          <p class="text-gray-400 mb-6">
+            Making cities better, one report at a time. Join thousands of citizens
+            working together to improve infrastructure and community safety.
+          </p>
+          <!-- Social Links -->
+          <div class="flex gap-4">
+            <a href="#"
+              class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary-500 transition-colors"
+              aria-label="Follow us on Twitter">
+              <i class="bi bi-twitter" aria-hidden="true"></i>
+            </a>
+            <a href="#"
+              class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary-500 transition-colors"
+              aria-label="Follow us on Facebook">
+              <i class="bi bi-facebook" aria-hidden="true"></i>
+            </a>
+            <a href="https://github.com/IslamMhareeq"
+              class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-primary-500 transition-colors"
+              aria-label="View our GitHub repository">
+              <i class="bi bi-github" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="font-semibold mb-4">Quick Links</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="{{ url_for('reports.report_issue') }}" class="hover:text-white transition-colors">Report
+                Issue</a></li>
+            <li><a href="{{ url_for('reports.public_reports') }}" class="hover:text-white transition-colors">View
+                Reports</a></li>
+            <li><a href="{{ url_for('auth.dashboard') }}" class="hover:text-white transition-colors">Dashboard</a></li>
+            <li><a href="{{ url_for('main.profile') }}" class="hover:text-white transition-colors">Profile</a></li>
+          </ul>
+        </div>
+
+        <!-- Support -->
+        <div>
+          <h4 class="font-semibold mb-4">Support</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="#" class="hover:text-white transition-colors">Help Center</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <!-- Legal -->
+        <div>
+          <h4 class="font-semibold mb-4">Legal</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="{{ url_for('main.about') }}" class="hover:text-white transition-colors">About Us</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Copyright -->
+      <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+        <p>&copy; {{ year }} CityFix. All rights reserved. Built with ❤️ for better cities.</p>
+      </div>
+    </div>
   </footer>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const DETAIL_BASE = "{{ url_for('reports.report_detail', issue_id='') }}",
-      DONE_UPLOAD_URL = "{{ url_for('done_reports.serve_done_upload', file_id='') }}";
-    (function () {
-      const recentTbody = document.getElementById('recentReports'),
-        doneList = document.getElementById('doneReports'),
-        weekEl = document.getElementById('weekReports'),
-        monthEl = document.getElementById('monthFixed'),
-        totalEl = document.getElementById('totalUpdates'),
-        mapEl = document.getElementById('map');
+    // Global constants for API endpoints
+    const API = {
+      ISSUES: '/api/issues',
+      DONE_REPORTS: '/api/done_reports'
+    };
 
-      const map = L.map(mapEl);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function () {
+      initializeNavigation();
+      initializeMap();
+      loadStatistics();
+      loadRecentReports();
+      initializeSearch();
+      initializeAnimations();
+    });
 
-      const cleanDate = iso => new Date(iso.includes('.') ? iso.split('.')[0] : iso).getTime();
+    // Navigation functionality
+    function initializeNavigation() {
+      const navToggler = document.querySelector('.navbar-toggler');
+      const navMenu = document.querySelector('.navbar-nav');
 
-      fetch('/api/issues').then(r => r.json()).then(({ issues }) => {
-        issues.sort((a, b) => cleanDate(b.timestamp) - cleanDate(a.timestamp));
-        const now = Date.now();
-        weekEl.textContent = issues.filter(i => now - cleanDate(i.timestamp) < 7 * 864e5).length;
-        monthEl.textContent = issues.filter(i => i.status === 'done' && now - cleanDate(i.timestamp) < 30 * 864e5).length;
-        totalEl.textContent = issues.length.toLocaleString();
-
-        issues.slice(0, 6).forEach(i => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td><i class="bi bi-clock me-1"></i>${i.description.slice(0, 30)}…<br><small class="text-muted">${i.timestamp.slice(0, 10)}</small></td>
-            <td><span class="badge bg-${statusColor(i.status)} text-capitalize">${i.status || 'pending'}</span></td>
-            <td><a href="${DETAIL_BASE}${i._id}" class="small text-decoration-none">SHOW DETAILS</a></td>
-          `;
-          recentTbody.appendChild(tr);
-          if (i.location) L.marker([i.location.lat, i.location.lng]).addTo(map).bindPopup(i.description);
+      if (navToggler && navMenu) {
+        navToggler.addEventListener('click', function () {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          this.setAttribute('aria-expanded', !isExpanded);
+          this.classList.toggle('active');
+          navMenu.classList.toggle('show');
         });
-        const coords = issues.filter(i => i.location).map(i => [i.location.lat, i.location.lng]);
-        coords.length ? map.fitBounds(L.latLngBounds(coords).pad(0.2)) : map.setView([31.95, 35.93], 7);
-      }).catch(console.error);
+      }
 
-      fetch('/api/done_reports').then(r => r.json()).then(({ done_reports }) => {
-        if (!done_reports.length) {
-          const li = document.createElement('li');
-          li.className = 'list-group-item text-center text-muted py-3';
-          li.textContent = 'No completed reports yet.';
-          doneList.appendChild(li);
-          return;
+      // Close mobile menu when clicking outside
+      document.addEventListener('click', function (e) {
+        if (!navToggler?.contains(e.target) && !navMenu?.contains(e.target)) {
+          navToggler?.classList.remove('active');
+          navMenu?.classList.remove('show');
+          navToggler?.setAttribute('aria-expanded', 'false');
         }
-        done_reports.slice(0, 6).forEach(dr => {
-          const li = document.createElement('li');
-          li.className = 'list-group-item d-flex align-items-center py-3';
-          li.innerHTML = `
-            ${dr.before_file_id ? `<img src="${DONE_UPLOAD_URL}${dr.before_file_id}" class="thumb me-3" alt="Before">` : ''}
-            ${dr.after_file_id ? `<img src="${DONE_UPLOAD_URL}${dr.after_file_id}"  class="thumb me-3" alt="After">` : ''}
-            <div class="ms-3">
-              <p class="mb-1">${dr.completion_description}</p>
-              <small class="text-muted">${dr.timestamp.slice(0, 10)} • ${dr.timestamp.slice(11, 19)}</small>
-            </div>
-            <span class="badge bg-success ms-auto">Done</span>
-          `;
-          doneList.appendChild(li);
-        });
-      }).catch(console.error);
+      });
+    }
 
-      function statusColor(st) {
-        switch ((st || '').toLowerCase()) {
-          case 'done': return 'success';
-          case 'in progress': return 'info';
-          case 'assigned': return 'warning';
-          case 'pending': return 'warning';
-          case 'rejected': return 'danger';
-          default: return 'secondary';
+    // Initialize the main map with proper image sizing
+    function initializeMap() {
+      const mapElement = document.getElementById('mainMap');
+      if (!mapElement) return;
+
+      // Create map centered on Jerusalem (default location)
+      const map = L.map('mainMap').setView([31.7683, 35.2137], 10);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+      }).addTo(map);
+
+      // Load and display issue markers
+      fetch(API.ISSUES)
+        .then(response => response.json())
+        .then(data => {
+          const issues = data.issues || [];
+          const bounds = [];
+
+          issues.forEach(issue => {
+            if (issue.location && issue.location.lat && issue.location.lng) {
+              const marker = L.marker([issue.location.lat, issue.location.lng])
+                .addTo(map);
+
+              const statusClass = getStatusClass(issue.status);
+              const statusIcon = getStatusIcon(issue.status);
+
+              // Properly sized popup image
+              const imageSection = issue.image_file_id ?
+                `<img src="/uploads/${issue.image_file_id}" 
+                     alt="Issue image" 
+                     class="popup-image"
+                     onerror="this.style.display='none';">` : '';
+
+              marker.bindPopup(`
+                <div style="padding: 12px; max-width: 200px;">
+                    ${imageSection}
+                    <h3 style="font-weight: 600; margin-bottom: 8px; font-size: 14px; line-height: 1.3;">${escapeHtml(issue.description.substring(0, 50))}${issue.description.length > 50 ? '...' : ''}</h3>
+                    <div style="margin-bottom: 8px;">
+                        <span class="badge badge-${statusClass}" style="font-size: 11px;">
+                            <i class="bi bi-${statusIcon}" aria-hidden="true"></i>
+                            ${issue.status || 'pending'}
+                        </span>
+                    </div>
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">${escapeHtml(issue.city_street || 'Location not specified')}</p>
+                    <a href="/report/${issue._id}" style="display: block; width: 100%; padding: 6px 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; text-align: center; font-weight: 500;">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                        View Details
+                    </a>
+                </div>
+              `);
+
+              bounds.push([issue.location.lat, issue.location.lng]);
+            }
+          });
+
+          // Fit map to show all markers
+          if (bounds.length > 0) {
+            map.fitBounds(L.latLngBounds(bounds).pad(0.1));
+          }
+        })
+        .catch(error => {
+          console.error('Error loading map data:', error);
+        });
+    }
+
+    // Load and display statistics
+    function loadStatistics() {
+      fetch(API.ISSUES)
+        .then(response => response.json())
+        .then(data => {
+          const issues = data.issues || [];
+          const now = new Date();
+          const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+          // Calculate statistics
+          const weekReports = issues.filter(issue => {
+            const issueDate = new Date(issue.timestamp);
+            return issueDate >= oneWeekAgo;
+          }).length;
+
+          const monthFixed = issues.filter(issue => {
+            const issueDate = new Date(issue.timestamp);
+            return issueDate >= oneMonthAgo &&
+              (issue.status === 'done' || issue.status === 'completed');
+          }).length;
+
+          const inProgress = issues.filter(issue =>
+            issue.status === 'in progress' || issue.status === 'assigned'
+          ).length;
+
+          // Update DOM elements with animation
+          animateNumber('weekReports', weekReports);
+          animateNumber('monthFixed', monthFixed);
+          animateNumber('inProgress', inProgress);
+          animateNumber('totalReports', issues.length);
+        })
+        .catch(error => {
+          console.error('Error loading statistics:', error);
+        });
+    }
+
+    // Load recent reports with proper image sizing
+    function loadRecentReports() {
+      fetch(API.ISSUES)
+        .then(response => response.json())
+        .then(data => {
+          const issues = data.issues || [];
+          const recentIssues = issues
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 5);
+
+          const tbody = document.getElementById('recentReports');
+          if (!tbody) return;
+
+          if (recentIssues.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="3" class="text-center py-8 text-muted">
+                  <div class="loading-container">
+                    <i class="bi bi-inbox" style="font-size: 24px; margin-bottom: 8px; opacity: 0.3;"></i>
+                    <div>No reports found</div>
+                  </div>
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          tbody.innerHTML = recentIssues.map(issue => {
+            const date = new Date(issue.timestamp);
+            const statusClass = getStatusClass(issue.status);
+            const statusIcon = getStatusIcon(issue.status);
+
+            // Properly sized thumbnail with error handling
+            const imageHtml = issue.image_file_id ?
+              `<img src="/uploads/${issue.image_file_id}" 
+                   alt="Issue thumbnail"
+                   class="report-thumbnail"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+               <div class="report-placeholder" style="display: none;">
+                 <i class="bi bi-image"></i>
+               </div>` :
+              `<div class="report-placeholder">
+                 <i class="bi bi-image"></i>
+               </div>`;
+
+            return `
+              <tr>
+                <td class="reports-table-cell">
+                  <div class="report-info-container">
+                    ${imageHtml}
+                    <div class="report-text-content">
+                      <div class="report-title-text">
+                        ${escapeHtml(issue.description.substring(0, 45))}${issue.description.length > 45 ? '...' : ''}
+                      </div>
+                      <div class="report-location-text">
+                        ${escapeHtml(issue.city_street || 'Location not specified')}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="reports-table-cell">
+                  <span class="status-badge badge-${statusClass}">
+                    <i class="bi bi-${statusIcon}" aria-hidden="true"></i>
+                    ${issue.status || 'pending'}
+                  </span>
+                </td>
+                <td class="reports-table-cell" style="font-size: 12px; color: #6b7280;">
+                  ${formatRelativeTime(date)}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        })
+        .catch(error => {
+          console.error('Error loading recent reports:', error);
+          const tbody = document.getElementById('recentReports');
+          if (tbody) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="3" class="text-center py-8" style="color: #dc2626;">
+                  <div class="loading-container">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px;"></i>
+                    <div>Error loading reports</div>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }
+        });
+    }
+
+    // Initialize search functionality
+    function initializeSearch() {
+      const searchInput = document.getElementById('main-search');
+      const filterButtons = document.querySelectorAll('.filter-btn');
+
+      if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function () {
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            performSearch(this.value);
+          }, 300);
+        });
+      }
+
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+
+          const category = this.dataset.category;
+          filterReports(category);
+        });
+      });
+    }
+
+    // Initialize animations and intersection observer
+    function initializeAnimations() {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('fade-in');
+          }
+        });
+      }, observerOptions);
+
+      // Observe all animatable elements
+      document.querySelectorAll('.card, .stat-card, section').forEach(el => {
+        observer.observe(el);
+      });
+    }
+
+    // Utility Functions
+    function animateNumber(elementId, targetNumber) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+
+      const startNumber = 0;
+      const duration = 1000; // 1 second
+      const startTime = performance.now();
+
+      function updateNumber(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function for smooth animation
+        const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+
+        const currentNumber = Math.round(startNumber + (targetNumber - startNumber) * easeOutCubic);
+        element.textContent = currentNumber.toLocaleString();
+
+        if (progress < 1) {
+          requestAnimationFrame(updateNumber);
         }
       }
-    })();
+
+      requestAnimationFrame(updateNumber);
+    }
+
+    function getStatusClass(status) {
+      switch ((status || '').toLowerCase()) {
+        case 'done':
+        case 'completed':
+          return 'success';
+        case 'in progress':
+        case 'assigned':
+          return 'warning';
+        case 'pending':
+          return 'secondary';
+        case 'rejected':
+          return 'danger';
+        default:
+          return 'secondary';
+      }
+    }
+
+    function getStatusIcon(status) {
+      switch ((status || '').toLowerCase()) {
+        case 'done':
+        case 'completed':
+          return 'check-circle-fill';
+        case 'in progress':
+          return 'hourglass-split';
+        case 'assigned':
+          return 'person-check';
+        case 'pending':
+          return 'clock';
+        case 'rejected':
+          return 'x-circle';
+        default:
+          return 'clock';
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatRelativeTime(date) {
+      const now = new Date();
+      const diffInSeconds = Math.floor((now - date) / 1000);
+
+      if (diffInSeconds < 60) {
+        return 'Just now';
+      } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes}m ago`;
+      } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours}h ago`;
+      } else {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days}d ago`;
+      }
+    }
+
+    function performSearch(query) {
+      // Implementation for search functionality
+      console.log('Searching for:', query);
+    }
+
+    function filterReports(category) {
+      // Implementation for filtering functionality
+      console.log('Filtering by category:', category);
+    }
+
+    // Handle keyboard navigation
+    document.addEventListener('keydown', function (e) {
+      // Escape key to close mobile menu
+      if (e.key === 'Escape') {
+        const navToggler = document.querySelector('.navbar-toggler');
+        const navMenu = document.querySelector('.navbar-nav');
+
+        if (navMenu && navMenu.classList.contains('show')) {
+          navToggler?.classList.remove('active');
+          navMenu.classList.remove('show');
+          navToggler?.setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
   </script>
 </body>
 

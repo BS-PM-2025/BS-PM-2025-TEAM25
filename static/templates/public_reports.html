@@ -3,336 +3,571 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
   <title>CityFix – All Reports</title>
+  <meta name="description" content="Browse all public infrastructure reports in your community on CityFix.">
 
-  <!-- Bootstrap & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <style>
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-    }
-
-    .hidden-select {
-      position: absolute;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      cursor: pointer;
-    }
-
-    .d-flex-full {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .main-content {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-
-    .navbar {
-      background-color: #fff !important;
-    }
-
-    .navbar-brand {
-      color: #0ef !important;
-      font-weight: bold;
-    }
-
-    .navbar .nav-link {
-      color: #000 !important;
-    }
-
-    .navbar .nav-link:hover {
-      color: #0ef !important;
-    }
-
-    .sidebar {
-      width: 360px;
-      background: #fff;
-      border-right: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .filter-section {
-      padding: 1rem;
-    }
-
-    .filter-item {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: .75rem 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .filter-item .label {
-      display: flex;
-      align-items: center;
-      font-size: .95rem;
-      color: #333;
-    }
-
-    .filter-item .label i {
-      font-size: 1.2rem;
-      margin-right: .5rem;
-      color: #555;
-    }
-
-    .filter-item .value {
-      font-weight: 600;
-    }
-
-    .filter-item .chevron {
-      color: #888;
-    }
-
-    .apply-btn {
-      margin: 1rem;
-      width: calc(100% - 2rem);
-    }
-
-    #reportList {
-      flex: 1;
-      overflow-y: auto;
-      background: #f9f9f9;
-      padding: 1rem;
-    }
-
-    .report-card {
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: .5rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      cursor: pointer;
-    }
-
-    .report-card .card-body {
-      display: flex;
-      align-items: center;
-      padding: 1rem;
-    }
-
-    .report-thumb {
-      width: 60px;
-      height: 40px;
-      object-fit: cover;
-      border-radius: .25rem;
-      margin-right: 1rem;
-    }
-
-    .report-card i.category-icon {
-      font-size: 1.5rem;
-      margin-right: 1rem;
-      color: #28a745;
-    }
-
-    .report-info {
-      flex: 1;
-    }
-
-    .report-info .title {
-      font-weight: 600;
-      margin-bottom: .25rem;
-    }
-
-    .report-info .time {
-      font-size: .8rem;
-      color: #666;
-    }
-
-    .badge-status {
-      text-transform: uppercase;
-      font-size: .75rem;
-    }
-
-    #publicMap {
-      flex: 1;
-    }
-  </style>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/public_reports.css') }}">
 </head>
 
-<body class="d-flex-full">
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
-          class="d-inline-block align-text-top">
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.my_reports') }}">My Reports</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}">Report Issue</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">Profile</a></li>
-        </ul>
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+<body>
+   <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+        <ul class="navbar-nav">
+          {% if user %}
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}" class="nav-link">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a href="{{ url_for('main.about') }}" class="nav-link">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <span>About</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="nav-link">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              <span>Sign Up</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+              <span>Login</span>
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- pass URLs into JS -->
-  <script>
-    const STATIC_URL = "{{ url_for('static', filename='') }}";
-    const UPLOAD_URL = "{{ url_for('reports.serve_upload', file_id='') }}";
-  </script>
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      {% if user %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-person-plus"></i>
+          <span>Join</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.about') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-info-circle"></i>
+          <span>About</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
+          <span>Login</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
 
-  <!-- Main content -->
-  <div class="main-content">
-    <aside class="sidebar">
-      <div class="filter-section">
-        <div class="filter-item">
-          <span class="label"><i class="bi bi-exclamation-circle"></i>Report Status</span>
-          <span><span id="statusValue" class="value">Everything</span> <i
-              class="bi bi-chevron-right chevron"></i></span>
-          <select id="statusFilter" class="hidden-select">
-            <option value="">Everything</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="in progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-          </select>
+  <!-- Reports Hero -->
+  <section class="reports-hero">
+    <div class="container">
+      <div class="reports-content">
+        <h1 class="reports-title">Community Reports</h1>
+        <p class="reports-subtitle">
+          Explore all infrastructure reports submitted by community members.
+          See what's happening in your neighborhood and track progress.
+        </p>
+
+        <div class="reports-stats">
+          <div class="reports-stat">
+            <span class="reports-stat-number" id="total-count">-</span>
+            <span class="reports-stat-label">Total Reports</span>
+          </div>
+          <div class="reports-stat">
+            <span class="reports-stat-number" id="resolved-count">-</span>
+            <span class="reports-stat-label">Resolved</span>
+          </div>
+          <div class="reports-stat">
+            <span class="reports-stat-number" id="progress-count">-</span>
+            <span class="reports-stat-label">In Progress</span>
+          </div>
         </div>
-        <div class="filter-item">
-          <span class="label"><i class="bi bi-folder"></i>Category</span>
-          <span><span id="categoryValue" class="value">Everything</span> <i
-              class="bi bi-chevron-right chevron"></i></span>
-          <select id="categoryFilter" class="hidden-select">
-            <option value="">Everything</option>
-            {% for cat in categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="filter-item">
-          <span class="label"><i class="bi bi-filter"></i>Sort By</span>
-          <span><span id="sortValue" class="value">Newest</span> <i class="bi bi-chevron-right chevron"></i></span>
-          <select id="sortBy" class="hidden-select">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-          </select>
-        </div>
-        <button class="btn btn-outline-dark apply-btn" onclick="applyFilters()">Apply filter</button>
       </div>
-      <div id="reportList"></div>
-    </aside>
+    </div>
+  </section>
 
-    <div id="publicMap"></div>
-  </div>
+  <!-- Main Content -->
+  <main class="container">
+    <div class="main-content">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="filter-section">
+          <h2 class="filter-title">
+            <i class="bi bi-funnel" aria-hidden="true"></i>
+            Filter Reports
+          </h2>
+          
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+              Report Status
+            </label>
+            <div class="filter-control">
+              <i class="bi bi-clock filter-icon" aria-hidden="true"></i>
+              <select id="statusFilter" class="filter-select">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="in progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              <i class="bi bi-chevron-down filter-chevron" aria-hidden="true"></i>
+            </div>
+          </div>
 
-  <!-- libs -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="bi bi-folder" aria-hidden="true"></i>
+              Category
+            </label>
+            <div class="filter-control">
+              <i class="bi bi-tag filter-icon" aria-hidden="true"></i>
+              <select id="categoryFilter" class="filter-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat.replace('_', ' ').title() }}</option>
+                {% endfor %}
+              </select>
+              <i class="bi bi-chevron-down filter-chevron" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="bi bi-sort-down" aria-hidden="true"></i>
+              Sort By
+            </label>
+            <div class="filter-control">
+              <i class="bi bi-sort-down filter-icon" aria-hidden="true"></i>
+              <select id="sortBy" class="filter-select">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="status">By Status</option>
+              </select>
+              <i class="bi bi-chevron-down filter-chevron" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <button class="apply-btn" onclick="applyFilters()">
+            <i class="bi bi-check-circle" aria-hidden="true"></i>
+            Apply Filters
+          </button>
+        </div>
+
+        <div class="reports-list">
+          <div class="reports-count" id="reports-count">Loading reports...</div>
+          <div id="reportList">
+            <div class="loading-state">
+              <div class="loading-spinner"></div>
+              Loading reports...
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Map Section -->
+      <section class="map-section">
+        <div class="map-header">
+          <h2 class="map-title">
+            <i class="bi bi-map" aria-hidden="true"></i>
+            Interactive Map
+          </h2>
+          <p class="map-subtitle">Click on markers to view report details</p>
+        </div>
+        <div class="map-container">
+          <div class="map-overlay">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            Click markers for details
+          </div>
+          <div id="publicMap" style="height: 100%; width: 100%;"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    (function () {
-      const statusFilter = document.getElementById('statusFilter'),
-        categoryFilter = document.getElementById('categoryFilter'),
-        sortBy = document.getElementById('sortBy'),
-        statusValue = document.getElementById('statusValue'),
-        categoryValue = document.getElementById('categoryValue'),
-        sortValue = document.getElementById('sortValue'),
-        reportList = document.getElementById('reportList');
-      let allReports = [];
+    // Global variables
+    const STATIC_URL = "{{ url_for('static', filename='') }}";
+    const UPLOAD_URL = "{{ url_for('reports.serve_upload', file_id='') }}";
+    
+    let map;
+    let allReports = [];
+    let filteredReports = [];
+    let currentMarkers = [];
 
-      // init map
-      const map = L.map('publicMap');
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeMap();
+      loadReports();
+      initializeAnimations();
+    });
 
-      // fetch data
+    function initializeMap() {
+      // Create map centered on Jerusalem (default location)
+      map = L.map('publicMap').setView([31.7683, 35.2137], 10);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map);
+
+      // Ensure map renders properly
+      setTimeout(() => map.invalidateSize(), 200);
+    }
+
+    function loadReports() {
       fetch('/api/issues')
-        .then(r => r.json())
-        .then(({ issues }) => {
-          allReports = issues.map(i => ({ ...i, timestamp: new Date(i.timestamp) }));
-          render();
+        .then(response => response.json())
+        .then(data => {
+          allReports = data.issues.map(issue => ({
+            ...issue,
+            timestamp: new Date(issue.timestamp)
+          }));
+          
+          filteredReports = [...allReports];
+          updateStats();
+          renderReports();
+          renderMapMarkers();
+        })
+        .catch(error => {
+          console.error('Error loading reports:', error);
+          document.getElementById('reportList').innerHTML = `
+            <div class="empty-state">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <h3>Error Loading Reports</h3>
+              <p>Unable to load reports. Please try again later.</p>
+            </div>
+          `;
         });
+    }
 
-      window.applyFilters = function () {
-        statusValue.textContent = statusFilter.options[statusFilter.selectedIndex].text;
-        categoryValue.textContent = categoryFilter.options[categoryFilter.selectedIndex].text;
-        sortValue.textContent = sortBy.options[sortBy.selectedIndex].text;
-        render();
+    function updateStats() {
+      document.getElementById('total-count').textContent = allReports.length;
+      document.getElementById('resolved-count').textContent = 
+        allReports.filter(r => r.status === 'resolved' || r.status === 'done').length;
+      document.getElementById('progress-count').textContent = 
+        allReports.filter(r => r.status === 'in progress').length;
+    }
+
+    function applyFilters() {
+      const statusFilter = document.getElementById('statusFilter').value;
+      const categoryFilter = document.getElementById('categoryFilter').value;
+      const sortBy = document.getElementById('sortBy').value;
+
+      // Filter reports
+      filteredReports = allReports.filter(report => {
+        if (statusFilter && report.status !== statusFilter) return false;
+        if (categoryFilter && report.category !== categoryFilter) return false;
+        return true;
+      });
+
+      // Sort reports
+      filteredReports.sort((a, b) => {
+        if (sortBy === 'oldest') {
+          return a.timestamp - b.timestamp;
+        } else if (sortBy === 'status') {
+          return (a.status || '').localeCompare(b.status || '');
+        } else {
+          return b.timestamp - a.timestamp;
+        }
+      });
+
+      renderReports();
+      renderMapMarkers();
+    }
+
+    function renderReports() {
+      const reportList = document.getElementById('reportList');
+      const reportsCount = document.getElementById('reports-count');
+
+      reportsCount.textContent = `Showing ${filteredReports.length} of ${allReports.length} reports`;
+
+      if (filteredReports.length === 0) {
+        reportList.innerHTML = `
+          <div class="empty-state">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <h3>No Reports Found</h3>
+            <p>Try adjusting your filters to see more results.</p>
+          </div>
+        `;
+        return;
+      }
+
+      reportList.innerHTML = filteredReports.map(report => `
+        <div class="report-card status-${(report.status || 'pending').replace(' ', '-')}" 
+             onclick="selectReport('${report._id}')">
+          <div class="report-card-body">
+            <div class="report-header">
+              ${report.image_file_id ? 
+                `<img class="report-image" src="${UPLOAD_URL}${report.image_file_id}" alt="Report image">` :
+                `<div class="report-icon">
+                   <i class="bi bi-${getIconForCategory(report.category)}" aria-hidden="true"></i>
+                 </div>`
+              }
+              <div class="report-content">
+                <div class="report-title">${escapeHtml(report.description.substring(0, 80))}${report.description.length > 80 ? '...' : ''}</div>
+                <div class="report-meta">
+                  <div class="report-time">
+                    <i class="bi bi-clock" aria-hidden="true"></i>
+                    ${formatRelativeTime(report.timestamp)}
+                  </div>
+                  <div class="status-badge status-${(report.status || 'pending').replace(' ', '-')}">
+                    <i class="bi bi-${getStatusIcon(report.status)}" aria-hidden="true"></i>
+                    ${(report.status || 'pending').charAt(0).toUpperCase() + (report.status || 'pending').slice(1)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderMapMarkers() {
+      // Clear existing markers
+      currentMarkers.forEach(marker => map.removeLayer(marker));
+      currentMarkers = [];
+
+      const bounds = [];
+
+      filteredReports.forEach(report => {
+        if (report.location && report.location.lat && report.location.lng) {
+          const marker = L.marker([report.location.lat, report.location.lng])
+            .addTo(map);
+
+          const popupContent = `
+            <div class="popup-content">
+              <div class="popup-title">${escapeHtml(report.description.substring(0, 60))}${report.description.length > 60 ? '...' : ''}</div>
+              <div class="popup-status">
+                <span class="status-badge status-${(report.status || 'pending').replace(' ', '-')}">
+                  <i class="bi bi-${getStatusIcon(report.status)}" aria-hidden="true"></i>
+                  ${(report.status || 'pending').charAt(0).toUpperCase() + (report.status || 'pending').slice(1)}
+                </span>
+              </div>
+              <div class="popup-description">${escapeHtml(report.city_street || 'Location not specified')}</div>
+              <a href="/report/${report._id}" class="popup-button">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+                View Details
+              </a>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent);
+          currentMarkers.push(marker);
+          bounds.push([report.location.lat, report.location.lng]);
+        }
+      });
+
+      // Fit map to show all markers
+      if (bounds.length > 0) {
+        map.fitBounds(L.latLngBounds(bounds).pad(0.1));
+      } else {
+        map.setView([31.7683, 35.2137], 10);
+      }
+    }
+
+    function selectReport(reportId) {
+      const report = allReports.find(r => r._id === reportId);
+      if (report && report.location) {
+        map.setView([report.location.lat, report.location.lng], 16);
+        
+        // Find and open the marker popup
+        const marker = currentMarkers.find(m => 
+          m.getLatLng().lat === report.location.lat && 
+          m.getLatLng().lng === report.location.lng
+        );
+        if (marker) {
+          marker.openPopup();
+        }
+      }
+    }
+
+    function initializeAnimations() {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
       };
 
-      function render() {
-        let filtered = allReports.filter(i => {
-          if (statusFilter.value && i.status !== statusFilter.value) return false;
-          if (categoryFilter.value && i.category !== categoryFilter.value) return false;
-          return true;
-        });
-        filtered.sort((a, b) => sortBy.value === 'oldest' ? a.timestamp - b.timestamp : b.timestamp - a.timestamp);
-
-        reportList.innerHTML = '';
-        map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l); });
-
-        const bounds = [];
-        filtered.forEach(i => {
-          const card = document.createElement('div');
-          card.className = 'report-card';
-          card.innerHTML = `
-            <div class="card-body">
-              ${i.image_file_id ? `<img class="report-thumb" src="${UPLOAD_URL}${i.image_file_id}" alt="Thumb">` : ''}
-              <i class="category-icon bi bi-${iconFor(i.category)}"></i>
-              <div class="report-info">
-                <div class="title">${i.category || 'Report'}</div>
-                <div class="time">${i.timestamp.toLocaleDateString()} · ${i.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-              </div>
-              <span class="badge bg-${statusColor(i.status)} badge-status">${i.status}</span>
-            </div>`;
-          card.onclick = () => i.location && map.setView([i.location.lat, i.location.lng], 15);
-          reportList.appendChild(card);
-
-          if (i.location) {
-            bounds.push([i.location.lat, i.location.lng]);
-            L.marker([i.location.lat, i.location.lng])
-              .addTo(map)
-              .bindPopup(`<strong>${i.category}</strong><br>${i.description}`);
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
           }
         });
+      }, observerOptions);
 
-        if (bounds.length) map.fitBounds(L.latLngBounds(bounds).pad(0.2));
-        else map.setView([31.95, 35.93], 7);
-        setTimeout(() => map.invalidateSize(), 200);
-      }
+      // Observe main sections
+      document.querySelectorAll('.sidebar, .map-section').forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = `opacity 0.6s ease ${index * 0.2}s, transform 0.6s ease ${index * 0.2}s`;
+        observer.observe(el);
+      });
+    }
 
-      function statusColor(st) {
-        switch ((st || '').toLowerCase()) {
-          case 'resolved': return 'success';
-          case 'in progress': return 'info';
-          case 'approved': return 'primary';
-          default: return 'secondary';
-        }
-      }
+    // Utility functions
+    function getIconForCategory(category) {
+      const icons = {
+        'traffic_light_failure': 'traffic-light',
+        'water_leak': 'droplet',
+        'pothole': 'slash-circle',
+        'street_lighting': 'lightbulb',
+        'missing_signage': 'signpost',
+        'road_closure': 'sign-stop',
+        'power_cut': 'lightning'
+      };
+      return icons[category] || 'exclamation-circle';
+    }
 
-      function iconFor(cat) {
-        switch ((cat || '').toLowerCase()) {
-          case 'traffic light failure': return 'traffic-light';
-          case 'water leak': return 'droplet';
-          case 'signage': return 'signpost';
-          case 'pothole': return 'slash-circle';
-          case 'street cleaning': return 'broom';
-          default: return 'exclamation-circle';
-        }
+    function getStatusIcon(status) {
+      const icons = {
+        'done': 'check-circle',
+        'resolved': 'check-circle',
+        'in progress': 'hourglass-split',
+        'approved': 'person-check',
+        'pending': 'clock',
+        'rejected': 'x-circle'
+      };
+      return icons[status] || 'clock';
+    }
+
+    function formatRelativeTime(date) {
+      const now = new Date();
+      const diffInSeconds = Math.floor((now - date) / 1000);
+
+      if (diffInSeconds < 60) {
+        return 'Just now';
+      } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes}m ago`;
+      } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours}h ago`;
+      } else {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days}d ago`;
       }
-    })();
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Auto refresh every 5 minutes
+    setInterval(() => {
+      loadReports();
+    }, 300000);
   </script>
 </body>
 

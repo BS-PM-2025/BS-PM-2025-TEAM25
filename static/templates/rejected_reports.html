@@ -1,73 +1,298 @@
-<!-- templates/rejected_reports.html -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rejected Reports</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Your custom CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Rejected Reports - CityFix</title>
+  <meta name="description" content="View and manage rejected maintenance reports in CityFix.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/rejected_reports.css') }}">
 </head>
 
-<body class="hm-gradient">
-  <div class="page-wrapper">
-        <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
-          class="d-inline-block align-text-top">
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.my_reports') }}">My Reports</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}">Report Issue</a></li>
-        </ul>
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+<body>
+   <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}" class="nav-link">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
 
-    <main class="container my-4">
-      <h1 class="text-center text-white mb-4">Your Rejected Reports</h1>
-      {% if not reports %}
-      <div class="alert alert-info">No rejection messages.</div>
-      {% else %}
-      <div class="list-group">
-        {% for r in reports %}
-        <a href="{{ url_for('reports.report_detail', issue_id=r.original_issue_id) }}"
-          class="list-group-item list-group-item-action flex-column align-items-start mb-2">
-          <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">Issue {{ r.original_issue_id }}</h5>
-            <small>{{ r.timestamp }}</small>
-          </div>
-          {% if r.image_file_id %}
-          <div class="mb-2">
-            <img src="{{ url_for('reports.serve_upload', file_id=r.image_file_id) }}" class="img-thumbnail"
-              style="max-height:120px;" alt="Issue Image">
-          </div>
-          {% endif %}
-          <p class="mb-1"><strong>Reason:</strong> {{ r.rejection_reason }}</p>
-          <small>Rejected by {{ r.admin }}</small>
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-tools"></i>
+          <span>Tasks</span>
         </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.rejected_reports') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-envelope-exclamation"></i>
+          <span>Rejected</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Rejected Reports Hero -->
+  <section class="rejected-hero">
+    <div class="container">
+      <div class="rejected-content">
+        <h1 class="rejected-title">Rejected Reports</h1>
+        <p class="rejected-subtitle">
+          Review reports that were rejected and need attention.
+          Learn from feedback to improve future submissions.
+        </p>
+
+        <div class="rejected-stats">
+          <div class="rejected-stat">
+            <span class="rejected-stat-number">{{ reports|length }}</span>
+            <span class="rejected-stat-label">Total Rejected</span>
+          </div>
+          <div class="rejected-stat">
+            <span class="rejected-stat-number">{{ user.name or 'Technician' }}</span>
+            <span class="rejected-stat-label">Your Account</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reports Container -->
+  <main class="container">
+    <div class="reports-container">
+      {% if reports %}
+      <div class="reports-grid">
+        {% for r in reports %}
+        <div class="report-card">
+          <!-- Report Header -->
+          <div class="report-header">
+            <div class="report-meta">
+              <div class="report-title">
+                <div class="report-icon">
+                  <i class="bi bi-x-circle" aria-hidden="true"></i>
+                </div>
+                Issue {{ r.original_issue_id }}
+              </div>
+              <div class="report-date">
+                <i class="bi bi-calendar3" aria-hidden="true"></i>
+                {{ r.timestamp }}
+              </div>
+            </div>
+            <div class="status-badge">
+              <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
+              Rejected
+            </div>
+          </div>
+
+          <!-- Report Body -->
+          <div class="report-body">
+            <!-- Rejection Reason -->
+            <div class="rejection-reason">
+              <div class="rejection-reason-title">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                Rejection Reason
+              </div>
+              <div class="rejection-reason-text">
+                {{ r.rejection_reason }}
+              </div>
+            </div>
+
+            <!-- Report Details -->
+            <div class="report-details">
+              {% if r.image_file_id %}
+              <div class="detail-item">
+                <i class="bi bi-image detail-icon" aria-hidden="true"></i>
+                <div class="detail-content">
+                  <div class="detail-label">Submitted Photo</div>
+                  <div class="detail-value">
+                    <img src="{{ url_for('reports.serve_upload', file_id=r.image_file_id) }}" alt="Issue Image"
+                      class="report-image"onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=r.image_file_id) }}')">
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+              <div class="detail-item">
+                <i class="bi bi-geo-alt detail-icon" aria-hidden="true"></i>
+                <div class="detail-content">
+                  <div class="detail-label">Report ID</div>
+                  <div class="detail-value">{{ r.original_issue_id }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Report Actions -->
+          <div class="report-actions">
+            <a href="{{ url_for('reports.report_detail', issue_id=r.original_issue_id) }}" class="btn-view-details">
+              <i class="bi bi-eye" aria-hidden="true"></i>
+              View Original Report
+            </a>
+            <div class="admin-info">
+              <i class="bi bi-person-badge" aria-hidden="true"></i>
+              Rejected by {{ r.admin }}
+            </div>
+          </div>
+        </div>
         {% endfor %}
       </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-check-circle" aria-hidden="true"></i>
+        <h3>No Rejected Reports</h3>
+        <p>
+          Great news! You don't have any rejected reports at this time.
+          Keep up the excellent work quality.
+        </p>
+        <a href="{{ url_for('auth.dashboard') }}" class="btn-back-dashboard">
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+          Back to Dashboard
+        </a>
+      </div>
       {% endif %}
-    </main>
+    </div>
+  </main>
+
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal-backdrop" onclick="closeImageModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Issue Image</h3>
+        <button class="btn-close" onclick="closeImageModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="Issue image">
+      </div>
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Image modal functionality
+    function showImageModal(src) {
+      const modal = document.getElementById('image-modal');
+      const modalImage = document.getElementById('modal-image');
+
+      modalImage.src = src;
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('image-modal');
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+
+      // Clear the image source after animation
+      setTimeout(() => {
+        document.getElementById('modal-image').src = '';
+      }, 300);
+    }
+
+    // Handle escape key for modal
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    });
+
+    // Animation on scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    // Observe report cards
+    document.querySelectorAll('.report-card').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    });
+  </script>
 </body>
 
 </html>

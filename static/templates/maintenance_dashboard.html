@@ -1,399 +1,642 @@
-<!-- templates/maintenance_dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maintenance Dashboard</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/dashboard.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Maintenance Dashboard - {{ user.name }}</title>
+  <meta name="description" content="Manage assigned maintenance tasks and work orders in CityFix.">
 
-  <!-- Bootstrap CSS & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-  <style>
-    :root {
-      --primary: #28a745;
-      --primary-bg: rgba(40, 167, 69, 0.1);
-      --badge-bg: #6c757d;
-      --light-gray: #f8f9fa;
-      --text-dark: #333;
-    }
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--light-gray);
-    }
-
-    .header-banner {
-      background: linear-gradient(to right, #2efef1, #ffffff);
-      padding: 3rem 1rem;
-      text-align: center;
-    }
-
-    .header-banner h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: .5rem;
-      color: #000;
-    }
-
-    .header-banner p {
-      font-size: 1.1rem;
-      color: #444;
-    }
-
-    .issues-grid {
-      display: grid;
-      gap: 1.5rem;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      padding: 2rem;
-    }
-
-    .issue-card {
-      background: #fff;
-      border-radius: .5rem;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      transition: transform 0.2s ease;
-    }
-
-    .issue-card:hover {
-      transform: translateY(-4px);
-    }
-
-    .issue-icon {
-      font-size: 2.5rem;
-      color: var(--primary);
-      width: 60px;
-      height: 60px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: var(--primary-bg);
-      margin-bottom: .75rem;
-    }
-
-    .issue-title {
-      font-weight: 600;
-      margin-bottom: .25rem;
-      font-size: 1.1rem;
-    }
-
-    .issue-subtitle {
-      color: #666;
-      font-size: 0.95rem;
-      margin-bottom: 1rem;
-    }
-
-    .btn-outline-success {
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-
-    .btn-outline-success:hover {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    .badge-completed,
-    .badge-pending,
-    .badge-awaiting {
-      background: var(--badge-bg);
-      color: #fff;
-      border-radius: 1rem;
-      padding: .5rem 1rem;
-      font-size: .85rem;
-      margin-top: auto;
-    }
-
-    .status-form {
-      margin-top: auto;
-    }
-
-    .status-form .form-select {
-      max-width: 140px;
-    }
-
-    .modal-detail .modal-content {
-      border-radius: .75rem;
-      overflow: hidden;
-    }
-
-    .detail-icon {
-      font-size: 2rem;
-      color: var(--primary);
-      width: 100px;
-      height: 100px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: var(--primary-bg);
-      margin: 0 auto 1rem;
-    }
-
-    .detail-title {
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    .detail-description {
-      font-size: .95rem;
-      color: var(--text-dark);
-      margin-bottom: 1.5rem;
-    }
-
-    .detail-grid {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      align-items: start;
-    }
-
-    .map-item,
-    .img-item {
-      background: #fff;
-      border-radius: .5rem;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      height: 350px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .map-container {
-      flex: 1;
-      width: 100%;
-      height: 100%;
-    }
-
-    .img-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .detail-item-label {
-      padding: .5rem;
-      text-align: center;
-      font-weight: 600;
-      color: #444;
-    }
-
-    .map-item a {
-      padding: .5rem;
-      color: #007bff;
-      text-decoration: none;
-    }
-
-    .close-btn {
-      background: #000;
-      color: #fff;
-      border-radius: 2rem;
-      padding: .5rem 1.5rem;
-      border: none;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/maintenance_dashboard.css') }}">
 </head>
 
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" width="30" height="30" alt="CityFix Logo"
-          class="d-inline-block align-text-top" />
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}">Profile</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}"><i
-                class="bi bi-plus-circle-fill"></i> Report Issue</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.rejected_reports') }}"><i
-                class="bi bi-envelope-exclamation-fill"></i> Rejections</a></li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}"><i
-                class="bi bi-box-arrow-right"></i> Logout</a></li>
+   <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+          <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span>
+        </a>
+
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}" class="nav-link">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+              <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.rejected_reports') }}" class="nav-link">
+              <i class="bi bi-envelope-exclamation-fill" aria-hidden="true"></i> Rejections
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- Header -->
-  <section class="header-banner">
-    <h1>Welcome, {{ user.name }}!</h1>
-    <p>Your Assigned Issues</p>
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-tools"></i>
+          <span>Tasks</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.rejected_reports') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-envelope-exclamation"></i>
+          <span>Rejected</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Maintenance Hero -->
+  <section class="maintenance-hero">
+    <div class="container">
+      <div class="maintenance-content">
+        <div class="maintenance-avatar">
+          {{ user.name[0].upper() if user.name else 'M' }}
+        </div>
+        <h1 class="maintenance-greeting">Welcome, {{ user.name }}!</h1>
+        <p class="maintenance-subtitle">
+          You have {{ issues|length }} assigned task{{ '' if issues|length == 1 else 's' }}
+        </p>
+
+        <div class="maintenance-stats">
+          <div class="maintenance-stat">
+            <span class="maintenance-stat-number">{{ issues|selectattr('status', 'equalto', 'pending')|list|length
+              }}</span>
+            <span class="maintenance-stat-label">Pending</span>
+          </div>
+          <div class="maintenance-stat">
+            <span class="maintenance-stat-number">{{ issues|selectattr('status', 'equalto', 'in progress')|list|length
+              }}</span>
+            <span class="maintenance-stat-label">In Progress</span>
+          </div>
+          <div class="maintenance-stat">
+            <span class="maintenance-stat-number">{{ issues|selectattr('status', 'equalto', 'resolved')|list|length
+              }}</span>
+            <span class="maintenance-stat-label">Resolved</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- Issues Grid -->
-  <section class="issues-grid">
-    {% for issue in issues %}
-    {% set cat = issue.category|lower %}
-    {% set icon = 'exclamation-circle-fill' %}
-    {% if cat=='traffic light failure'%}{% set icon='traffic-light-fill'%}
-    {% elif cat=='water leak'%}{% set icon='droplet-fill'%}
-    {% elif cat=='road closure'%}{% set icon='road-closed'%}
-    {% elif cat=='power cut'%}{% set icon='bolt-fill'%}
-    {% elif cat=='hole in the road'%}{% set icon='slash-circle-fill'%}{% endif %}
-
-    <div class="issue-card">
-      <div class="issue-icon"><i class="bi bi-{{ icon }}"></i></div>
-      <div class="issue-title">{{ issue.category|replace('_',' ') }}</div>
-      <div class="issue-subtitle">See what happens</div>
-      <button class="btn btn-outline-success mb-2" data-bs-toggle="modal"
-        data-bs-target="#detailModal{{ issue._id }}">Details</button>
-
-      {% if issue.status=='pending' %}
-      <span class="badge-pending">Pending</span>
-      {% elif issue.awaiting %}
-      <span class="badge-awaiting">Awaiting Approval</span>
-      {% elif issue.status=='done' %}
-      <span class="badge-completed">Completed</span>
-      {% else %}
-      <form class="status-form" action="{{ url_for('reports.maintenance_update_status', issue_id=issue._id) }}"
-        method="POST">
-        <div class="input-group">
-          <select name="status" class="form-select status-select">
-            <option value="in progress" {% if issue.status=='in progress' %}selected{% endif %}>In Progress</option>
-            <option value="done" {% if issue.status=='done' %}selected{% endif %}>Done</option>
-          </select>
-          <button type="button" class="btn btn-success btn-update" data-issue-id="{{ issue._id }}">Update</button>
+  <!-- Dashboard Content -->
+  <main class="dashboard-content">
+    <div class="container">
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <h2 class="dashboard-title">
+          <i class="bi bi-tools" aria-hidden="true"></i>
+          Assigned Tasks
+        </h2>
+        <div class="dashboard-actions">
+          <a href="{{ url_for('reports.report_issue') }}" class="btn-action btn-primary-action">
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+            Report Issue
+          </a>
+          <a href="{{ url_for('reports.rejected_reports') }}" class="btn-action btn-secondary-action">
+            <i class="bi bi-envelope-exclamation" aria-hidden="true"></i>
+            View Rejections
+          </a>
         </div>
-      </form>
-      {% endif %}
-    </div>
-    {% endfor %}
-  </section>
+      </div>
 
-  <!-- Completion Modals -->
-  {% for issue in issues %}
-  <div class="modal fade" id="completionModal{{ issue._id }}" tabindex="-1">
-    <div class="modal-dialog">
-      <form action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}" method="POST"
-        enctype="multipart/form-data" class="modal-content">
-        <div class="modal-header bg-dark text-white">
-          <h5 class="modal-title">Work Completion Report</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body text-start">
-          <div class="mb-3">
-            <label class="form-label">Detailed Description</label>
-            <textarea name="completion_description" class="form-control" rows="4" required></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Before Photo</label>
-            <input type="file" name="before_image" accept="image/*" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">After Photo</label>
-            <input type="file" name="after_image" accept="image/*" class="form-control" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-      </form>
-    </div>
-  </div>
-  {% endfor %}
-
-  <!-- Detail Modals -->
-  {% for issue in issues %}
-  <div class="modal fade modal-detail" id="detailModal{{ issue._id }}" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-body">
-          {% set cat = issue.category|lower %}
-          {% if cat == 'traffic light failure' %}{% set icon = 'traffic-light-fill' %}
-          {% elif cat == 'water leak' %}{% set icon = 'droplet-fill' %}
-          {% elif cat == 'road closure' %}{% set icon = 'road-closed' %}
-          {% elif cat == 'power cut' %}{% set icon = 'bolt-fill' %}
-          {% elif cat == 'hole in the road' %}{% set icon = 'slash-circle-fill' %}
-          {% else %}{% set icon = 'exclamation-circle-fill' %}{% endif %}
-          <div class="detail-icon"><i class="bi bi-{{ icon }}"></i></div>
-          <div class="detail-title">{{ issue.category }}</div>
-          <div class="detail-description"><strong>Description of the Issue:</strong><br>{{ issue.description }}</div>
-          <div class="detail-grid">
-            <div class="map-item">
-              <div id="map{{ issue._id }}" class="map-container" data-lat="{{ issue.location.lat }}"
-                data-lng="{{ issue.location.lng }}"></div>
-              <a href="https://maps.google.com/?q={{ issue.location.lat }},{{ issue.location.lng }}"
-                target="_blank">View on Map</a>
+      <!-- Tasks Grid -->
+      {% if issues %}
+      <div class="tasks-grid">
+        {% for issue in issues %}
+        <div
+          class="task-card {{ 'awaiting' if issue.awaiting else 'rejected' if issue.rejection_reason else 'completed' if issue.status == 'done' }}">
+          <!-- Task Header -->
+          <div class="task-header">
+            <div class="task-meta">
+              <div class="task-category">
+                {% set cat = issue.category|lower %}
+                <div
+                  class="category-icon category-{{ 'traffic' if cat == 'traffic light failure' else 'water' if cat == 'water leak' else 'power' if cat == 'power cut' else 'road' if cat == 'hole in the road' else 'default' }}">
+                  <i class="bi bi-{{ 'traffic-light-fill' if cat == 'traffic light failure' else 'droplet-fill' if cat == 'water leak' else 'bolt-fill' if cat == 'power cut' else 'slash-circle-fill' if cat == 'hole in the road' else 'exclamation-circle-fill' }}"
+                    aria-hidden="true"></i>
+                </div>
+                <div class="category-name">{{ issue.category.replace('_', ' ').title() if issue.category else 'General
+                  Task' }}</div>
+              </div>
+              <div
+                class="task-priority priority-{{ 'high' if issue.status == 'pending' else 'medium' if issue.status == 'in progress' else 'low' }}">
+                {{ 'High' if issue.status == 'pending' else 'Medium' if issue.status == 'in progress' else 'Low' }}
+              </div>
             </div>
-            {% if issue.image_file_id %}
-            <div class="img-item">
-              <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Problem Image" />
-              <div class="detail-item-label">Problem</div>
+            <div class="task-description">{{ issue.description }}</div>
+          </div>
+
+          <!-- Task Body -->
+          <div class="task-body">
+            {% if issue.rejection_reason %}
+            <div class="rejection-notice">
+              <div class="rejection-title">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                Work Rejected
+              </div>
+              <div class="rejection-reason">{{ issue.rejection_reason }}</div>
             </div>
             {% endif %}
-          </div>
-          <div class="text-end mt-4"><button class="close-btn" data-bs-dismiss="modal">Close</button></div>
-        </div>
 
+            <div class="task-details">
+              <div class="detail-item">
+                <i class="bi bi-geo-alt detail-icon" aria-hidden="true"></i>
+                <div class="detail-content">
+                  {% if issue.location and issue.location.lat and issue.location.lng %}
+                  <div class="detail-label">Location</div>
+                  <div class="detail-value">{{ issue.location.lat|round(4) }}, {{ issue.location.lng|round(4) }}</div>
+                  {% else %}
+                  <div class="detail-label">Location</div>
+                  <div class="detail-value">Location not specified</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <i class="bi bi-clock detail-icon" aria-hidden="true"></i>
+                <div class="detail-content">
+                  <div class="detail-label">Status</div>
+                  <div class="detail-value">
+                    <span
+                      class="status-badge status-{{ issue.status.replace(' ', '-') if issue.status else 'pending' }}">
+                      <i class="bi bi-{{ 'clock' if issue.status == 'pending' else 'hourglass-split' if issue.status == 'in progress' else 'check-circle' if issue.status == 'resolved' else 'clock' }}"
+                        aria-hidden="true"></i>
+                      {{ issue.status.title() if issue.status else 'Pending' }}
+                      {% if issue.awaiting %}(Awaiting Approval){% endif %}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {% if issue.image_file_id %}
+              <div class="detail-item">
+                <i class="bi bi-image detail-icon" aria-hidden="true"></i>
+                <div class="detail-content">
+                  <div class="detail-label">Issue Photo</div>
+                  <div class="detail-value">
+                    <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue image"
+                      style="width: 100%; max-width: 200px; height: 120px; object-fit: cover; border-radius: var(--radius-lg); cursor: pointer;"onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Task Actions -->
+          <div class="task-actions">
+            {% if issue.status == 'done' %}
+            <div class="status-badge status-completed" style="margin-bottom: var(--space-4);">
+              <i class="bi bi-check-all" aria-hidden="true"></i>
+              Work Completed
+            </div>
+            {% elif issue.awaiting %}
+            <div class="status-badge status-awaiting" style="margin-bottom: var(--space-4);">
+              <i class="bi bi-clock-history" aria-hidden="true"></i>
+              Awaiting Admin Approval
+            </div>
+            {% else %}
+            <form class="status-form" action="{{ url_for('reports.maintenance_update_status', issue_id=issue._id) }}"
+              method="POST">
+              <select name="status" class="status-select">
+                <option value="in progress" {% if issue.status=='in progress' %}selected{% endif %}>In Progress</option>
+                <option value="resolved" {% if issue.status=='resolved' %}selected{% endif %}>Resolved</option>
+              </select>
+              <button type="submit" class="btn-update">
+                <i class="bi bi-check" aria-hidden="true"></i>
+                Update Status
+              </button>
+            </form>
+            {% endif %}
+
+            <div class="action-buttons">
+              <button class="btn-details" onclick="showTaskModal('{{ issue._id }}')">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+                View Details
+              </button>
+              {% if issue.status not in ['done', 'awaiting'] %}
+              <button class="btn-complete" onclick="showCompletionModal('{{ issue._id }}')">
+                <i class="bi bi-check-circle" aria-hidden="true"></i>
+                Mark Complete
+              </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-tools" aria-hidden="true"></i>
+        <h3>No Tasks Assigned</h3>
+        <p>
+          You don't have any assigned maintenance tasks at this time.
+          New tasks will appear here when they're assigned to you.
+        </p>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <!-- Task Detail Modals -->
+  {% for issue in issues %}
+  <div id="task-modal-{{ issue._id }}" class="modal-backdrop" onclick="closeModal('task-modal-{{ issue._id }}')">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Task Details</h3>
+        <button class="btn-close" onclick="closeModal('task-modal-{{ issue._id }}')">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <h4 class="font-semibold mb-3">Issue Information</h4>
+            <div class="space-y-3">
+              <div>
+                <span class="text-sm text-secondary font-semibold">Category:</span>
+                <div>{{ issue.category.replace('_', ' ').title() if issue.category else 'General' }}</div>
+              </div>
+              <div>
+                <span class="text-sm text-secondary font-semibold">Description:</span>
+                <div>{{ issue.description }}</div>
+              </div>
+              <div>
+                <span class="text-sm text-secondary font-semibold">Status:</span>
+                <div>{{ issue.status.title() if issue.status else 'Pending' }}</div>
+              </div>
+              {% if issue.city_street %}
+              <div>
+                <span class="text-sm text-secondary font-semibold">Address:</span>
+                <div>{{ issue.city_street }}</div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% if issue.location and issue.location.lat and issue.location.lng %}
+          <div>
+            <h4 class="font-semibold mb-3">Location</h4>
+            <div id="map-{{ issue._id }}" style="height: 200px; border-radius: var(--radius-lg);"
+              data-lat="{{ issue.location.lat }}" data-lng="{{ issue.location.lng }}"></div>
+
+            <!-- Google Maps Link -->
+            <div class="mt-4 space-y-2">
+              <a href="https://www.google.com/maps/search/?api=1&query={{ issue.location.lat }},{{ issue.location.lng }}"
+                target="_blank" class="google-maps-btn" onclick="trackMapClick('view_location', '{{ issue._id }}')">
+                <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                Open in Google Maps
+              </a>
+
+              <!-- Get Directions Link -->
+              <a href="https://www.google.com/maps/dir/?api=1&destination={{ issue.location.lat }},{{ issue.location.lng }}"
+                target="_blank" class="directions-btn" onclick="trackMapClick('get_directions', '{{ issue._id }}')">
+                <i class="bi bi-compass" aria-hidden="true"></i>
+                Get Directions
+              </a>
+
+              <!-- Coordinates Display -->
+              <div class="coordinates-display">
+                <i class="bi bi-geo" aria-hidden="true"></i>
+                Coordinates: {{ "%.6f"|format(issue.location.lat) }}, {{ "%.6f"|format(issue.location.lng) }}
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div>
+            <h4 class="font-semibold mb-3">Location</h4>
+            <div class="no-location-display">
+              <div class="text-center">
+                <i class="bi bi-geo-alt text-4xl mb-2 opacity-50" aria-hidden="true"></i>
+                <p>No location coordinates available</p>
+                {% if issue.city_street %}
+                <p class="text-sm mt-2">Address: {{ issue.city_street }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('task-modal-{{ issue._id }}')">
+          Close
+        </button>
+        {% if issue.location and issue.location.lat and issue.location.lng %}
+        <a href="https://www.google.com/maps/search/?api=1&query={{ issue.location.lat }},{{ issue.location.lng }}"
+          target="_blank" class="btn btn-primary inline-flex items-center gap-2"
+          style="text-decoration: none; color: white;" onclick="trackMapClick('quick_view', '{{ issue._id }}')">
+          <i class="bi bi-map" aria-hidden="true"></i>
+          View on Map
+        </a>
+        {% endif %}
       </div>
     </div>
   </div>
+
+  <!-- Completion Modal -->
+  <div id="completion-modal-{{ issue._id }}" class="modal-backdrop"
+    onclick="closeModal('completion-modal-{{ issue._id }}')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <form action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}" method="POST"
+        enctype="multipart/form-data">
+        <div class="modal-header">
+          <h3 class="modal-title">Mark Task Complete</h3>
+          <button type="button" class="btn-close" onclick="closeModal('completion-modal-{{ issue._id }}')">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group mb-4">
+            <label class="form-label">Work Description</label>
+            <textarea name="completion_description" class="form-control" rows="4"
+              placeholder="Describe the work completed..." required></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-group">
+              <label class="form-label">Before Photo</label>
+              <input type="file" name="before_image" accept="image/*" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">After Photo</label>
+              <input type="file" name="after_image" accept="image/*" class="form-control" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('completion-modal-{{ issue._id }}')">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle" aria-hidden="true"></i>
+            Submit Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
   {% endfor %}
 
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal-backdrop" onclick="closeImageModal()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: 80vw;">
+      <div class="modal-header">
+        <h3 class="modal-title">Issue Image</h3>
+        <button class="btn-close" onclick="closeImageModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modal-image" src="" alt="Issue image"
+          style="max-width: 100%; height: auto; border-radius: var(--radius-xl);">
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // configure Leaflet icons
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
-    });
     const maps = {};
-    document.querySelectorAll('.modal-detail').forEach(modalEl => {
-      modalEl.addEventListener('shown.bs.modal', () => {
-        const id = modalEl.id.replace('detailModal', '');
-        const div = document.getElementById('map' + id);
-        if (!maps[id]) {
-          const lat = parseFloat(div.dataset.lat);
-          const lng = parseFloat(div.dataset.lng);
-          const map = L.map(div).setView([lat, lng], 15);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-          L.marker([lat, lng]).addTo(map);
-          setTimeout(() => map.invalidateSize(), 200);
-          maps[id] = map;
-        } else {
-          maps[id].invalidateSize();
+
+    // Modal functions
+    function showTaskModal(taskId) {
+      const modal = document.getElementById(`task-modal-${taskId}`);
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+
+      // Initialize map if it exists
+      setTimeout(() => {
+        const mapEl = document.getElementById(`map-${taskId}`);
+        if (mapEl && !maps[taskId]) {
+          const lat = parseFloat(mapEl.dataset.lat);
+          const lng = parseFloat(mapEl.dataset.lng);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            const map = L.map(`map-${taskId}`).setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            L.marker([lat, lng]).addTo(map);
+            maps[taskId] = map;
+          }
+        }
+      }, 300);
+    }
+
+    function showCompletionModal(taskId) {
+      const modal = document.getElementById(`completion-modal-${taskId}`);
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+    }
+
+    function showImageModal(src) {
+      const modal = document.getElementById('image-modal');
+      const modalImage = document.getElementById('modal-image');
+
+      modalImage.src = src;
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('image-modal');
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+
+      setTimeout(() => {
+        document.getElementById('modal-image').src = '';
+      }, 300);
+    }
+
+    // Handle escape key
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-backdrop.show').forEach(modal => {
+          modal.classList.remove('show');
+        });
+        closeImageModal();
+        document.body.style.overflow = 'auto';
+      }
+    });
+
+    // Animation on scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    // Observe task cards
+    document.querySelectorAll('.task-card').forEach((el, index) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+      observer.observe(el);
+    });
+
+    // Form submission handling
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          const originalContent = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Processing...';
+
+          setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+          }, 3000);
         }
       });
     });
-    document.querySelectorAll('.btn-update').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.issueId;
-        const form = document.querySelector(`form[action*='${id}']`);
-        const select = form.querySelector('.status-select');
-        if (select.value === 'done') {
-          bootstrap.Modal.getOrCreateInstance(document.getElementById('completionModal' + id)).show();
-        } else {
-          form.submit();
-        }
-      });
-    });
+
+    // Track Google Maps clicks for analytics
+    function trackMapClick(action, issueId) {
+      console.log(`Map ${action} clicked for issue: ${issueId}`);
+
+      // Optional: Send analytics data
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'map_interaction', {
+          'event_category': 'maintenance_dashboard',
+          'event_label': action,
+          'value': issueId
+        });
+      }
+
+      // Show feedback toast
+      showLocationToast(action);
+    }
+
+    // Show feedback when location links are clicked
+    function showLocationToast(action) {
+      const messages = {
+        'view_location': 'Opening location in Google Maps...',
+        'get_directions': 'Getting directions in Google Maps...',
+        'quick_view': 'Opening map view...'
+      };
+
+      const message = messages[action] || 'Opening map...';
+
+      // Create toast notification
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification';
+      toast.innerHTML = `
+        <div class="toast-content">
+          <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+          <span>${message}</span>
+        </div>
+      `;
+
+      // Add toast styles
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #4285f4, #34a853);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      `;
+
+      document.body.appendChild(toast);
+
+      // Animate in
+      setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+      }, 100);
+
+      // Remove after 3 seconds
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      }, 3000);
+    }
   </script>
 </body>
 

@@ -1,0 +1,253 @@
+ /* Recent Reports Table Image Styles */
+    .report-thumbnail {
+      width: 48px;
+      height: 36px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    .report-placeholder {
+      width: 48px;
+      height: 36px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 14px;
+      border: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    /* Map Popup Image Styles */
+    .popup-image {
+      width: 100%;
+      max-width: 160px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* Ensure proper sizing for table cells */
+    .reports-table-cell {
+      padding: 12px 16px;
+      vertical-align: middle;
+    }
+
+    .report-info-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .report-text-content {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .report-title-text {
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .report-location-text {
+      font-size: 12px;
+      color: #6b7280;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .badge-success {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-warning {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+
+    .badge-info {
+      background-color: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .badge-secondary {
+      background-color: #f3f4f6;
+      color: #374151;
+    }
+
+    .badge-danger {
+      background-color: #fecaca;
+      color: #dc2626;
+    }
+
+    /* Table responsive improvements */
+    .table-responsive {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table th {
+      background-color: #f9fafb;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      color: #374151;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .table td {
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 14px;
+    }
+
+    .table tbody tr {
+      transition: background-color 0.15s ease;
+    }
+
+    .table tbody tr:hover {
+      background-color: #f9fafb;
+    }
+
+    /* Loading and empty states */
+    .loading-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #e5e7eb;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Mobile responsive adjustments */
+    @media (max-width: 768px) {
+
+      .report-thumbnail,
+      .report-placeholder {
+        width: 40px;
+        height: 30px;
+      }
+
+      .report-info-container {
+        gap: 8px;
+      }
+
+      .reports-table-cell {
+        padding: 8px 12px;
+      }
+
+      .popup-image {
+        max-width: 140px;
+        height: 80px;
+      }
+    }
+
+    /* Liquid Animation Brand Style */
+    .navbar-brand-liquid {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 26px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 8px 16px;
+      border-radius: 12px;
+    }
+
+    .liquid-text {
+      position: relative;
+      color: white;
+      z-index: 2;
+      overflow: hidden;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .liquid-text::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981, #2563eb);
+      z-index: -1;
+      animation: liquid 4s ease-in-out infinite;
+      border-radius: inherit;
+    }
+
+    @keyframes liquid {
+
+      0%,
+      100% {
+        left: -100%;
+        transform: skewX(0deg);
+      }
+
+      50% {
+        left: 100%;
+        transform: skewX(20deg);
+      }
+    }
+
+    /* Hover Effects */
+    .navbar-brand-liquid:hover {
+      text-decoration: none;
+      transform: scale(1.02);
+    }
+
+    .navbar-brand-liquid:hover .liquid-text::before {
+      animation-duration: 1s;
+    }
+
+   

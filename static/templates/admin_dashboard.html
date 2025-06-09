@@ -1,298 +1,658 @@
-<!-- templates/admin_dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/dashboard.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Admin Dashboard - CityFix</title>
+  <meta name="description" content="Admin dashboard for managing reports and users in CityFix.">
 
-  <!-- Bootstrap 5 + Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
- /* Navbar styling */
- .navbar {
-  background-color: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/admin_dashboard.css') }}">
 
-.navbar .nav-link {
-  color: #333;
-  transition: color .2s;
-}
-
-.navbar .nav-link:hover,
-.navbar .nav-link.active {
-  color: #1effe1;
-}
-    /* Gradient banner */
-    .header-banner {
-      background: linear-gradient(to right, #2efef1, #ffffff);
-      padding: 3rem 1rem;
-      text-align: center;
-    }
-
-    .header-banner h1 {
-      font-size: 2.5rem;
-      font-weight: bold;
-      margin-bottom: .5rem;
-      color: #000;
-    }
-
-    .search-box {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .search-box .form-control {
-      border-radius: 2rem;
-      padding: 1rem 1.5rem;
-      border: 1px solid #ccc;
-      box-shadow: none;
-    }
-
-    .search-box .input-group-text {
-      background: transparent;
-      border: none;
-    }
-
-    /* Table styling */
-    .issues-table thead {
-      background: linear-gradient(to right, #2efef1, #ffffff);
-    }
-
-    .issues-table thead th {
-      color: #000;
-      font-weight: 600;
-      border: none;
-    }
-
-    .issues-table tbody tr:hover {
-      background-color: #f1fdfd;
-    }
-
-    .image-thumb-admin {
-      width: 60px;
-      height: 40px;
-      object-fit: cover;
-      border-radius: .25rem;
-      cursor: pointer;
-    }
-
-    .badge-status {
-      text-transform: capitalize;
-    }
-
-    .table-responsive {
-      overflow-x: auto;
-    }
-  </style>
 </head>
 
 <body>
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
-          class="d-inline-block align-text-top">
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <a class="navbar-brand" href="{{ url_for('main.profile') }}">
-        <i class="bi bi-person-circle"></i> {{ user.name }}
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="adminNav">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}"><i
-                class="bi bi-exclamation-triangle"></i> Report Issue</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('done_reports.done_issue') }}"><i
-                class="bi bi-check2-all"></i> Done Reports</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('user_roles.edit_user_roles') }}"><i
-                class="bi bi-people"></i> Edit Users</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.my_reports') }}"><i
-                class="bi bi-journal-text"></i> My Reports <span class="badge bg-secondary">{{ my_issue_count
-                }}</span></a></li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
+     <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+  <!-- Desktop Navigation -->  
+   <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-content">
+      <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
 
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}"><i
-                class="bi bi-box-arrow-right"></i> Logout</a></li>
-        </ul>
-      </div>
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+            <span>Report Issue</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('done_reports.done_issue') }}" class="nav-link">
+            <i class="bi bi-check2-all" aria-hidden="true"></i>
+            <span>Done Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('user_roles.edit_user_roles') }}" class="nav-link">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <span>Manage Users</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
+            <i class="bi bi-journal-text" aria-hidden="true"></i>
+            <span>My Reports</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('main.profile') }}" class="nav-link">
+            <i class="bi bi-person-circle" aria-hidden="true"></i>
+            <span>{{ user.name }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
     </div>
   </nav>
 
-  <!-- Banner + Search -->
-  <section class="header-banner">
-    <h1>All reported Issues</h1>
-    <p class="mb-3">Search within table</p>
-    <div class="search-box">
-      <div class="input-group">
-        <input id="searchInput" type="text" class="form-control" placeholder="Search..." aria-label="Search">
-        <span class="input-group-text"><i class="bi bi-search"></i></span>
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('done_reports.done_issue') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-check2-all"></i>
+          <span>Done reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('user_roles.edit_user_roles') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-people"></i>
+          <span>Users</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Dashboard Header -->
+  <section class="dashboard-header">
+    <div class="container">
+      <div class="dashboard-welcome">
+        <div class="welcome-info">
+          <h1>Welcome back, {{ user.name }}!</h1>
+          <p class="welcome-subtitle">
+            Admin Dashboard • Manage all reported issues and oversee city maintenance
+          </p>
+        </div>
+
+        <div class="quick-actions">
+          <a href="{{ url_for('reports.report_issue') }}" class="quick-action-btn">
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+            <span>New Report</span>
+          </a>
+          <a href="{{ url_for('user_roles.edit_user_roles') }}" class="quick-action-btn">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <span>Manage Users</span>
+          </a>
+          <button class="quick-action-btn" onclick="refreshData()">
+            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Table -->
-  <div class="container-fluid mt-4">
-    <div class="table-responsive">
-      <table class="table issues-table table-hover" id="issuesTable">
-        <thead>
-          <tr>
-            <th>Reporter</th>
-            <th>Description</th>
-            <th>Location</th>
-            <th>Image</th>
-            <th>Status</th>
-            <th>Assign/Update</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for issue in issues %}
-          <tr>
-            <td>{{ issue.reporter_email }}</td>
-            <td><a href="#" data-bs-toggle="modal" data-bs-target="#descModal{{ issue._id }}">{{ issue.description[:30]
-                }}{{ '...' if issue.description|length>30 }}</a></td>
-            <td>{% if issue.location %}<a href="#" data-bs-toggle="modal" data-bs_target="#locModal{{ issue._id }}">View
-                Map</a>{% else %}&mdash;{% endif %}</td>
-            <td>{% if issue.image_file_id %}<img
-                src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" class="image-thumb-admin"
-                data-bs-toggle="modal" data-bs-target="#imageModal{{ issue._id }}">{% else
-              %}&mdash;{% endif %}</td>
-            <td><span
-                class="badge badge-status {% if issue.status=='pending' %}bg-warning text-dark{% elif issue.status=='approved' %}bg-info text-dark{% elif issue.status=='in progress' %}bg-primary{% else %}bg-success{% endif %}">{{
-                issue.status|capitalize }}</span></td>
-            <td>
-              <form action="{{ url_for('reports.assign_issue', issue_id=issue._id) }}" method="post">
-                <div class="input-group input-group-sm">
-                  <select name="maintenance_email" class="form-select">
-                    <option value="">Unchanged</option>
-                    {% for m in maintenance_users %}<option value="{{ m.email }}">{{ m.name }}</option>{% endfor %}
-                  </select>
-                  <button type="submit" class="btn btn-outline-success">Assign</button>
-                </div>
-              </form>
-            </td>
-            <td>
-              {% if user.role=='admin' or issue.reporter_email==user.email %}
-              <form action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}" method="post"
-                onsubmit="return confirm('Delete this report?');">
-                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-              </form>
-              {% else %}&mdash;{% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- IMAGE MODALS -->
-  {% for issue in issues if issue.image_file_id %}
-  <div class="modal fade" id="imageModal{{ issue._id }}" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-body text-center">
-          <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" class="img-fluid"
-            alt="Issue image">
+  <!-- Stats Overview -->
+  <section class="stats-overview">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="stat-number" id="total-reports">{{ issues|length }}</div>
+          <div class="stat-label">Total Reports</div>
+          <div class="stat-trend trend-up">
+            <i class="bi bi-arrow-up" aria-hidden="true"></i>
+            <span>12% this month</span>
+          </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+        <div class="stat-card emerald">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="bi bi-check-circle" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="stat-number" id="resolved-reports">
+            {{ issues|selectattr('status', 'equalto', 'done')|list|length }}
+          </div>
+          <div class="stat-label">Resolved</div>
+          <div class="stat-trend trend-up">
+            <i class="bi bi-arrow-up" aria-hidden="true"></i>
+            <span>8% this week</span>
+          </div>
+        </div>
+
+        <div class="stat-card orange">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="stat-number" id="pending-reports">
+            {{ issues|selectattr('status', 'equalto', 'in progress')|list|length }}
+          </div>
+          <div class="stat-label">In Progress</div>
+          <div class="stat-trend trend-down">
+            <i class="bi bi-arrow-down" aria-hidden="true"></i>
+            <span>3% this week</span>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="bi bi-clock" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="stat-number" id="new-reports">
+            {{ issues|selectattr('status', 'equalto', 'pending')|list|length }}
+          </div>
+          <div class="stat-label">Pending</div>
+          <div class="stat-trend trend-up">
+            <i class="bi bi-arrow-up" aria-hidden="true"></i>
+            <span>5 today</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  {% endfor %}
+  </section>
 
-  <!-- DESCRIPTION MODALS -->
-  {% for issue in issues %}
-  <div class="modal fade" id="descModal{{ issue._id }}" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Full Description</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <!-- Main Content -->
+  <main class="container">
+    <div class="main-content">
+      <!-- Reports Table -->
+      <div class="content-card">
+        <div class="content-card-header">
+          <h2 class="content-card-title">
+            <i class="bi bi-list-ul" aria-hidden="true"></i>
+            All Reports
+          </h2>
+
+          <div class="search-box relative">
+            <i class="bi bi-search search-icon" aria-hidden="true"></i>
+            <input type="text" id="search-input" class="search-input" placeholder="Search reports..."
+              onkeyup="filterReports()">
+          </div>
         </div>
-        <div class="modal-body">
-          <p>{{ issue.description }}</p>
+
+        <div class="reports-table-container">
+          <table class="table" id="reports-table">
+            <thead>
+              <tr>
+                <th>Reporter</th>
+                <th>Description</th>
+                <th>Location</th>
+                <th>Image</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if issues %}
+              {% for issue in issues %}
+              <tr>
+                <td data-label="Reporter">
+                  <div class="reporter-info">
+                    <div class="reporter-avatar">
+                      {{ issue.reporter_email[0]|upper }}
+                    </div>
+                    <div class="reporter-details">
+                      <div class="reporter-name">
+                        {{ issue.reporter_email.split('@')[0]|title }}
+                      </div>
+                      <div class="reporter-email">{{ issue.reporter_email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Description" class="description-cell">
+                  <div class="description-text description-truncated" onclick="toggleDescription(this)"
+                    title="Click to expand">
+                    {{ issue.description }}
+                  </div>
+                </td>
+                <td data-label="Location">
+                  {% if issue.location %}
+                  <a href="#"onclick="showLocationModal('{{ issue._id }}',{{ issue.location.lat }},{{ issue.location.lng }})"
+                    class="nav-link">
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    View Map
+                  </a>
+                  {% else %}
+                  <span class="text-muted">No location</span>
+                  {% endif %}
+                </td>
+
+                <td data-label="Image">
+                  {% if issue.image_file_id %}
+                  <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue Image"
+                    class="image-thumb"onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
+                  {% else %}
+                  <div class="no-image">
+                    <i class="bi bi-image" aria-hidden="true"></i>
+                  </div>
+                  {% endif %}
+                </td>
+
+                <td data-label="Status">
+                  <span
+                    class="badge badge-{{ 'success' if issue.status == 'done' else 'warning' if issue.status == 'in progress' else 'info' if issue.status == 'assigned' else 'secondary' }}">
+                    <i class="bi bi-{{ 'check-circle' if issue.status == 'done' else 'hourglass-split' if issue.status == 'in progress' else 'person-check' if issue.status == 'assigned' else 'clock' }}"
+                      aria-hidden="true"></i>
+                    {{ issue.status|title }}
+                  </span>
+                </td>
+
+                <td data-label="Actions">
+                  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <form action="{{ url_for('reports.assign_issue', issue_id=issue._id) }}" method="post"
+                      class="assign-form">
+                      <select name="maintenance_email" class="assign-select">
+                        <option value="">Unassigned</option>
+                        {% for m in maintenance_users %}
+                        <option value="{{ m.email }}" {% if issue.assigned_to==m.email %}selected{% endif %}>
+                          {{ m.name }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                      <button type="submit" class="assign-btn">
+                        <i class="bi bi-person-check" aria-hidden="true"></i>
+                        Assign
+                      </button>
+                    </form>
+
+                    {% if user.role == 'admin' or issue.reporter_email == user.email %}
+                    <form action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}" method="post"
+                      onsubmit="return confirm('Are you sure you want to delete this report?');">
+                      <button type="submit" class="delete-btn" title="Delete Report">
+                        <i class="bi bi-trash" aria-hidden="true"></i>
+                      </button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="6" class="empty-state">
+                  <i class="bi bi-inbox" aria-hidden="true"></i>
+                  <p>No reports found</p>
+                </td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="content-card">
+        <div class="content-card-header">
+          <h2 class="content-card-title">
+            <i class="bi bi-activity" aria-hidden="true"></i>
+            Recent Activity
+          </h2>
+        </div>
+
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-icon activity-new">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">New report submitted</div>
+              <div class="activity-description">Pothole reported on Main Street</div>
+              <div class="activity-time">2 minutes ago</div>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon activity-progress">
+              <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Status updated</div>
+              <div class="activity-description">Water leak marked as in progress</div>
+              <div class="activity-time">15 minutes ago</div>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon activity-complete">
+              <i class="bi bi-check-circle" aria-hidden="true"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Report completed</div>
+              <div class="activity-description">Traffic light repair finished</div>
+              <div class="activity-time">1 hour ago</div>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon activity-new">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">New user registered</div>
+              <div class="activity-description">John Doe joined as maintenance</div>
+              <div class="activity-time">3 hours ago</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  {% endfor %}
+  </main>
 
-  <!-- LOCATION MODALS -->
-  {% for issue in issues if issue.location %}
-  <div class="modal fade" id="locModal{{ issue._id }}" data-lat="{{ issue.location.lat }}"
-    data-lng="{{ issue.location.lng }}" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Report Location</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body p-0">
-          <div id="map{{ issue._id }}" class="map-container" style="height:300px;"></div>
-        </div>
-        <div class="modal-footer">
-          <a href="https://www.google.com/maps/dir/?api=1&destination={{ issue.location.lat }},{{ issue.location.lng }}"
-            target="_blank" class="btn btn-primary">Get Directions</a>
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
+  <!-- Modals -->
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal-backdrop" onclick="closeImageModal()">
+    <div class="modal image-modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Issue Image</h3>
+        <button class="btn-close" onclick="closeImageModal()" aria-label="Close modal">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="Issue image" loading="lazy">
       </div>
     </div>
   </div>
-  {% endfor %}
 
-  <!-- SCRIPTS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Location Modal -->
+  <div id="location-modal" class="modal-backdrop" onclick="closeLocationModal()">
+    <div class="modal location-modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Issue Location</h3>
+        <button class="btn-close" onclick="closeLocationModal()" aria-label="Close modal">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-map"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeLocationModal()">Close</button>
+        <a id="directions-link" href="#" target="_blank" class="btn btn-primary">
+          <i class="bi bi-map" aria-hidden="true"></i>
+          Get Directions
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Live search
-    document.getElementById('searchInput').addEventListener('keyup', function () {
-      const term = this.value.toLowerCase();
-      document.querySelectorAll('#issuesTable tbody tr').forEach(row => {
-        row.style.display = Array.from(row.cells).some(cell => cell.textContent.toLowerCase().includes(term)) ? '' : 'none';
-      });
+    let modalMap;
+
+    // Search functionality
+    function filterReports() {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const table = document.getElementById('reports-table');
+
+      if (!table) return;
+
+      const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+      let visibleCount = 0;
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const text = row.textContent.toLowerCase();
+        const isVisible = text.includes(searchTerm);
+
+        row.style.display = isVisible ? '' : 'none';
+        if (isVisible) visibleCount++;
+      }
+
+      console.log(`Showing ${visibleCount} of ${rows.length} reports`);
+    }
+
+    // Toggle description
+    function toggleDescription(element) {
+      element.classList.toggle('description-truncated');
+
+      if (element.classList.contains('description-truncated')) {
+        element.title = 'Click to expand';
+      } else {
+        element.title = 'Click to collapse';
+      }
+    }
+
+    // Image modal functions
+    function showImageModal(src) {
+      const modal = document.getElementById('image-modal');
+      const modalImage = document.getElementById('modal-image');
+
+      if (!modal || !modalImage || !src) return;
+
+      modalImage.src = src;
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+
+      modal.querySelector('.btn-close')?.focus();
+
+      modalImage.onload = function () {
+        this.style.opacity = '1';
+      };
+      modalImage.onerror = function () {
+        this.alt = 'Failed to load image';
+      };
+      modalImage.style.opacity = '0.5';
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('image-modal');
+      if (!modal) return;
+
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+
+      setTimeout(() => {
+        const modalImage = document.getElementById('modal-image');
+        if (modalImage) {
+          modalImage.src = '';
+          modalImage.style.opacity = '1';
+        }
+      }, 300);
+    }
+
+    // Location modal functions
+    function showLocationModal(issueId, lat, lng) {
+      const modal = document.getElementById('location-modal');
+      const directionsLink = document.getElementById('directions-link');
+
+      if (!modal || !lat || !lng) return;
+
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+
+      if (directionsLink) {
+        directionsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      }
+
+      setTimeout(() => {
+        initializeModalMap(lat, lng);
+      }, 100);
+
+      modal.querySelector('.btn-close')?.focus();
+    }
+
+    function closeLocationModal() {
+      const modal = document.getElementById('location-modal');
+      if (!modal) return;
+
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+
+      if (modalMap) {
+        modalMap.remove();
+        modalMap = null;
+      }
+    }
+
+    function initializeModalMap(lat, lng) {
+      const mapContainer = document.getElementById('modal-map');
+      if (!mapContainer) return;
+
+      if (modalMap) {
+        modalMap.remove();
+      }
+
+      try {
+        modalMap = L.map('modal-map').setView([lat, lng], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 18
+        }).addTo(modalMap);
+
+        L.marker([lat, lng]).addTo(modalMap)
+          .bindPopup(`Issue Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`)
+          .openPopup();
+
+        setTimeout(() => {
+          if (modalMap) {
+            modalMap.invalidateSize();
+          }
+        }, 250);
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        mapContainer.innerHTML = '<div class="loading"><span>Error loading map</span></div>';
+      }
+    }
+
+    // Refresh data
+    function refreshData() {
+      const refreshBtn = document.querySelector('[onclick="refreshData()"]');
+      if (!refreshBtn) return;
+
+      const originalText = refreshBtn.innerHTML;
+      refreshBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i><span>Refreshing...</span>';
+      refreshBtn.style.pointerEvents = 'none';
+
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
+    }
+
+    // Handle escape key for modals
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeImageModal();
+        closeLocationModal();
+      }
     });
 
-    // Initialize maps in location modals
-    const mapInstances = {};
-    document.querySelectorAll('[id^="locModal"]').forEach(modalEl => {
-      modalEl.addEventListener('shown.bs.modal', () => {
-        const mid = modalEl.id;
-        if (!mapInstances[mid]) {
-          const lat = +modalEl.dataset.lat;
-          const lng = +modalEl.dataset.lng;
-          const mapDiv = document.getElementById('map' + mid.replace('locModal', ''));
-          const map = L.map(mapDiv).setView([lat, lng], 15);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-          L.marker([lat, lng]).addTo(map);
-          mapInstances[mid] = map;
-        } else {
-          mapInstances[mid].invalidateSize();
-        }
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+      // Add smooth scrolling
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+
+      // Add loading states to forms
+      document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+          const submitBtn = this.querySelector('button[type="submit"]');
+          if (submitBtn && !submitBtn.hasAttribute('onclick')) {
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i>';
+            submitBtn.disabled = true;
+
+            setTimeout(() => {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalContent;
+            }, 5000);
+          }
+        });
+      });
+
+      // Initialize intersection observer for animations
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, observerOptions);
+
+      // Observe stat cards
+      document.querySelectorAll('.stat-card').forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+        observer.observe(el);
       });
     });
   </script>

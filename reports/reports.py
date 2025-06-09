@@ -16,6 +16,29 @@ reports_bp = Blueprint(
     template_folder="../templates"
 )
 
+# Helper function to serialize MongoDB documents for JSON
+def serialize_issue_for_json(issue):
+    """Convert MongoDB document to JSON-serializable format"""
+    if issue is None:
+        return None
+    
+    # Convert ObjectId fields to strings
+    if "_id" in issue:
+        issue["_id"] = str(issue["_id"])
+    
+    if "image_file_id" in issue and issue["image_file_id"]:
+        issue["image_file_id"] = str(issue["image_file_id"])
+    
+    # Handle timestamp conversion
+    if "timestamp" in issue:
+        ts = issue["timestamp"]
+        if isinstance(ts, datetime):
+            issue["timestamp"] = ts.isoformat(timespec="milliseconds") + "Z"
+        elif isinstance(ts, str) and "." in ts:
+            issue["timestamp"] = ts.split(".")[0] + "Z"
+    
+    return issue
+
 # ---------- Utility: serve files from GridFS ----------
 @reports_bp.route("/uploads/<file_id>")
 def serve_upload(file_id):
@@ -42,7 +65,7 @@ def test_email():
         send_email(
             user["email"],
             "🐍 Flask-SMTP Test",
-            "If you’re reading this, SMTP is working!"
+            "If you're reading this, SMTP is working!"
         )
     return "", 200
 
@@ -57,7 +80,9 @@ def report_detail(issue_id):
     issue = mongo.db.issues.find_one({"_id": _id})
     if not issue:
         abort(404)
-    issue["_id"] = str(issue["_id"])
+    
+    # Serialize the issue for template use
+    issue = serialize_issue_for_json(issue)
     return render_template("report_detail.html", issue=issue)
 
 # ---------- Public list of all reports ----------
@@ -66,11 +91,13 @@ def public_reports():
     mongo = current_app.mongo
     issues = list(mongo.db.issues.find().sort("timestamp", -1))
     categories = sorted({i.get("category", "") for i in issues if i.get("category")})
-    for i in issues:
-        i["_id"] = str(i["_id"])
+    
+    # Serialize all issues
+    serialized_issues = [serialize_issue_for_json(issue) for issue in issues]
+    
     return render_template(
         "public_reports.html",
-        issues=issues,
+        issues=serialized_issues,
         categories=categories
     )
 
@@ -168,15 +195,16 @@ def admin_dashboard():
         return redirect(url_for("auth.dashboard"))
 
     issues = list(mongo.db.issues.find().sort("timestamp", -1))
-    for i in issues:
-        i["_id"] = str(i["_id"])
+    # Serialize issues for template
+    serialized_issues = [serialize_issue_for_json(issue) for issue in issues]
+    
     maintenance_users = list(mongo.db.users.find({"role": "maintenance"}))
     my_issue_count = mongo.db.issues.count_documents({"reporter_email": session["user"]})
     user_data.pop("password", None)
 
     return render_template(
         "admin_dashboard.html",
-        issues=issues,
+        issues=serialized_issues,
         maintenance_users=maintenance_users,
         user=user_data,
         my_issue_count=my_issue_count
@@ -231,7 +259,7 @@ def assign_issue(issue_id):
 
     return redirect(url_for("reports.admin_dashboard"))
 
-# ---------- Current user’s reports ----------
+# ---------- Current user's reports ----------
 @reports_bp.route("/my_reports")
 def my_reports():
     if "user" not in session:
@@ -239,13 +267,14 @@ def my_reports():
         return redirect(url_for("auth.root"))
     mongo = current_app.mongo
     issues = list(mongo.db.issues.find({"reporter_email": session["user"]}))
-    for i in issues:
-        i["_id"] = str(i["_id"])
+    # Serialize issues for template
+    serialized_issues = [serialize_issue_for_json(issue) for issue in issues]
+    
     user_data = mongo.db.users.find_one({"email": session["user"]})
     user_data.pop("password", None)
     return render_template(
         "user_dashboard.html",
-        issues=issues,
+        issues=serialized_issues,
         user=user_data
     )
 
@@ -254,14 +283,36 @@ def my_reports():
 def get_all_issues():
     mongo = current_app.mongo
     issues = list(mongo.db.issues.find())
-    for i in issues:
-        i["_id"] = str(i["_id"])  
-        ts = i.get("timestamp")
-        if isinstance(ts, datetime):
-            i["timestamp"] = ts.isoformat(timespec="milliseconds") + "Z"
-        elif isinstance(ts, str) and "." in ts:
-            i["timestamp"] = ts.split(".")[0] + "Z"
-    return {"issues": issues}, 200
+    
+    # Use the helper function to serialize each issue
+    serialized_issues = [serialize_issue_for_json(issue) for issue in issues]
+    
+    return {"issues": serialized_issues}, 200
+
+# ---------- Additional API endpoints ----------
+@reports_bp.route("/api/issues/<issue_id>")
+def get_issue_by_id(issue_id):
+    """Get a single issue by ID"""
+    mongo = current_app.mongo
+    try:
+        issue = mongo.db.issues.find_one({"_id": ObjectId(issue_id)})
+        if not issue:
+            return {"error": "Issue not found"}, 404
+        
+        serialized_issue = serialize_issue_for_json(issue)
+        return {"issue": serialized_issue}, 200
+    except Exception as e:
+        return {"error": "Invalid issue ID"}, 400
+
+@reports_bp.route("/api/issues/user/<user_email>")
+def get_user_issues(user_email):
+    """Get all issues for a specific user"""
+    mongo = current_app.mongo
+    issues = list(mongo.db.issues.find({"reporter_email": user_email}))
+    
+    serialized_issues = [serialize_issue_for_json(issue) for issue in issues]
+    
+    return {"issues": serialized_issues}, 200
 
 # ---------- Maintenance dashboard ----------
 @reports_bp.route("/maintenance/dashboard")
@@ -289,6 +340,11 @@ def maintenance_dashboard():
             i["awaiting"] = False
         elif dr:
             i["awaiting"] = True
+        
+        # Serialize image_file_id if present
+        if i.get("image_file_id"):
+            i["image_file_id"] = str(i["image_file_id"])
+            
         issues.append(i)
 
     rejected_count = 0
@@ -395,6 +451,11 @@ def rejected_reports():
             continue
         r["_id"] = str(r["_id"])
         r["original_issue_id"] = str(r["original_issue_id"])
+        
+        # Serialize image_file_id if present in the original issue
+        if issue.get("image_file_id"):
+            r["image_file_id"] = str(issue["image_file_id"])
+            
         reports.append(r)
 
     return render_template(

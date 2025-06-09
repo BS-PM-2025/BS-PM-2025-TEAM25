@@ -1,127 +1,306 @@
-<!-- templates/user_dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
   <title>My Reports – {{ user.name }}</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/dashboard.png') }}">
+  <meta name="description" content="View and manage your submitted reports in CityFix.">
 
-  <!-- Bootstrap & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Your shared dashboard CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}" />
-
-  <style>
-    body {
-      background: #f5f6f7;
-    }
-
-    .image-container {
-      height: 180px;
-      overflow: hidden;
-      border-top-left-radius: .5rem;
-      border-top-right-radius: .5rem;
-    }
-
-    .image-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  </style>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/user_dashboard.css') }}">
 </head>
 
-<body class="hm-gradient">
-     <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix" width="30" height="30"
-          class="d-inline-block align-text-top">
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
+<body>
+   <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
 
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.report_issue') }}">Report Issue</a></li>
-        </ul>
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}" class="nav-link">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
-  <div class="container my-4">
-    <h2 class="text-center mb-4">
-      Hello {{ user.name }} — you have {{ issues|length }} report{{ '' if issues|length==1 else 's' }}
-    </h2>
 
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link active">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
 
-    {% if issues %}
-    <div class="row g-4">
-      {% for issue in issues %}
-      <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          {% if issue.image_file_id %}
-          <div class="image-container">
-            <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue image">
+  <!-- User Hero -->
+  <section class="user-hero">
+    <div class="container">
+      <div class="user-content">
+        <div class="user-avatar">
+          {{ user.name[0].upper() if user.name else 'U' }}
+        </div>
+        <h1 class="user-greeting">Hello, {{ user.name }}!</h1>
+        <p class="user-subtitle">
+          You have {{ issues|length }} report{{ '' if issues|length == 1 else 's' }} submitted
+        </p>
+
+        <div class="user-stats">
+          <div class="user-stat">
+            <span class="user-stat-number">{{ issues|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+            <span class="user-stat-label">Pending</span>
           </div>
-          {% endif %}
-          <div class="card-body d-flex flex-column">
-            <h6 class="text-muted mb-1">{{ issue.category or 'Report' }}</h6>
-            <p class="flex-grow-1">{{ issue.description|truncate(100) }}</p>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="badge bg-secondary text-capitalize">{{ issue.status }}</span>
-              <a href="{{ url_for('reports.report_detail', issue_id=issue._id) }}"
-                class="btn btn-sm btn-primary">Details</a>
-            </div>
-            <form action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}" method="POST"
-              onsubmit="return confirm('Delete this report permanently?');">
-              <button class="btn btn-danger w-100 btn-sm">Delete</button>
-            </form>
+          <div class="user-stat">
+            <span class="user-stat-number">{{ issues|selectattr('status', 'equalto', 'in progress')|list|length }}</span>
+            <span class="user-stat-label">In Progress</span>
+          </div>
+          <div class="user-stat">
+            <span class="user-stat-number">{{ issues|selectattr('status', 'equalto', 'done')|list|length }}</span>
+            <span class="user-stat-label">Completed</span>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Content -->
+  <main class="dashboard-content">
+    <div class="container">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} mb-6">
+        <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' if category == 'info' else 'x-circle' }}"
+          aria-hidden="true"></i>
+        {{ message }}
       </div>
       {% endfor %}
-    </div>
-    {% else %}
-    <div class="row">
-      <div class="col-12">
-        <div class="card shadow-sm text-center bg-warning text-white">
-          <div class="card-body">
-            <h5 class="card-title mb-0">You haven’t reported any issues yet.</h5>
-            <a href="{{ url_for('reports.report_issue') }}" class="btn btn-light mt-3">File your first report</a>
-          </div>
+      {% endif %}
+      {% endwith %}
+
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <h2 class="dashboard-title">
+          <i class="bi bi-journal-text" aria-hidden="true"></i>
+          My Reports
+        </h2>
+        <div class="dashboard-actions">
+          <a href="{{ url_for('reports.report_issue') }}" class="btn-action btn-primary-action">
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+            New Report
+          </a>
+          <a href="{{ url_for('reports.public_reports') }}" class="btn-action btn-secondary-action">
+            <i class="bi bi-map" aria-hidden="true"></i>
+            View All Reports
+          </a>
         </div>
       </div>
+
+      <!-- Reports Grid -->
+      {% if issues %}
+      <div class="reports-grid">
+        {% for issue in issues %}
+        <article class="report-card">
+          <!-- Report Image -->
+          {% if issue.image_file_id %}
+          <div class="report-image-container">
+            <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" 
+                 alt="Issue image" 
+                 class="report-image">
+            <div class="report-status-overlay status-{{ issue.status.replace(' ', '-') }}">
+              {{ issue.status }}
+            </div>
+          </div>
+          {% else %}
+          <div class="no-image-placeholder">
+            <div class="report-status-overlay status-{{ issue.status.replace(' ', '-') }}">
+              {{ issue.status }}
+            </div>
+            <i class="bi bi-image no-image-icon" aria-hidden="true"></i>
+            <span class="no-image-text">No Image</span>
+          </div>
+          {% endif %}
+
+          <!-- Report Body -->
+          <div class="report-card-body">
+            <div class="report-category">
+              <i class="bi bi-{{ 'traffic-light' if issue.category == 'traffic_light_failure' else 'droplet' if issue.category == 'water_leak' else 'cone-striped' if issue.category == 'pothole' else 'lightbulb' if issue.category == 'street_lighting' else 'exclamation-circle' }} category-icon" aria-hidden="true"></i>
+              {{ issue.category.replace('_', ' ').title() if issue.category else 'General Issue' }}
+            </div>
+
+            <h3 class="report-title">{{ issue.description[:60] }}{{ '...' if issue.description|length > 60 else '' }}</h3>
+
+            <p class="report-description">{{ issue.description }}</p>
+
+            <div class="report-meta">
+              <div class="report-date">
+                <i class="bi bi-calendar3" aria-hidden="true"></i>
+                {{ issue.timestamp[:10] if issue.timestamp else 'Unknown' }}
+              </div>
+              {% if issue.city_street %}
+              <div class="report-location">
+                <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                {{ issue.city_street[:20] }}{{ '...' if issue.city_street|length > 20 else '' }}
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="report-actions">
+              <a href="{{ url_for('reports.report_detail', issue_id=issue._id) }}" class="btn-report-action btn-view">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+                View Details
+              </a>
+              <form action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}" method="POST"
+                onsubmit="return confirm('Are you sure you want to delete this report? This action cannot be undone.');"
+                style="flex: 1;">
+                <button type="submit" class="btn-report-action btn-delete" style="width: 100%;">
+                  <i class="bi bi-trash" aria-hidden="true"></i>
+                  Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-journal-plus" aria-hidden="true"></i>
+        <h3>No Reports Yet</h3>
+        <p>
+          You haven't submitted any reports yet. Help improve your community 
+          by reporting infrastructure issues in your area.
+        </p>
+        <a href="{{ url_for('reports.report_issue') }}" class="btn-cta">
+          <i class="bi bi-plus-circle" aria-hidden="true"></i>
+          Create Your First Report
+        </a>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
+  </main>
 
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    setTimeout(() => {
-      document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
-    }, 3000);
+    // Auto-dismiss flash messages
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+          alert.style.transition = 'opacity 0.5s ease';
+          alert.style.opacity = '0';
+          setTimeout(() => alert.remove(), 500);
+        });
+      }, 5000);
+    });
+
+    // Animation on scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    // Observe report cards
+    document.querySelectorAll('.report-card').forEach((el, index) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+      observer.observe(el);
+    });
+
+    // Enhanced form submission
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          const originalContent = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Deleting...';
+          
+          // Re-enable if form doesn't submit (fallback)
+          setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+          }, 5000);
+        }
+      });
+    });
   </script>
 </body>
 
