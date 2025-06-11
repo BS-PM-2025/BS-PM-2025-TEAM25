@@ -29,13 +29,13 @@
 </head>
 
 <body>
-     <!-- Back Link -->
+  <!-- Back Link -->
   <a href="{{ url_for('main.home') }}" class="back-link">
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
   </a>
   <!-- Desktop Navigation -->  
-   <nav class="navbar" role="navigation" aria-label="Main navigation">
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="navbar-content">
       <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
 
@@ -123,7 +123,7 @@
         <div class="welcome-info">
           <h1>Welcome back, {{ user.name }}!</h1>
           <p class="welcome-subtitle">
-            Admin Dashboard • Manage all reported issues and oversee city maintenance
+            Admin Dashboard • Manage all reported issues with priority-based oversight
           </p>
         </div>
 
@@ -136,6 +136,10 @@
             <i class="bi bi-people" aria-hidden="true"></i>
             <span>Manage Users</span>
           </a>
+          <a href="/api/priority-stats" class="quick-action-btn" onclick="viewPriorityStats(event)">
+            <i class="bi bi-bar-chart" aria-hidden="true"></i>
+            <span>Priority Stats</span>
+          </a>
           <button class="quick-action-btn" onclick="refreshData()">
             <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
             <span>Refresh</span>
@@ -145,7 +149,7 @@
     </div>
   </section>
 
-  <!-- Stats Overview -->
+  <!-- Enhanced Stats Overview -->
   <section class="stats-overview">
     <div class="container">
       <div class="stats-grid">
@@ -160,6 +164,38 @@
           <div class="stat-trend trend-up">
             <i class="bi bi-arrow-up" aria-hidden="true"></i>
             <span>12% this month</span>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="stat-number" id="critical-reports">
+            {{ issues|selectattr('priority', 'equalto', 'critical')|list|length }}
+          </div>
+          <div class="stat-label">Critical Priority</div>
+          <div class="stat-trend trend-up">
+            <i class="bi bi-arrow-up" aria-hidden="true"></i>
+            <span>{{ issues|selectattr('severity', 'equalto', 'critical')|list|length }} Critical Severity</span>
+          </div>
+        </div>
+
+        <div class="stat-card orange">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="stat-number" id="high-priority-reports">
+            {{ issues|selectattr('priority', 'equalto', 'high')|list|length }}
+          </div>
+          <div class="stat-label">High Priority</div>
+          <div class="stat-trend trend-down">
+            <i class="bi bi-arrow-down" aria-hidden="true"></i>
+            <span>{{ issues|selectattr('severity', 'equalto', 'major')|list|length }} Major Severity</span>
           </div>
         </div>
 
@@ -179,35 +215,18 @@
           </div>
         </div>
 
-        <div class="stat-card orange">
+        <!-- New Urgency Score Card -->
+        <div class="stat-card purple">
           <div class="stat-header">
             <div class="stat-icon">
-              <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
             </div>
           </div>
-          <div class="stat-number" id="pending-reports">
-            {{ issues|selectattr('status', 'equalto', 'in progress')|list|length }}
-          </div>
-          <div class="stat-label">In Progress</div>
-          <div class="stat-trend trend-down">
-            <i class="bi bi-arrow-down" aria-hidden="true"></i>
-            <span>3% this week</span>
-          </div>
-        </div>
-
-        <div class="stat-card red">
-          <div class="stat-header">
-            <div class="stat-icon">
-              <i class="bi bi-clock" aria-hidden="true"></i>
-            </div>
-          </div>
-          <div class="stat-number" id="new-reports">
-            {{ issues|selectattr('status', 'equalto', 'pending')|list|length }}
-          </div>
-          <div class="stat-label">Pending</div>
-          <div class="stat-trend trend-up">
-            <i class="bi bi-arrow-up" aria-hidden="true"></i>
-            <span>5 today</span>
+          <div class="stat-number" id="avg-urgency">-</div>
+          <div class="stat-label">Avg Urgency Score</div>
+          <div class="stat-trend" id="urgency-trend">
+            <i class="bi bi-dash" aria-hidden="true"></i>
+            <span>Out of 4.0</span>
           </div>
         </div>
       </div>
@@ -223,12 +242,64 @@
           <h2 class="content-card-title">
             <i class="bi bi-list-ul" aria-hidden="true"></i>
             All Reports
+            <span class="urgency-indicator" id="urgency-indicator">
+              <i class="bi bi-lightning-charge" aria-hidden="true"></i>
+              Sorted by Urgency
+            </span>
           </h2>
 
-          <div class="search-box relative">
-            <i class="bi bi-search search-icon" aria-hidden="true"></i>
-            <input type="text" id="search-input" class="search-input" placeholder="Search reports..."
-              onkeyup="filterReports()">
+          <div class="filter-controls">
+            <!-- Priority Filter -->
+            <div class="filter-group">
+              <label for="priority-filter" class="filter-label">
+                <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                Priority
+              </label>
+              <select id="priority-filter" class="filter-select" onchange="applyFilters()">
+                <option value="">All Priorities</option>
+                <option value="critical">🔴 Critical</option>
+                <option value="high">🟠 High</option>
+                <option value="medium">🟡 Medium</option>
+                <option value="low">🟢 Low</option>
+              </select>
+            </div>
+
+            <!-- Severity Filter -->
+            <div class="filter-group">
+              <label for="severity-filter" class="filter-label">
+                <i class="bi bi-bar-chart" aria-hidden="true"></i>
+                Severity
+              </label>
+              <select id="severity-filter" class="filter-select" onchange="applyFilters()">
+                <option value="">All Severities</option>
+                <option value="critical">🔴 Critical</option>
+                <option value="major">🟠 Major</option>
+                <option value="moderate">🟡 Moderate</option>
+                <option value="minor">🟢 Minor</option>
+              </select>
+            </div>
+
+            <!-- Enhanced Sort Options -->
+            <div class="filter-group">
+              <label for="sort-select" class="filter-label">
+                <i class="bi bi-sort-down" aria-hidden="true"></i>
+                Sort By
+              </label>
+              <select id="sort-select" class="filter-select" onchange="applyFilters()">
+                <option value="urgency" {{ 'selected' if current_sort == 'urgency' }}>⚡ Urgency Score</option>
+                <option value="priority" {{ 'selected' if current_sort == 'priority' }}>🔥 Priority (High to Low)</option>
+                <option value="severity" {{ 'selected' if current_sort == 'severity' }}>📊 Severity (High to Low)</option>
+                <option value="newest" {{ 'selected' if current_sort == 'newest' }}>🕒 Newest First</option>
+                <option value="oldest" {{ 'selected' if current_sort == 'oldest' }}>📅 Oldest First</option>
+              </select>
+            </div>
+
+            <!-- Search Box -->
+            <div class="search-box relative">
+              <i class="bi bi-search search-icon" aria-hidden="true"></i>
+              <input type="text" id="search-input" class="search-input" placeholder="Search reports..."
+                onkeyup="filterReports()">
+            </div>
           </div>
         </div>
 
@@ -236,8 +307,11 @@
           <table class="table" id="reports-table">
             <thead>
               <tr>
+                <th>Urgency</th>
                 <th>Reporter</th>
                 <th>Description</th>
+                <th>Priority</th>
+                <th>Severity</th>
                 <th>Location</th>
                 <th>Image</th>
                 <th>Status</th>
@@ -247,7 +321,27 @@
             <tbody>
               {% if issues %}
               {% for issue in issues %}
-              <tr>
+              <tr data-priority="{{ issue.priority or 'medium' }}" 
+                  data-severity="{{ issue.severity or 'moderate' }}" 
+                  data-status="{{ issue.status or 'pending' }}"
+                  data-urgency="{{ '%.2f'|format(issue.urgency_score|default(2.0)) }}"
+                  class="priority-{{ issue.priority or 'medium' }} severity-{{ issue.severity or 'moderate' }}">
+                
+                <!-- Urgency Score Column -->
+                <td data-label="Urgency">
+                  <div class="urgency-score-display">
+                    <div class="urgency-number urgency-{{ 'critical' if issue.urgency_score|default(2.0) >= 3.5 else 'high' if issue.urgency_score|default(2.0) >= 2.5 else 'medium' if issue.urgency_score|default(2.0) >= 1.5 else 'low' }}">
+                      {{ '%.1f'|format(issue.urgency_score|default(2.0)) }}
+                    </div>
+                    <div class="urgency-bar">
+                      <div class="urgency-fill" style="width: {{ ((issue.urgency_score|default(2.0) / 4.0 * 100)|round) }}%"></div>
+                    </div>
+                    <div class="urgency-label">
+                      {{ 'URGENT' if issue.urgency_score|default(2.0) >= 3.0 else 'HIGH' if issue.urgency_score|default(2.0) >= 2.5 else 'NORMAL' if issue.urgency_score|default(2.0) >= 1.5 else 'LOW' }}
+                    </div>
+                  </div>
+                </td>
+
                 <td data-label="Reporter">
                   <div class="reporter-info">
                     <div class="reporter-avatar">
@@ -261,15 +355,31 @@
                     </div>
                   </div>
                 </td>
+                
                 <td data-label="Description" class="description-cell">
                   <div class="description-text description-truncated" onclick="toggleDescription(this)"
                     title="Click to expand">
                     {{ issue.description }}
                   </div>
                 </td>
+                
+                <td data-label="Priority">
+                  <div class="priority-badge priority-{{ issue.priority or 'medium' }}">
+                    <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.priority or 'medium') == 'critical' else 'exclamation-circle' if (issue.priority or 'medium') == 'high' else 'dash-circle' if (issue.priority or 'medium') == 'medium' else 'clock' }}" aria-hidden="true"></i>
+                    <span>{{ (issue.priority or 'medium').title() }}</span>
+                  </div>
+                </td>
+                
+                <td data-label="Severity">
+                  <div class="severity-badge severity-{{ issue.severity or 'moderate' }}">
+                    <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.severity or 'moderate') == 'critical' else 'exclamation-circle' if (issue.severity or 'moderate') == 'major' else 'dash-circle' if (issue.severity or 'moderate') == 'moderate' else 'dash' }}" aria-hidden="true"></i>
+                    <span>{{ (issue.severity or 'moderate').title() }}</span>
+                  </div>
+                </td>
+                
                 <td data-label="Location">
                   {% if issue.location %}
-                  <a href="#"onclick="showLocationModal('{{ issue._id }}',{{ issue.location.lat }},{{ issue.location.lng }})"
+                  <a href="#" onclick="showLocationModal('{{ issue._id }}',{{ issue.location.lat }},{{ issue.location.lng }})"
                     class="nav-link">
                     <i class="bi bi-geo-alt" aria-hidden="true"></i>
                     View Map
@@ -282,7 +392,7 @@
                 <td data-label="Image">
                   {% if issue.image_file_id %}
                   <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue Image"
-                    class="image-thumb"onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
+                    class="image-thumb" onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
                   {% else %}
                   <div class="no-image">
                     <i class="bi bi-image" aria-hidden="true"></i>
@@ -332,7 +442,7 @@
               {% endfor %}
               {% else %}
               <tr>
-                <td colspan="6" class="empty-state">
+                <td colspan="9" class="empty-state">
                   <i class="bi bi-inbox" aria-hidden="true"></i>
                   <p>No reports found</p>
                 </td>
@@ -343,57 +453,168 @@
         </div>
       </div>
 
-      <!-- Recent Activity -->
+      <!-- Enhanced Priority Analysis Sidebar -->
       <div class="content-card">
         <div class="content-card-header">
           <h2 class="content-card-title">
-            <i class="bi bi-activity" aria-hidden="true"></i>
-            Recent Activity
+            <i class="bi bi-pie-chart" aria-hidden="true"></i>
+            Priority & Urgency Analysis
           </h2>
         </div>
 
-        <div class="activity-list">
-          <div class="activity-item">
-            <div class="activity-icon activity-new">
-              <i class="bi bi-plus-circle" aria-hidden="true"></i>
-            </div>
-            <div class="activity-content">
-              <div class="activity-title">New report submitted</div>
-              <div class="activity-description">Pothole reported on Main Street</div>
-              <div class="activity-time">2 minutes ago</div>
+        <div class="priority-analysis">
+          <!-- Urgency Distribution -->
+          <div class="analysis-section">
+            <h3 class="analysis-title">Urgency Distribution</h3>
+            <div class="urgency-stats">
+              <div class="urgency-stat critical">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ (issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 3.0)|list|length / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">🔴 Urgent (3.0+)</span>
+                  <span class="stat-count">{{ issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 3.0)|list|length }}</span>
+                </div>
+              </div>
+              
+              <div class="urgency-stat high">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ (issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 2.0)|selectattr('urgency_score', 'lt', 3.0)|list|length / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">🟠 High (2.0-3.0)</span>
+                  <span class="stat-count">{{ issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 2.0)|selectattr('urgency_score', 'lt', 3.0)|list|length }}</span>
+                </div>
+              </div>
+              
+              <div class="urgency-stat normal">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ (issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 1.0)|selectattr('urgency_score', 'lt', 2.0)|list|length / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">🟡 Normal (1.0-2.0)</span>
+                  <span class="stat-count">{{ issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 1.0)|selectattr('urgency_score', 'lt', 2.0)|list|length }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="activity-item">
-            <div class="activity-icon activity-progress">
-              <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
-            </div>
-            <div class="activity-content">
-              <div class="activity-title">Status updated</div>
-              <div class="activity-description">Water leak marked as in progress</div>
-              <div class="activity-time">15 minutes ago</div>
+          <!-- Priority Distribution -->
+          <div class="analysis-section">
+            <h3 class="analysis-title">Priority Distribution</h3>
+            <div class="priority-stats">
+              <div class="priority-stat critical">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ ((issues|selectattr('priority', 'equalto', 'critical')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Critical</span>
+                  <span class="stat-count">{{ issues|selectattr('priority', 'equalto', 'critical')|list|length }}</span>
+                </div>
+              </div>
+              
+              <div class="priority-stat high">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ ((issues|selectattr('priority', 'equalto', 'high')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">High</span>
+                  <span class="stat-count">{{ issues|selectattr('priority', 'equalto', 'high')|list|length }}</span>
+                </div>
+              </div>
+              
+              <div class="priority-stat medium">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ ((issues|selectattr('priority', 'equalto', 'medium')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Medium</span>
+                  <span class="stat-count">{{ issues|selectattr('priority', 'equalto', 'medium')|list|length }}</span>
+                </div>
+              </div>
+              
+              <div class="priority-stat low">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ ((issues|selectattr('priority', 'equalto', 'low')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Low</span>
+                  <span class="stat-count">{{ issues|selectattr('priority', 'equalto', 'low')|list|length }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="activity-item">
-            <div class="activity-icon activity-complete">
-              <i class="bi bi-check-circle" aria-hidden="true"></i>
-            </div>
-            <div class="activity-content">
-              <div class="activity-title">Report completed</div>
-              <div class="activity-description">Traffic light repair finished</div>
-              <div class="activity-time">1 hour ago</div>
+          <!-- Severity Distribution -->
+          <div class="analysis-section">
+            <h3 class="analysis-title">Severity Distribution</h3>
+            <div class="severity-stats">
+              <div class="severity-stat critical">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ ((issues|selectattr('severity', 'equalto', 'critical')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Critical</span>
+                  <span class="stat-count">{{ issues|selectattr('severity', 'equalto', 'critical')|list|length }}</span>
+                </div>
+              </div>
+              
+              <div class="severity-stat major">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ ((issues|selectattr('severity', 'equalto', 'major')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Major</span>
+                  <span class="stat-count">{{ issues|selectattr('severity', 'equalto', 'major')|list|length }}</span>
+                </div>
+              </div>
+              
+              <div class="severity-stat moderate">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ ((issues|selectattr('severity', 'equalto', 'moderate')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Moderate</span>
+                  <span class="stat-count">{{ issues|selectattr('severity', 'equalto', 'moderate')|list|length }}</span>
+                </div>
+              </div>
+              
+              <div class="severity-stat minor">
+                <div class="stat-bar">
+                  <div class="stat-fill" style="width: {{ ((issues|selectattr('severity', 'equalto', 'minor')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-label">Minor</span>
+                  <span class="stat-count">{{ issues|selectattr('severity', 'equalto', 'minor')|list|length }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="activity-item">
-            <div class="activity-icon activity-new">
-              <i class="bi bi-person-plus" aria-hidden="true"></i>
-            </div>
-            <div class="activity-content">
-              <div class="activity-title">New user registered</div>
-              <div class="activity-description">John Doe joined as maintenance</div>
-              <div class="activity-time">3 hours ago</div>
+          <!-- Enhanced Quick Actions -->
+          <div class="analysis-section">
+            <h3 class="analysis-title">Quick Actions</h3>
+            <div class="quick-action-buttons">
+              <button class="action-button critical" onclick="filterByUrgency(3.0)">
+                <i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>
+                View Urgent (3.0+)
+              </button>
+              <button class="action-button critical" onclick="filterByPriority('critical')">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                View Critical Priority
+              </button>
+              <button class="action-button high" onclick="filterByPriority('high')">
+                <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                View High Priority
+              </button>
+              <button class="action-button" onclick="sortByUrgency()">
+                <i class="bi bi-sort-numeric-down" aria-hidden="true"></i>
+                Sort by Urgency
+              </button>
+              <button class="action-button" onclick="clearFilters()">
+                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                Clear Filters
+              </button>
             </div>
           </div>
         </div>
@@ -439,42 +660,296 @@
     </div>
   </div>
 
+  <!-- Priority Stats Modal -->
+  <div id="priority-stats-modal" class="modal-backdrop" onclick="closePriorityStatsModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">📊 Priority & Urgency Statistics</h3>
+        <button class="btn-close" onclick="closePriorityStatsModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="priority-stats-content">
+          <div class="loading">
+            <div class="spinner"></div>
+            Loading statistics...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     let modalMap;
+    let allRows = [];
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Store all table rows for filtering
+      const tbody = document.querySelector('#reports-table tbody');
+      if (tbody) {
+        allRows = Array.from(tbody.getElementsByTagName('tr'));
+      }
+      
+      // Calculate and display average urgency
+      calculateAverageUrgency();
+    });
+
+    // Calculate average urgency score
+    function calculateAverageUrgency() {
+      const urgencyScores = allRows
+        .filter(row => !row.querySelector('.empty-state'))
+        .map(row => parseFloat(row.dataset.urgency || 0))
+        .filter(score => !isNaN(score) && score > 0);
+      
+      if (urgencyScores.length > 0) {
+        const avgUrgency = urgencyScores.reduce((a, b) => a + b, 0) / urgencyScores.length;
+        const avgElement = document.getElementById('avg-urgency');
+        const trendElement = document.getElementById('urgency-trend');
+        
+        if (avgElement && trendElement) {
+          avgElement.textContent = avgUrgency.toFixed(2);
+          
+          // Update trend based on average
+          if (avgUrgency >= 3.0) {
+            trendElement.innerHTML = '<i class="bi bi-arrow-up text-red-500"></i><span class="text-red-500">High Risk</span>';
+          } else if (avgUrgency >= 2.0) {
+            trendElement.innerHTML = '<i class="bi bi-dash text-orange-500"></i><span class="text-orange-500">Moderate</span>';
+          } else {
+            trendElement.innerHTML = '<i class="bi bi-arrow-down text-green-500"></i><span class="text-green-500">Low Risk</span>';
+          }
+        }
+      }
+    }
+
+    // Enhanced filtering functionality
+    function applyFilters() {
+      const priorityFilter = document.getElementById('priority-filter').value;
+      const severityFilter = document.getElementById('severity-filter').value;
+      const sortBy = document.getElementById('sort-select').value;
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+      let visibleRows = allRows.filter(row => {
+        // Skip empty state row
+        if (row.querySelector('.empty-state')) return false;
+
+        const priority = row.dataset.priority;
+        const severity = row.dataset.severity;
+        const text = row.textContent.toLowerCase();
+
+        // Apply filters
+        if (priorityFilter && priority !== priorityFilter) return false;
+        if (severityFilter && severity !== severityFilter) return false;
+        if (searchTerm && !text.includes(searchTerm)) return false;
+
+        return true;
+      });
+
+      // Sort rows
+      sortRows(visibleRows, sortBy);
+
+      // Update table display
+      updateTableDisplay(visibleRows);
+    }
+
+    function sortRows(rows, sortBy) {
+      const priorityOrder = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
+      const severityOrder = { 'critical': 4, 'major': 3, 'moderate': 2, 'minor': 1 };
+
+      rows.sort((a, b) => {
+        switch (sortBy) {
+          case 'urgency':
+            const urgencyA = parseFloat(a.dataset.urgency || 0);
+            const urgencyB = parseFloat(b.dataset.urgency || 0);
+            return urgencyB - urgencyA;
+          case 'priority':
+            return priorityOrder[b.dataset.priority] - priorityOrder[a.dataset.priority];
+          case 'severity':
+            return severityOrder[b.dataset.severity] - severityOrder[a.dataset.severity];
+          case 'status':
+            return a.dataset.status.localeCompare(b.dataset.status);
+          case 'oldest':
+            return 0; // Keep original order for oldest
+          default: // newest
+            return 0; // Keep original order for newest
+        }
+      });
+    }
+
+    function updateTableDisplay(visibleRows) {
+      const tbody = document.querySelector('#reports-table tbody');
+      
+      // Hide all rows first
+      allRows.forEach(row => row.style.display = 'none');
+
+      if (visibleRows.length === 0) {
+        // Show empty state
+        const emptyRow = tbody.querySelector('.empty-state');
+        if (emptyRow) {
+          emptyRow.parentElement.style.display = '';
+          emptyRow.parentElement.querySelector('td').textContent = 'No reports match your filters';
+        }
+      } else {
+        // Show filtered rows
+        visibleRows.forEach(row => row.style.display = '');
+      }
+
+      console.log(`Showing ${visibleRows.length} of ${allRows.length} reports`);
+    }
+
+    // Quick filter functions
+    function filterByPriority(priority) {
+      document.getElementById('priority-filter').value = priority;
+      applyFilters();
+    }
+
+    function filterByUrgency(minUrgency) {
+      // Filter rows by urgency score
+      allRows.forEach(row => {
+        if (row.querySelector('.empty-state')) return;
+        
+        const urgency = parseFloat(row.dataset.urgency || 0);
+        row.style.display = urgency >= minUrgency ? '' : 'none';
+      });
+    }
+
+    function sortByUrgency() {
+      document.getElementById('sort-select').value = 'urgency';
+      applyFilters();
+      
+      // Update urgency indicator
+      const indicator = document.getElementById('urgency-indicator');
+      if (indicator) {
+        indicator.classList.add('active');
+        setTimeout(() => indicator.classList.remove('active'), 2000);
+      }
+    }
+
+    function clearFilters() {
+      document.getElementById('priority-filter').value = '';
+      document.getElementById('severity-filter').value = '';
+      document.getElementById('sort-select').value = 'urgency';
+      document.getElementById('search-input').value = '';
+      applyFilters();
+    }
 
     // Search functionality
     function filterReports() {
-      const searchTerm = document.getElementById('search-input').value.toLowerCase();
-      const table = document.getElementById('reports-table');
-
-      if (!table) return;
-
-      const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-      let visibleCount = 0;
-
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        const text = row.textContent.toLowerCase();
-        const isVisible = text.includes(searchTerm);
-
-        row.style.display = isVisible ? '' : 'none';
-        if (isVisible) visibleCount++;
-      }
-
-      console.log(`Showing ${visibleCount} of ${rows.length} reports`);
+      applyFilters();
     }
 
     // Toggle description
     function toggleDescription(element) {
       element.classList.toggle('description-truncated');
+      element.title = element.classList.contains('description-truncated') ? 'Click to expand' : 'Click to collapse';
+    }
 
-      if (element.classList.contains('description-truncated')) {
-        element.title = 'Click to expand';
-      } else {
-        element.title = 'Click to collapse';
-      }
+    // Priority Stats Modal
+    function viewPriorityStats(event) {
+      event.preventDefault();
+      
+      fetch('/api/priority-stats')
+        .then(response => response.json())
+        .then(data => {
+          showPriorityStatsModal(data);
+        })
+        .catch(error => {
+          console.error('Error fetching priority stats:', error);
+          alert('Error loading priority statistics');
+        });
+    }
+
+    function showPriorityStatsModal(stats) {
+      const modal = document.getElementById('priority-stats-modal');
+      const content = document.getElementById('priority-stats-content');
+      
+      content.innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-item">
+            <h4>📊 Total Issues</h4>
+            <div class="stat-value">${stats.total_issues}</div>
+          </div>
+          
+          <div class="stat-item">
+            <h4>⚡ Average Urgency</h4>
+            <div class="stat-value">${stats.average_urgency.toFixed(2)}/4.0</div>
+          </div>
+          
+          <div class="stat-section">
+            <h4>🔥 Priority Distribution</h4>
+            <div class="distribution-grid">
+              <div class="dist-item critical">
+                <span>Critical</span>
+                <span>${stats.priority_distribution.critical}</span>
+              </div>
+              <div class="dist-item high">
+                <span>High</span>
+                <span>${stats.priority_distribution.high}</span>
+              </div>
+              <div class="dist-item medium">
+                <span>Medium</span>
+                <span>${stats.priority_distribution.medium}</span>
+              </div>
+              <div class="dist-item low">
+                <span>Low</span>
+                <span>${stats.priority_distribution.low}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="stat-section">
+            <h4>📈 Severity Distribution</h4>
+            <div class="distribution-grid">
+              <div class="dist-item critical">
+                <span>Critical</span>
+                <span>${stats.severity_distribution.critical}</span>
+              </div>
+              <div class="dist-item major">
+                <span>Major</span>
+                <span>${stats.severity_distribution.major}</span>
+              </div>
+              <div class="dist-item moderate">
+                <span>Moderate</span>
+                <span>${stats.severity_distribution.moderate}</span>
+              </div>
+              <div class="dist-item minor">
+                <span>Minor</span>
+                <span>${stats.severity_distribution.minor}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="stat-section">
+            <h4>🎯 Urgency Ranges</h4>
+            <div class="urgency-ranges">
+              <div class="urgency-range urgent">
+                <span>🔴 Urgent (3.0+)</span>
+                <span>${stats.urgency_ranges.urgent}</span>
+              </div>
+              <div class="urgency-range normal">
+                <span>🟡 Normal (2.0-3.0)</span>
+                <span>${stats.urgency_ranges.normal}</span>
+              </div>
+              <div class="urgency-range low">
+                <span>🟢 Low (1.0-2.0)</span>
+                <span>${stats.urgency_ranges.low}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePriorityStatsModal() {
+      const modal = document.getElementById('priority-stats-modal');
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
     }
 
     // Image modal functions
@@ -599,6 +1074,7 @@
       if (e.key === 'Escape') {
         closeImageModal();
         closeLocationModal();
+        closePriorityStatsModal();
       }
     });
 
@@ -656,6 +1132,284 @@
       });
     });
   </script>
+
+  <style>
+    /* Enhanced Priority & Severity Badge Styles */
+    .priority-badge, .severity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    /* Urgency Score Display */
+    .urgency-score-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      min-width: 60px;
+    }
+
+    .urgency-number {
+      font-size: 1rem;
+      font-weight: 800;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .urgency-number.urgency-critical { background: #ef4444; }
+    .urgency-number.urgency-high { background: #f97316; }
+    .urgency-number.urgency-medium { background: #f59e0b; }
+    .urgency-number.urgency-low { background: #10b981; }
+
+    .urgency-bar {
+      width: 40px;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .urgency-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #f59e0b, #f97316, #ef4444);
+      transition: width 0.3s ease;
+    }
+
+    .urgency-label {
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Priority Colors */
+    .priority-critical { background-color: #fecaca; color: #991b1b; }
+    .priority-high { background-color: #fed7aa; color: #9a3412; }
+    .priority-medium { background-color: #fef3c7; color: #92400e; }
+    .priority-low { background-color: #d1fae5; color: #065f46; }
+
+    /* Severity Colors */
+    .severity-critical { background-color: #fecaca; color: #991b1b; }
+    .severity-major { background-color: #fef3c7; color: #92400e; }
+    .severity-moderate { background-color: #dbeafe; color: #1e40af; }
+    .severity-minor { background-color: #f3f4f6; color: #374151; }
+
+    /* Row highlighting based on priority */
+    tr.priority-critical {
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.05), transparent);
+      border-left: 3px solid #ef4444;
+    }
+
+    tr.priority-high {
+      background: linear-gradient(90deg, rgba(249, 115, 22, 0.05), transparent);
+      border-left: 3px solid #f97316;
+    }
+
+    /* Urgency Indicator */
+    .urgency-indicator {
+      margin-left: 1rem;
+      padding: 0.25rem 0.75rem;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: white;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .urgency-indicator.active {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      transform: scale(1.05);
+    }
+
+    /* Filter Controls Enhanced */
+    .filter-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      min-width: 140px;
+    }
+
+    .filter-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .filter-select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: white;
+      cursor: pointer;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 2px var(--primary-100);
+    }
+
+    /* Enhanced Analysis Sidebar */
+    .urgency-stats {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .urgency-stat {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .urgency-stat.critical .stat-fill { background: #ef4444; }
+    .urgency-stat.high .stat-fill { background: #f97316; }
+    .urgency-stat.normal .stat-fill { background: #f59e0b; }
+
+    /* Purple stat card for urgency */
+    .stat-card.purple::before { background: #8b5cf6; }
+    .stat-card.purple .stat-icon {
+      background: #f3e8ff;
+      color: #7c3aed;
+    }
+
+    /* Priority Stats Modal */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--gray-50);
+      border-radius: 8px;
+    }
+
+    .stat-item h4 {
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-section h4 {
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .distribution-grid, .urgency-ranges {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .dist-item, .urgency-range {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+    }
+
+    .dist-item.critical, .urgency-range.urgent { background: #fecaca; color: #991b1b; }
+    .dist-item.high, .dist-item.major { background: #fed7aa; color: #9a3412; }
+    .dist-item.medium, .dist-item.moderate, .urgency-range.normal { background: #fef3c7; color: #92400e; }
+    .dist-item.low, .dist-item.minor, .urgency-range.low { background: #d1fae5; color: #065f46; }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-group {
+        min-width: auto;
+      }
+
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
+      .urgency-score-display {
+        min-width: 50px;
+      }
+
+      .urgency-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.875rem;
+      }
+
+      .urgency-bar {
+        width: 32px;
+        height: 3px;
+      }
+
+      .urgency-label {
+        font-size: 0.5rem;
+      }
+
+      .urgency-indicator {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+
+      .table th:nth-child(4),
+      .table th:nth-child(5),
+      .table td:nth-child(4),
+      .table td:nth-child(5) {
+        display: none;
+      }
+
+      .priority-badge,
+      .severity-badge {
+        font-size: 0.625rem;
+        padding: 0.25rem 0.5rem;
+      }
+    }
+  </style>
 </body>
 
 </html>

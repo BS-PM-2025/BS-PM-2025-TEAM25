@@ -29,17 +29,19 @@
 </head>
 
 <body>
-   <!-- Back Link -->
+  <!-- Back Link -->
   <a href="{{ url_for('main.home') }}" class="back-link">
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
   </a>
-  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+   <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
-         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+        <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid">
+          <span class="liquid-text">CityFix</span>
+        </a>
         <ul class="navbar-nav">
-          {% if user %}
           <li class="nav-item">
             <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
               <i class="bi bi-speedometer2" aria-hidden="true"></i>
@@ -50,6 +52,12 @@
             <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
               <i class="bi bi-journal-text" aria-hidden="true"></i>
               <span>My Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
             </a>
           </li>
           <li class="nav-item">
@@ -64,26 +72,6 @@
               <span>Logout</span>
             </a>
           </li>
-          {% else %}
-          <li class="nav-item">
-            <a href="{{ url_for('main.about') }}" class="nav-link">
-              <i class="bi bi-info-circle" aria-hidden="true"></i>
-              <span>About</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ url_for('auth.root') }}" class="nav-link">
-              <i class="bi bi-person-plus" aria-hidden="true"></i>
-              <span>Sign Up</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
-              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-              <span>Login</span>
-            </a>
-          </li>
-          {% endif %}
         </ul>
       </div>
     </div>
@@ -92,7 +80,6 @@
   <!-- Mobile Navigation -->
   <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
     <ul class="mobile-nav-list">
-      {% if user %}
       <li class="mobile-nav-item">
         <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
           <i class="mobile-nav-icon bi bi-house"></i>
@@ -102,11 +89,11 @@
       <li class="mobile-nav-item">
         <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link">
           <i class="mobile-nav-icon bi bi-journal-text"></i>
-          <span>Reports</span>
+          <span>My Reports</span>
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary active">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
           <i class="mobile-nav-icon bi bi-plus"></i>
           <span>Report</span>
         </a>
@@ -123,38 +110,6 @@
           <span>Profile</span>
         </a>
       </li>
-      {% else %}
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-house"></i>
-          <span>Home</span>
-        </a>
-      </li>
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-map"></i>
-          <span>Reports</span>
-        </a>
-      </li>
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary active">
-          <i class="mobile-nav-icon bi bi-plus"></i>
-          <span>Report</span>
-        </a>
-      </li>
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('main.about') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-info-circle"></i>
-          <span>About</span>
-        </a>
-      </li>
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
-          <span>Login</span>
-        </a>
-      </li>
-      {% endif %}
     </ul>
   </nav>
 
@@ -175,18 +130,22 @@
           </div>
           <div class="progress-step" id="step-indicator-2">
             <span class="progress-step-number">2</span>
-            <span class="progress-step-text">Category</span>
+            <span class="progress-step-text">Priority</span>
           </div>
           <div class="progress-step" id="step-indicator-3">
             <span class="progress-step-number">3</span>
-            <span class="progress-step-text">Location</span>
+            <span class="progress-step-text">Category</span>
           </div>
           <div class="progress-step" id="step-indicator-4">
             <span class="progress-step-number">4</span>
-            <span class="progress-step-text">Photo</span>
+            <span class="progress-step-text">Location</span>
           </div>
           <div class="progress-step" id="step-indicator-5">
             <span class="progress-step-number">5</span>
+            <span class="progress-step-text">Photo</span>
+          </div>
+          <div class="progress-step" id="step-indicator-6">
+            <span class="progress-step-number">6</span>
             <span class="progress-step-text">Review</span>
           </div>
         </div>
@@ -216,12 +175,171 @@
             <textarea id="description" name="description" class="form-control"
               placeholder="Describe the issue in detail. What exactly is the problem? How does it affect the area?"
               required></textarea>
+            <div class="form-hint">
+              <i class="bi bi-lightbulb" aria-hidden="true"></i>
+              Be specific about the problem location, timing, and impact on the community.
+            </div>
           </div>
-
-
 
           <div class="form-actions">
             <div></div>
+            <button type="button" class="btn-step btn-primary" onclick="nextStep()">
+              Next: Set Priority
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Priority & Severity -->
+        <div class="form-step" id="step-2">
+          <div class="step-header">
+            <h2 class="step-title">Set Priority & Severity</h2>
+            <p class="step-description">
+              Help us understand how urgent and severe this issue is for proper prioritization.
+            </p>
+          </div>
+
+          <!-- Priority Selection -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
+              Priority Level
+              <span class="help-text">How urgently does this need attention?</span>
+            </label>
+            <div class="priority-grid">
+              <div class="priority-option">
+                <input type="radio" id="priority-low" name="priority" value="low" class="priority-radio">
+                <label for="priority-low" class="priority-card priority-low-card">
+                  <div class="priority-icon">
+                    <i class="bi bi-clock" aria-hidden="true"></i>
+                  </div>
+                  <div class="priority-content">
+                    <h3>Low Priority</h3>
+                    <p>Can wait for routine maintenance</p>
+                    <div class="priority-examples">
+                      <small>Examples: Minor cosmetic issues, non-urgent repairs</small>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="priority-option">
+                <input type="radio" id="priority-medium" name="priority" value="medium" class="priority-radio" checked>
+                <label for="priority-medium" class="priority-card priority-medium-card">
+                  <div class="priority-icon">
+                    <i class="bi bi-dash-circle" aria-hidden="true"></i>
+                  </div>
+                  <div class="priority-content">
+                    <h3>Medium Priority</h3>
+                    <p>Should be addressed soon</p>
+                    <div class="priority-examples">
+                      <small>Examples: Street light out, minor road damage</small>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="priority-option">
+                <input type="radio" id="priority-high" name="priority" value="high" class="priority-radio">
+                <label for="priority-high" class="priority-card priority-high-card">
+                  <div class="priority-icon">
+                    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                  </div>
+                  <div class="priority-content">
+                    <h3>High Priority</h3>
+                    <p>Needs prompt attention</p>
+                    <div class="priority-examples">
+                      <small>Examples: Traffic light malfunction, water leak</small>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="priority-option">
+                <input type="radio" id="priority-critical" name="priority" value="critical" class="priority-radio">
+                <label for="priority-critical" class="priority-card priority-critical-card">
+                  <div class="priority-icon">
+                    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                  </div>
+                  <div class="priority-content">
+                    <h3>Critical Priority</h3>
+                    <p>Immediate safety hazard</p>
+                    <div class="priority-examples">
+                      <small>Examples: Dangerous road conditions, emergency situations</small>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Severity Selection -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-bar-chart me-2" aria-hidden="true"></i>
+              Severity Level
+              <span class="help-text">How severe is the impact of this issue?</span>
+            </label>
+            <div class="severity-grid">
+              <div class="severity-option">
+                <input type="radio" id="severity-minor" name="severity" value="minor" class="severity-radio">
+                <label for="severity-minor" class="severity-card severity-minor-card">
+                  <div class="severity-icon">
+                    <i class="bi bi-dash" aria-hidden="true"></i>
+                  </div>
+                  <div class="severity-content">
+                    <h3>Minor</h3>
+                    <p>Little to no impact on daily life</p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="severity-option">
+                <input type="radio" id="severity-moderate" name="severity" value="moderate" class="severity-radio" checked>
+                <label for="severity-moderate" class="severity-card severity-moderate-card">
+                  <div class="severity-icon">
+                    <i class="bi bi-dash-circle" aria-hidden="true"></i>
+                  </div>
+                  <div class="severity-content">
+                    <h3>Moderate</h3>
+                    <p>Some inconvenience or disruption</p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="severity-option">
+                <input type="radio" id="severity-major" name="severity" value="major" class="severity-radio">
+                <label for="severity-major" class="severity-card severity-major-card">
+                  <div class="severity-icon">
+                    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                  </div>
+                  <div class="severity-content">
+                    <h3>Major</h3>
+                    <p>Significant impact on area or traffic</p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="severity-option">
+                <input type="radio" id="severity-critical" name="severity" value="critical" class="severity-radio">
+                <label for="severity-critical" class="severity-card severity-critical-card">
+                  <div class="severity-icon">
+                    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                  </div>
+                  <div class="severity-content">
+                    <h3>Critical</h3>
+                    <p>Safety risk or major service disruption</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-step btn-secondary" onclick="prevStep()">
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              Back
+            </button>
             <button type="button" class="btn-step btn-primary" onclick="nextStep()">
               Next: Choose Category
               <i class="bi bi-arrow-right" aria-hidden="true"></i>
@@ -229,8 +347,8 @@
           </div>
         </div>
 
-        <!-- Step 2: Category -->
-        <div class="form-step" id="step-2">
+        <!-- Step 3: Category -->
+        <div class="form-step" id="step-3">
           <div class="step-header">
             <h2 class="step-title">Select Issue Category</h2>
             <p class="step-description">
@@ -325,15 +443,15 @@
               <i class="bi bi-arrow-left" aria-hidden="true"></i>
               Back
             </button>
-            <button type="button" class="btn-step btn-primary" onclick="nextStep()" id="step2-next" disabled>
+            <button type="button" class="btn-step btn-primary" onclick="nextStep()" id="step3-next" disabled>
               Next: Set Location
               <i class="bi bi-arrow-right" aria-hidden="true"></i>
             </button>
           </div>
         </div>
 
-        <!-- Step 3: Location -->
-        <div class="form-step" id="step-3">
+        <!-- Step 4: Location -->
+        <div class="form-step" id="step-4">
           <div class="step-header">
             <h2 class="step-title">Set Location</h2>
             <p class="step-description">
@@ -356,7 +474,8 @@
             <label for="city_street" class="form-label">
               <i class="bi bi-geo-alt me-2" aria-hidden="true"></i>
               Street Address or Location
-              <span style="font-size: var(--text-xs); font-weight: normal; color: var(--text-muted);">(searches as you type)</span>
+              <span style="font-size: var(--text-xs); font-weight: normal; color: var(--text-muted);">(searches as you
+                type)</span>
             </label>
             <div class="search-input-wrapper">
               <input type="text" id="city_street" name="city_street" class="form-control"
@@ -406,15 +525,15 @@
               <i class="bi bi-arrow-left" aria-hidden="true"></i>
               Back
             </button>
-            <button type="button" class="btn-step btn-primary" onclick="nextStep()" id="step3-next" disabled>
+            <button type="button" class="btn-step btn-primary" onclick="nextStep()" id="step4-next" disabled>
               Next: Add Photo
               <i class="bi bi-arrow-right" aria-hidden="true"></i>
             </button>
           </div>
         </div>
 
-        <!-- Step 4: Photo -->
-        <div class="form-step" id="step-4">
+        <!-- Step 5: Photo -->
+        <div class="form-step" id="step-5">
           <div class="step-header">
             <h2 class="step-title">Add a Photo</h2>
             <p class="step-description">
@@ -460,8 +579,8 @@
           </div>
         </div>
 
-        <!-- Step 5: Review -->
-        <div class="form-step" id="step-5">
+        <!-- Step 6: Review -->
+        <div class="form-step" id="step-6">
           <div class="step-header">
             <h2 class="step-title">Review Your Report</h2>
             <p class="step-description">
@@ -473,6 +592,14 @@
             <div class="summary-item">
               <span class="summary-label">Description</span>
               <span class="summary-value" id="review-description">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Priority</span>
+              <span class="summary-value priority-display" id="review-priority">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Severity</span>
+              <span class="summary-value severity-display" id="review-severity">-</span>
             </div>
             <div class="summary-item">
               <span class="summary-label">Category</span>
@@ -507,7 +634,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     let currentStep = 1;
-    const totalSteps = 5;
+    const totalSteps = 6;
     let map;
     let marker;
     let locationSet = false;
@@ -546,12 +673,12 @@
       document.getElementById(`step-indicator-${currentStep}`).classList.add('active');
 
       // Special handling for map step
-      if (currentStep === 3 && map) {
+      if (currentStep === 4 && map) {
         setTimeout(() => map.invalidateSize(), 100);
       }
 
       // Update review step
-      if (currentStep === 5) {
+      if (currentStep === 6) {
         updateReviewStep();
       }
     }
@@ -567,6 +694,10 @@
           return true;
 
         case 2:
+          // Priority and severity are optional with defaults, so always valid
+          return true;
+
+        case 3:
           const selectedCategory = document.querySelector('input[name="category"]:checked');
           if (!selectedCategory) {
             showError('Please select a category.');
@@ -574,7 +705,7 @@
           }
           return true;
 
-        case 3:
+        case 4:
           const lat = document.getElementById('lat').value;
           const lng = document.getElementById('lng').value;
           const cityStreet = document.getElementById('city_street').value.trim();
@@ -610,7 +741,7 @@
     function getCurrentLocation() {
       const btn = document.getElementById('auto-location-btn');
       const originalText = btn.innerHTML;
-      
+
       btn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Getting location...';
       btn.disabled = true;
 
@@ -682,9 +813,9 @@
 
       // Show location info
       showLocationInfo(lat, lng);
-      
+
       // Enable next button
-      document.getElementById('step3-next').disabled = false;
+      document.getElementById('step4-next').disabled = false;
       locationSet = true;
 
       // Reverse geocode to get address
@@ -698,11 +829,11 @@
       const locationInfo = document.getElementById('location-info');
       const coordinatesDisplay = document.getElementById('coordinates-display');
       const statusDiv = document.getElementById('location-status');
-      
+
       coordinatesDisplay.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
       locationInfo.style.display = 'block';
       statusDiv.style.display = 'flex';
-      
+
       // Update status
       const statusIcon = statusDiv.querySelector('.status-icon');
       statusIcon.className = 'status-icon status-success';
@@ -712,7 +843,7 @@
 
     function reverseGeocode(lat, lng) {
       const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-      
+
       fetch(url)
         .then(response => response.json())
         .then(data => {
@@ -730,10 +861,10 @@
       const errorDiv = document.getElementById('location-error');
       const errorText = document.getElementById('error-text');
       const statusDiv = document.getElementById('location-status');
-      
+
       errorText.textContent = message;
       errorDiv.classList.add('show');
-      
+
       // Update status
       statusDiv.style.display = 'flex';
       const statusIcon = statusDiv.querySelector('.status-icon');
@@ -844,7 +975,7 @@
     // Category selection
     function setupCategorySelection() {
       const categoryRadios = document.querySelectorAll('input[name="category"]');
-      const nextButton = document.getElementById('step2-next');
+      const nextButton = document.getElementById('step3-next');
 
       categoryRadios.forEach(radio => {
         radio.addEventListener('change', function () {
@@ -856,6 +987,8 @@
     // Review step
     function updateReviewStep() {
       const description = document.getElementById('description').value;
+      const priority = document.querySelector('input[name="priority"]:checked');
+      const severity = document.querySelector('input[name="severity"]:checked');
       const category = document.querySelector('input[name="category"]:checked');
       const cityStreet = document.getElementById('city_street').value;
       const lat = document.getElementById('lat').value;
@@ -863,6 +996,19 @@
       const fileInput = document.getElementById('image');
 
       document.getElementById('review-description').textContent = description.substring(0, 100) + (description.length > 100 ? '...' : '');
+      
+      // Priority with styling
+      const priorityDisplay = document.getElementById('review-priority');
+      const priorityValue = priority ? priority.value : 'medium';
+      priorityDisplay.textContent = priorityValue.charAt(0).toUpperCase() + priorityValue.slice(1);
+      priorityDisplay.className = `summary-value priority-display priority-${priorityValue}`;
+      
+      // Severity with styling
+      const severityDisplay = document.getElementById('review-severity');
+      const severityValue = severity ? severity.value : 'moderate';
+      severityDisplay.textContent = severityValue.charAt(0).toUpperCase() + severityValue.slice(1);
+      severityDisplay.className = `summary-value severity-display severity-${severityValue}`;
+      
       document.getElementById('review-category').textContent = category ? getCategoryName(category.value) : '-';
       document.getElementById('review-location').textContent = cityStreet;
       document.getElementById('review-photo').textContent = fileInput.files.length > 0 ? fileInput.files[0].name : 'No photo selected';
@@ -913,16 +1059,16 @@
 
     addressInput.addEventListener('input', function () {
       clearTimeout(geocodeTimer);
-      
+
       const query = this.value.trim();
-      
+
       // Clear indicators if input is empty
       if (query.length === 0) {
         hideSearchingIndicator();
         hideLocationError();
         return;
       }
-      
+
       // Start searching after 3 characters
       if (query.length > 2 && map) {
         geocodeTimer = setTimeout(() => {
@@ -932,7 +1078,7 @@
     });
 
     // Prevent form submission when pressing Enter in address field
-    addressInput.addEventListener('keydown', function(e) {
+    addressInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         const query = this.value.trim();
@@ -978,12 +1124,12 @@
     function showSearchingIndicator() {
       const searchSpinner = document.getElementById('search-spinner');
       const statusDiv = document.getElementById('location-status');
-      
+
       // Show spinner in input field
       if (searchSpinner) {
         searchSpinner.style.display = 'block';
       }
-      
+
       // Update status indicator
       if (statusDiv) {
         statusDiv.style.display = 'flex';
@@ -996,15 +1142,191 @@
 
     function hideSearchingIndicator() {
       const searchSpinner = document.getElementById('search-spinner');
-      
+
       // Hide spinner in input field
       if (searchSpinner) {
         searchSpinner.style.display = 'none';
       }
-      
+
       // Status will be updated by setLocation function when location is found
     }
   </script>
+
+  <style>
+    /* Priority & Severity Styling */
+    .priority-grid, .severity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+    }
+
+    .priority-option, .severity-option {
+      position: relative;
+    }
+
+    .priority-radio, .severity-radio {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .priority-card, .severity-card {
+      display: block;
+      padding: var(--space-6);
+      border: 2px solid var(--gray-300);
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: var(--transition-all);
+      text-align: center;
+      background: white;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+    }
+
+    .priority-card:hover, .severity-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .priority-radio:checked + .priority-card,
+    .severity-radio:checked + .severity-card {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    /* Priority specific colors */
+    .priority-low-card { border-color: #10b981; }
+    .priority-low-card:hover, .priority-radio:checked + .priority-low-card {
+      border-color: #059669;
+      background: #d1fae5;
+    }
+
+    .priority-medium-card { border-color: #f59e0b; }
+    .priority-medium-card:hover, .priority-radio:checked + .priority-medium-card {
+      border-color: #d97706;
+      background: #fef3c7;
+    }
+
+    .priority-high-card { border-color: #f97316; }
+    .priority-high-card:hover, .priority-radio:checked + .priority-high-card {
+      border-color: #ea580c;
+      background: #fed7aa;
+    }
+
+    .priority-critical-card { border-color: #ef4444; }
+    .priority-critical-card:hover, .priority-radio:checked + .priority-critical-card {
+      border-color: #dc2626;
+      background: #fecaca;
+    }
+
+    /* Severity specific colors */
+    .severity-minor-card { border-color: #6b7280; }
+    .severity-minor-card:hover, .severity-radio:checked + .severity-minor-card {
+      border-color: #4b5563;
+      background: #f3f4f6;
+    }
+
+    .severity-moderate-card { border-color: #3b82f6; }
+    .severity-moderate-card:hover, .severity-radio:checked + .severity-moderate-card {
+      border-color: #2563eb;
+      background: #dbeafe;
+    }
+
+    .severity-major-card { border-color: #f59e0b; }
+    .severity-major-card:hover, .severity-radio:checked + .severity-major-card {
+      border-color: #d97706;
+      background: #fef3c7;
+    }
+
+    .severity-critical-card { border-color: #ef4444; }
+    .severity-critical-card:hover, .severity-radio:checked + .severity-critical-card {
+      border-color: #dc2626;
+      background: #fecaca;
+    }
+
+    .priority-icon, .severity-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xl);
+      background: var(--gray-100);
+      color: var(--text-secondary);
+      transition: var(--transition-all);
+    }
+
+    .priority-content h3, .severity-content h3 {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+      color: var(--text-primary);
+    }
+
+    .priority-content p, .severity-content p {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-2);
+    }
+
+    .priority-examples {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .help-text {
+      font-size: var(--text-sm);
+      font-weight: normal;
+      color: var(--text-muted);
+      display: block;
+      margin-top: var(--space-1);
+    }
+
+    /* Review step styling */
+    .priority-display, .severity-display {
+      display: inline-flex !important;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .priority-low { background: #d1fae5; color: #065f46; }
+    .priority-medium { background: #fef3c7; color: #92400e; }
+    .priority-high { background: #fed7aa; color: #9a3412; }
+    .priority-critical { background: #fecaca; color: #991b1b; }
+
+    .severity-minor { background: #f3f4f6; color: #374151; }
+    .severity-moderate { background: #dbeafe; color: #1e40af; }
+    .severity-major { background: #fef3c7; color: #92400e; }
+    .severity-critical { background: #fecaca; color: #991b1b; }
+
+    @media (max-width: 768px) {
+      .priority-grid, .severity-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+
+      .priority-card, .severity-card {
+        min-height: 120px;
+        padding: var(--space-4);
+      }
+
+      .priority-content h3, .severity-content h3 {
+        font-size: var(--text-base);
+      }
+    }
+  </style>
 </body>
 
 </html>

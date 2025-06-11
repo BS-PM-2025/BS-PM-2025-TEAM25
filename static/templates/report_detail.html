@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
   <title>Report Details - CityFix</title>
   <meta name="description" content="View detailed information about this infrastructure report.">
@@ -28,15 +28,16 @@
 </head>
 
 <body>
-   <!-- Back Link -->
+  <!-- Back Link -->
   <a href="{{ url_for('main.home') }}" class="back-link">
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
   </a>
-  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+  <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
-         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+        <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
         <ul class="navbar-nav">
           {% if user %}
           <li class="nav-item">
@@ -345,6 +346,53 @@
             </ul>
           </div>
 
+          <!-- Edit History Section - PROPERLY CLOSED -->
+          {% if issue.last_modified %}
+          <div class="info-card">
+            <div class="info-header">
+              <div class="info-icon" style="background: var(--orange-100); color: var(--orange-600);">
+                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+              </div>
+              <div class="info-title">Edit History</div>
+            </div>
+            <ul class="info-list">
+              <li class="info-item">
+                <i class="bi bi-clock info-item-icon" aria-hidden="true"></i>
+                <div class="info-item-content">
+                  <div class="info-item-label">Last Modified</div>
+                  <div class="info-item-value">{{ issue.last_modified[:10] if issue.last_modified else 'Never' }}</div>
+                </div>
+              </li>
+              <li class="info-item">
+                <i class="bi bi-person info-item-icon" aria-hidden="true"></i>
+                <div class="info-item-content">
+                  <div class="info-item-label">Modified By</div>
+                  <div class="info-item-value">{{ issue.modified_by or issue.reporter_email }}</div>
+                </div>
+              </li>
+              {% if issue.edit_count %}
+              <li class="info-item">
+                <i class="bi bi-arrow-repeat info-item-icon" aria-hidden="true"></i>
+                <div class="info-item-content">
+                  <div class="info-item-label">Edit Count</div>
+                  <div class="info-item-value">{{ issue.edit_count }} time{{ 's' if issue.edit_count != 1 else '' }}</div>
+                </div>
+              </li>
+              {% endif %}
+            </ul>
+            
+            <!-- Add edit button for the issue owner -->
+            {% if user and user.email == issue.reporter_email and issue.status not in ['done', 'completed', 'closed'] %}
+            <div style="margin-top: 1rem;">
+              <a href="{{ url_for('reports.edit_issue', issue_id=issue._id) }}" class="btn btn-warning btn-sm">
+                <i class="bi bi-pencil" aria-hidden="true"></i>
+                Edit This Report
+              </a>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
           <!-- Actions -->
           <div class="info-card">
             <div class="info-header">
@@ -466,7 +514,7 @@
       }, 300);
     }
 
-    // Share function
+    // Share function - FIXED
     function shareReport() {
       if (navigator.share) {
         navigator.share({
@@ -489,6 +537,44 @@
       }
     });
   </script>
+
+  <style>
+    /* Edit Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.875rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
+    .btn-warning:hover {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+
+    .btn-warning:active {
+      transform: translateY(0);
+    }
+
+    .btn-sm {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.8125rem;
+    }
+  </style>
 </body>
 
 </html>

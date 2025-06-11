@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Edit Report - CityFix</title>
+  <meta name="description" content="Edit your infrastructure report with updated information.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/report_issue.css') }}">
+</head>
+
+<body>
+    <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+  <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid">
+          <span class="liquid-text">CityFix</span>
+        </a>
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}" class="nav-link">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>Profile</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Report Header -->
+  <section class="report-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="header-title">Edit Your Report</h1>
+          <p class="header-subtitle">
+            Update your infrastructure report with new information or corrections. 
+            Your reports help make communities safer and better maintained.
+          </p>
+
+          <!-- Current Status Display -->
+          <div class="status-display">
+            <div class="status-item">
+              <span class="status-label">Current Status:</span>
+              <div class="status-badge status-{{ issue.status.replace(' ', '-') if issue.status else 'pending' }}">
+                <i class="bi bi-{{ 'check-circle' if issue.status == 'done' else 'hourglass-split' if issue.status == 'in progress' else 'person-check' if issue.status == 'assigned' else 'clock' }}" aria-hidden="true"></i>
+                {{ issue.status.title() if issue.status else 'Pending' }}
+              </div>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Submitted:</span>
+              <span class="status-value">{{ issue.timestamp[:10] if issue.timestamp else 'Unknown' }}</span>
+            </div>
+            <!-- Priority Display -->
+            <div class="status-item">
+              <span class="status-label">Priority:</span>
+              <span class="priority-badge priority-{{ issue.priority or 'medium' }}">
+                <i class="bi bi-{{ 'exclamation-triangle-fill' if issue.priority == 'critical' else 'exclamation-circle' if issue.priority == 'high' else 'dash-circle' if issue.priority == 'medium' else 'clock' }}" aria-hidden="true"></i>
+                {{ (issue.priority or 'medium').title() }}
+              </span>
+            </div>
+            <!-- Severity Display -->
+            <div class="status-item">
+              <span class="status-label">Severity:</span>
+              <span class="severity-badge severity-{{ issue.severity or 'moderate' }}">
+                <i class="bi bi-{{ 'exclamation-triangle-fill' if issue.severity == 'critical' else 'exclamation-circle' if issue.severity == 'major' else 'dash-circle' if issue.severity == 'moderate' else 'dash' }}" aria-hidden="true"></i>
+                {{ (issue.severity or 'moderate').title() }}
+              </span>
+            </div>
+          </div>
+
+          <div class="progress-steps">
+            <div class="progress-step active" id="step-indicator-1">
+              <span class="progress-step-number">1</span>
+              <span class="progress-step-text">Details</span>
+            </div>
+            <div class="progress-step active" id="step-indicator-2">
+              <span class="progress-step-number">2</span>
+              <span class="progress-step-text">Priority</span>
+            </div>
+            <div class="progress-step active" id="step-indicator-3">
+              <span class="progress-step-number">3</span>
+              <span class="progress-step-text">Category</span>
+            </div>
+            <div class="progress-step active" id="step-indicator-4">
+              <span class="progress-step-number">4</span>
+              <span class="progress-step-text">Location</span>
+            </div>
+            <div class="progress-step active" id="step-indicator-5">
+              <span class="progress-step-number">5</span>
+              <span class="progress-step-text">Photo</span>
+            </div>
+            <div class="progress-step active" id="step-indicator-6">
+              <span class="progress-step-number">6</span>
+              <span class="progress-step-text">Review</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form Container -->
+  <main class="container">
+    <div class="form-container">
+      <form class="form-card" action="{{ url_for('reports.edit_issue', issue_id=issue._id) }}" method="POST" enctype="multipart/form-data" id="editForm">
+        
+        <!-- Step 1: Details -->
+        <div class="form-step active" id="step-1">
+          <div class="step-header">
+            <h2 class="step-title">Update Issue Description</h2>
+            <p class="step-description">
+              Modify the description with any new information or corrections you need to make.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="description" class="form-label">
+              <i class="bi bi-chat-left-text me-2" aria-hidden="true"></i>
+              Problem Description
+            </label>
+            <textarea id="description" name="description" class="form-control" 
+                      placeholder="Describe the issue in detail. What exactly is the problem? How does it affect the area?" 
+                      required>{{ issue.description }}</textarea>
+            <div class="form-hint">
+              <i class="bi bi-lightbulb" aria-hidden="true"></i>
+              Be specific about the problem and include any new developments since your original report.
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <div></div>
+            <button type="button" class="btn-step btn-primary" onclick="nextStep()">
+              Next: Update Priority
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Priority & Severity -->
+        <div class="form-step" id="step-2">
+          <div class="step-header">
+            <h2 class="step-title">Update Priority & Severity</h2>
+            <p class="step-description">
+              Adjust the priority and severity based on current conditions or new information.
+            </p>
+          </div>
+
+          <!-- Priority Selection -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
+              Priority Level
+              <span class="help-text">How urgently does this need attention?</span>
+            </label>
+            <div class="priority-grid">
+              <div class="priority-option">
+                <input type="radio" id="priority-low" name="priority" value="low" class="priority-radio" 
+                       {{ 'checked' if issue.priority == 'low' }}>
+                <label for="priority-low" class="priority-card priority-low-card">
+                  <div class="priority-icon">
+                    <i class="bi bi-clock" aria-hidden="true"></i>
+                  </div>
+                  <div class="priority-content">
+                    <h3>Low Priority</h3>
+                    <p>Can wait for routine maintenance</p>
+                    <div class="priority-examples">
+                      <small>Examples: Minor cosmetic issues, non-urgent repairs</small>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="priority-option">
+                <input type="radio" id="priority-medium" name="priority" value="medium" class="priority-radio" 
+                       {{ 'checked' if issue.priority == 'medium' or not issue.priority }}>
+                <label for="priority-medium" class="priority-card priority-medium-card">
+                  <div class="priority-icon">
+                    <i class="bi bi-dash-circle" aria-hidden="true"></i>
+                  </div>
+                  <div class="priority-content">
+                    <h3>Medium Priority</h3>
+                    <p>Should be addressed soon</p>
+                    <div class="priority-examples">
+                      <small>Examples: Street light out, minor road damage</small>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="priority-option">
+                <input type="radio" id="priority-high" name="priority" value="high" class="priority-radio" 
+                       {{ 'checked' if issue.priority == 'high' }}>
+                <label for="priority-high" class="priority-card priority-high-card">
+                  <div class="priority-icon">
+                    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                  </div>
+                  <div class="priority-content">
+                    <h3>High Priority</h3>
+                    <p>Needs prompt attention</p>
+                    <div class="priority-examples">
+                      <small>Examples: Traffic light malfunction, water leak</small>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="priority-option">
+                <input type="radio" id="priority-critical" name="priority" value="critical" class="priority-radio" 
+                       {{ 'checked' if issue.priority == 'critical' }}>
+                <label for="priority-critical" class="priority-card priority-critical-card">
+                  <div class="priority-icon">
+                    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                  </div>
+                  <div class="priority-content">
+                    <h3>Critical Priority</h3>
+                    <p>Immediate safety hazard</p>
+                    <div class="priority-examples">
+                      <small>Examples: Dangerous road conditions, emergency situations</small>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Severity Selection -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-bar-chart me-2" aria-hidden="true"></i>
+              Severity Level
+              <span class="help-text">How severe is the impact of this issue?</span>
+            </label>
+            <div class="severity-grid">
+              <div class="severity-option">
+                <input type="radio" id="severity-minor" name="severity" value="minor" class="severity-radio" 
+                       {{ 'checked' if issue.severity == 'minor' }}>
+                <label for="severity-minor" class="severity-card severity-minor-card">
+                  <div class="severity-icon">
+                    <i class="bi bi-dash" aria-hidden="true"></i>
+                  </div>
+                  <div class="severity-content">
+                    <h3>Minor</h3>
+                    <p>Little to no impact on daily life</p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="severity-option">
+                <input type="radio" id="severity-moderate" name="severity" value="moderate" class="severity-radio" 
+                       {{ 'checked' if issue.severity == 'moderate' or not issue.severity }}>
+                <label for="severity-moderate" class="severity-card severity-moderate-card">
+                  <div class="severity-icon">
+                    <i class="bi bi-dash-circle" aria-hidden="true"></i>
+                  </div>
+                  <div class="severity-content">
+                    <h3>Moderate</h3>
+                    <p>Some inconvenience or disruption</p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="severity-option">
+                <input type="radio" id="severity-major" name="severity" value="major" class="severity-radio" 
+                       {{ 'checked' if issue.severity == 'major' }}>
+                <label for="severity-major" class="severity-card severity-major-card">
+                  <div class="severity-icon">
+                    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                  </div>
+                  <div class="severity-content">
+                    <h3>Major</h3>
+                    <p>Significant impact on area or traffic</p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="severity-option">
+                <input type="radio" id="severity-critical" name="severity" value="critical" class="severity-radio" 
+                       {{ 'checked' if issue.severity == 'critical' }}>
+                <label for="severity-critical" class="severity-card severity-critical-card">
+                  <div class="severity-icon">
+                    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                  </div>
+                  <div class="severity-content">
+                    <h3>Critical</h3>
+                    <p>Safety risk or major service disruption</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-step btn-secondary" onclick="prevStep()">
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              Previous
+            </button>
+            <button type="button" class="btn-step btn-primary" onclick="nextStep()">
+              Next: Update Category
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Category -->
+        <div class="form-step" id="step-3">
+          <div class="step-header">
+            <h2 class="step-title">Update Issue Category</h2>
+            <p class="step-description">
+              Choose the category that best describes your updated issue.
+            </p>
+          </div>
+
+          <div class="category-grid">
+            <div class="category-option">
+              <input type="radio" id="traffic_light" name="category" value="traffic_light_failure" 
+                     {{ 'checked' if issue.category == 'traffic_light_failure' }}>
+              <label for="traffic_light" class="category-card">
+                <div class="category-icon">
+                  <i class="bi bi-traffic-light" aria-hidden="true"></i>
+                </div>
+                <div class="category-content">
+                  <h3>Traffic Light Issues</h3>
+                  <p>Broken signals, timing problems, outages</p>
+                </div>
+              </label>
+            </div>
+
+            <div class="category-option">
+              <input type="radio" id="water_leak" name="category" value="water_leak" 
+                     {{ 'checked' if issue.category == 'water_leak' }}>
+              <label for="water_leak" class="category-card">
+                <div class="category-icon">
+                  <i class="bi bi-droplet" aria-hidden="true"></i>
+                </div>
+                <div class="category-content">
+                  <h3>Water Leaks</h3>
+                  <p>Pipe bursts, street flooding, water waste</p>
+                </div>
+              </label>
+            </div>
+
+            <div class="category-option">
+              <input type="radio" id="pothole" name="category" value="pothole" 
+                     {{ 'checked' if issue.category == 'pothole' }}>
+              <label for="pothole" class="category-card">
+                <div class="category-icon">
+                  <i class="bi bi-cone-striped" aria-hidden="true"></i>
+                </div>
+                <div class="category-content">
+                  <h3>Road Damage</h3>
+                  <p>Potholes, cracks, dangerous surfaces</p>
+                </div>
+              </label>
+            </div>
+
+            <div class="category-option">
+              <input type="radio" id="street_lighting" name="category" value="street_lighting" 
+                     {{ 'checked' if issue.category == 'street_lighting' }}>
+              <label for="street_lighting" class="category-card">
+                <div class="category-icon">
+                  <i class="bi bi-lightbulb" aria-hidden="true"></i>
+                </div>
+                <div class="category-content">
+                  <h3>Street Lighting</h3>
+                  <p>Broken lights, dark areas, safety hazards</p>
+                </div>
+              </label>
+            </div>
+
+            <div class="category-option">
+              <input type="radio" id="other" name="category" value="other" 
+                     {{ 'checked' if issue.category == 'other' or not issue.category }}>
+              <label for="other" class="category-card">
+                <div class="category-icon">
+                  <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                </div>
+                <div class="category-content">
+                  <h3>Other Issues</h3>
+                  <p>Signage, maintenance, general problems</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-step btn-secondary" onclick="prevStep()">
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              Previous
+            </button>
+            <button type="button" class="btn-step btn-primary" onclick="nextStep()">
+              Next: Update Location
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Location -->
+        <div class="form-step" id="step-4">
+          <div class="step-header">
+            <h2 class="step-title">Update Location</h2>
+            <p class="step-description">
+              Verify or update the exact location of the issue for accurate dispatch.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="city_street" class="form-label">
+              <i class="bi bi-geo-alt me-2" aria-hidden="true"></i>
+              Street Address
+            </label>
+            <input type="text" id="city_street" name="city_street" class="form-control" 
+                   value="{{ issue.city_street or issue.location_address or '' }}"
+                   placeholder="Enter the exact street address or nearby landmark" required>
+            <div class="form-hint">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              You can click on the map below to update the location or use the search box above.
+            </div>
+          </div>
+
+          <!-- Hidden coordinate fields -->
+          <input type="hidden" id="lat" name="lat" value="{{ issue.location.lat if issue.location else '' }}">
+          <input type="hidden" id="lng" name="lng" value="{{ issue.location.lng if issue.location else '' }}">
+
+          <!-- Map Container -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-map me-2" aria-hidden="true"></i>
+              Location on Map
+            </label>
+            <div class="map-wrapper">
+              <div id="map" style="height: 400px; width: 100%; border-radius: 12px; border: 2px solid var(--border-light); z-index: 1;"></div>
+              <div class="map-instructions">
+                <i class="bi bi-cursor" aria-hidden="true"></i>
+                Click on the map to set the exact location, or drag the marker to adjust
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-step btn-secondary" onclick="prevStep()">
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              Previous
+            </button>
+            <button type="button" class="btn-step btn-primary" onclick="nextStep()">
+              Next: Update Photo
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 5: Photo -->
+        <div class="form-step" id="step-5">
+          <div class="step-header">
+            <h2 class="step-title">Update Photo</h2>
+            <p class="step-description">
+              Replace or add a photo to show the current state of the issue.
+            </p>
+          </div>
+
+          <!-- Current Image Display -->
+          {% if issue.image_file_id %}
+          <div class="current-photo-section">
+            <h4 class="section-title">
+              <i class="bi bi-image" aria-hidden="true"></i>
+              Current Photo
+            </h4>
+            <div class="current-photo-container">
+              <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" 
+                   alt="Current issue photo" class="current-photo"onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
+              <div class="photo-overlay">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+                <span>Click to view full size</span>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- File Upload Area -->
+          <div class="form-group">
+            <label for="image" class="form-label">
+              <i class="bi bi-camera me-2" aria-hidden="true"></i>
+              {{ 'Replace Photo' if issue.image_file_id else 'Add Photo' }} (Optional)
+            </label>
+            
+            <div class="file-upload-area" id="file-upload-area">
+              <div class="upload-placeholder">
+                <i class="bi bi-cloud-upload upload-icon" aria-hidden="true"></i>
+                <h3>{{ 'Upload New Photo' if issue.image_file_id else 'Upload Photo' }}</h3>
+                <p>Drag and drop your image here, or click to browse</p>
+                <div class="upload-requirements">
+                  <span>Supports: JPG, PNG, GIF, WEBP</span>
+                  <span>Max size: 10MB</span>
+                </div>
+              </div>
+              <input type="file" id="image" name="image" class="file-input" accept="image/*">
+            </div>
+
+            <!-- File Preview -->
+            <div class="file-preview" id="file-preview">
+              <div class="preview-content">
+                <div class="preview-info">
+                  <i class="bi bi-file-earmark-image preview-icon" aria-hidden="true"></i>
+                  <div class="preview-details">
+                    <span class="file-name" id="file-name"></span>
+                    <span class="file-size" id="file-size"></span>
+                  </div>
+                </div>
+                <button type="button" class="remove-file-btn" onclick="removeFile()">
+                  <i class="bi bi-x" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-step btn-secondary" onclick="prevStep()">
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              Previous
+            </button>
+            <button type="button" class="btn-step btn-primary" onclick="nextStep()">
+              Next: Review Changes
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 6: Review -->
+        <div class="form-step" id="step-6">
+          <div class="step-header">
+            <h2 class="step-title">Review Your Changes</h2>
+            <p class="step-description">
+              Please review all the changes before updating your report.
+            </p>
+          </div>
+
+          <div class="review-sections">
+            <div class="review-section">
+              <h3 class="review-title">
+                <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                Description
+              </h3>
+              <div class="review-content" id="review-description">
+                {{ issue.description }}
+              </div>
+            </div>
+
+            <div class="review-section">
+              <h3 class="review-title">
+                <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                Priority
+              </h3>
+              <div class="review-content priority-display" id="review-priority">
+                {{ (issue.priority or 'medium').title() }}
+              </div>
+            </div>
+
+            <div class="review-section">
+              <h3 class="review-title">
+                <i class="bi bi-bar-chart" aria-hidden="true"></i>
+                Severity
+              </h3>
+              <div class="review-content severity-display" id="review-severity">
+                {{ (issue.severity or 'moderate').title() }}
+              </div>
+            </div>
+
+            <div class="review-section">
+              <h3 class="review-title">
+                <i class="bi bi-tag" aria-hidden="true"></i>
+                Category
+              </h3>
+              <div class="review-content" id="review-category">
+                {{ issue.category.replace('_', ' ').title() if issue.category else 'Other' }}
+              </div>
+            </div>
+
+            <div class="review-section">
+              <h3 class="review-title">
+                <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                Location
+              </h3>
+              <div class="review-content" id="review-location">
+                {{ issue.city_street or issue.location_address or 'Location coordinates provided' }}
+              </div>
+            </div>
+
+            <div class="review-section">
+              <h3 class="review-title">
+                <i class="bi bi-camera" aria-hidden="true"></i>
+                Photo
+              </h3>
+              <div class="review-content" id="review-photo">
+                {% if issue.image_file_id %}
+                Current photo will be kept (unless you uploaded a new one)
+                {% else %}
+                No photo attached
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-step btn-secondary" onclick="prevStep()">
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              Previous
+            </button>
+            <button type="submit" class="btn-step btn-success">
+              <i class="bi bi-check2-circle" aria-hidden="true"></i>
+              Update Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Cancel Action -->
+        <div class="form-footer">
+          <a href="{{ url_for('reports.report_detail', issue_id=issue._id) }}" class="cancel-link">
+            <i class="bi bi-x-circle" aria-hidden="true"></i>
+            Cancel and return to report
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal-backdrop" onclick="closeImageModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Current Photo</h3>
+        <button class="btn-close" onclick="closeImageModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="Current issue photo">
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let currentStep = 1;
+    let map;
+    let marker;
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      setupCategorySelection();
+      setupFileUpload();
+      
+      // Initialize map if we're starting on step 3 (location step)
+      if (currentStep === 4) {
+        setTimeout(() => {
+          initializeMap();
+        }, 500);
+      }
+      
+      console.log('Page loaded, map will be initialized when location step is active');
+    });
+
+    // Step navigation
+    function nextStep() {
+      if (currentStep < 6) {
+        document.getElementById(`step-${currentStep}`).classList.remove('active');
+        currentStep++;
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        
+        if (currentStep === 4) {
+          // Reinitialize map when location step becomes active
+          setTimeout(() => {
+            initializeMap();
+          }, 100);
+        }
+        
+        if (currentStep === 6) {
+          updateReviewStep();
+        }
+        
+        updateProgressIndicators();
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        document.getElementById(`step-${currentStep}`).classList.remove('active');
+        currentStep--;
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        
+        if (currentStep === 4) {
+          // Reinitialize map when returning to location step
+          setTimeout(() => {
+            initializeMap();
+          }, 100);
+        }
+        
+        updateProgressIndicators();
+      }
+    }
+
+    function updateProgressIndicators() {
+      for (let i = 1; i <= 6; i++) {
+        const indicator = document.getElementById(`step-indicator-${i}`);
+        if (i <= currentStep) {
+          indicator.classList.add('active');
+        } else {
+          indicator.classList.remove('active');
+        }
+      }
+    }
+
+    // Category selection
+    function setupCategorySelection() {
+      const categoryRadios = document.querySelectorAll('input[name="category"]');
+      categoryRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          // Category selection doesn't need validation for edit form
+        });
+      });
+    }
+
+    // File upload handling
+    function setupFileUpload() {
+      const fileUploadArea = document.getElementById('file-upload-area');
+      const fileInput = document.getElementById('image');
+
+      fileUploadArea.addEventListener('click', () => fileInput.click());
+      fileUploadArea.addEventListener('dragover', handleDragOver);
+      fileUploadArea.addEventListener('drop', handleDrop);
+      fileInput.addEventListener('change', handleFileSelect);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFile(files[0]);
+      }
+    }
+
+    function handleFileSelect(e) {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    }
+
+    function handleFile(file) {
+      if (!file.type.startsWith('image/')) {
+        showError('Please select a valid image file.');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        showError('File size must be less than 10MB.');
+        return;
+      }
+
+      const fileInput = document.getElementById('image');
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      fileInput.files = dataTransfer.files;
+
+      showFilePreview(file);
+    }
+
+    function showFilePreview(file) {
+      const fileName = document.getElementById('file-name');
+      const fileSize = document.getElementById('file-size');
+      const filePreview = document.getElementById('file-preview');
+      const uploadArea = document.getElementById('file-upload-area');
+
+      fileName.textContent = file.name;
+      fileSize.textContent = formatFileSize(file.size);
+
+      filePreview.classList.add('show');
+      uploadArea.style.display = 'none';
+    }
+
+    function removeFile() {
+      const fileInput = document.getElementById('image');
+      const filePreview = document.getElementById('file-preview');
+      const uploadArea = document.getElementById('file-upload-area');
+
+      fileInput.value = '';
+      filePreview.classList.remove('show');
+      uploadArea.style.display = 'block';
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Map initialization
+    function initializeMap() {
+      try {
+        const currentLat = parseFloat(document.getElementById('lat').value) || 31.7683;
+        const currentLng = parseFloat(document.getElementById('lng').value) || 35.2137;
+        
+        // Check if map already exists
+        if (map) {
+          map.remove();
+        }
+        
+        map = L.map('map').setView([currentLat, currentLng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        marker = L.marker([currentLat, currentLng], { draggable: true }).addTo(map);
+
+        marker.on('dragend', function() {
+          const position = marker.getLatLng();
+          document.getElementById('lat').value = position.lat;
+          document.getElementById('lng').value = position.lng;
+          updateAddressFromCoords(position.lat, position.lng);
+        });
+
+        map.on('click', function(e) {
+          marker.setLatLng(e.latlng);
+          document.getElementById('lat').value = e.latlng.lat;
+          document.getElementById('lng').value = e.latlng.lng;
+          updateAddressFromCoords(e.latlng.lat, e.latlng.lng);
+        });
+
+        // Force map to resize when it becomes visible
+        setTimeout(() => {
+          if (map) {
+            map.invalidateSize();
+          }
+        }, 500);
+        
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        // Fallback: hide map container and show error
+        const mapContainer = document.getElementById('map');
+        if (mapContainer) {
+          mapContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;"><i class="bi bi-exclamation-triangle"></i><br>Map could not be loaded. Please enter the address manually.</div>';
+        }
+      }
+    }
+
+    function updateAddressFromCoords(lat, lng) {
+      // Reverse geocoding would go here
+      // For now, just update the display
+      console.log(`Updated coordinates: ${lat}, ${lng}`);
+    }
+
+    // Review step
+    function updateReviewStep() {
+      const description = document.getElementById('description').value;
+      const priority = document.querySelector('input[name="priority"]:checked');
+      const severity = document.querySelector('input[name="severity"]:checked');
+      const category = document.querySelector('input[name="category"]:checked');
+      const cityStreet = document.getElementById('city_street').value;
+      const fileInput = document.getElementById('image');
+
+      document.getElementById('review-description').textContent = description.substring(0, 100) + (description.length > 100 ? '...' : '');
+      
+      // Priority with styling
+      const priorityDisplay = document.getElementById('review-priority');
+      const priorityValue = priority ? priority.value : '{{ issue.priority or "medium" }}';
+      priorityDisplay.textContent = priorityValue.charAt(0).toUpperCase() + priorityValue.slice(1);
+      priorityDisplay.className = `review-content priority-display priority-${priorityValue}`;
+      
+      // Severity with styling
+      const severityDisplay = document.getElementById('review-severity');
+      const severityValue = severity ? severity.value : '{{ issue.severity or "moderate" }}';
+      severityDisplay.textContent = severityValue.charAt(0).toUpperCase() + severityValue.slice(1);
+      severityDisplay.className = `review-content severity-display severity-${severityValue}`;
+      
+      document.getElementById('review-category').textContent = category ? getCategoryName(category.value) : '-';
+      document.getElementById('review-location').textContent = cityStreet;
+      document.getElementById('review-photo').textContent = fileInput.files.length > 0 ? 
+        'New photo will be uploaded' : 
+        '{{ "Current photo will be kept" if issue.image_file_id else "No photo attached" }}';
+    }
+
+    function getCategoryName(value) {
+      const names = {
+        'traffic_light_failure': 'Traffic Light Issues',
+        'water_leak': 'Water Leaks',
+        'pothole': 'Road Damage',
+        'street_lighting': 'Street Lighting',
+        'other': 'Other Issues'
+      };
+      return names[value] || 'Unknown';
+    }
+
+    // Image modal functions
+    function showImageModal(src) {
+      const modal = document.getElementById('image-modal');
+      const modalImage = document.getElementById('modal-image');
+
+      modalImage.src = src;
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('image-modal');
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+
+      setTimeout(() => {
+        document.getElementById('modal-image').src = '';
+      }, 300);
+    }
+
+    // Error handling
+    function showError(message) {
+      alert(message); // Replace with better error handling
+    }
+
+    // Handle escape key for modals
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    });
+  </script>
+
+  <style>
+    /* Additional styles for edit page */
+    .status-display {
+      display: flex;
+      gap: 2rem;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      flex-wrap: wrap;
+    }
+
+    .status-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-width: 120px;
+    }
+
+    .status-label {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      font-weight: 500;
+    }
+
+    .status-value {
+      font-weight: 600;
+    }
+
+    .status-badge, .priority-badge, .severity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .status-pending { background: #f3f4f6; color: #374151; }
+    .status-assigned { background: #dbeafe; color: #1e40af; }
+    .status-in-progress { background: #fef3c7; color: #92400e; }
+    .status-done { background: #d1fae5; color: #065f46; }
+
+    .priority-low { background: #d1fae5; color: #065f46; }
+    .priority-medium { background: #fef3c7; color: #92400e; }
+    .priority-high { background: #fed7aa; color: #9a3412; }
+    .priority-critical { background: #fecaca; color: #991b1b; }
+
+    .severity-minor { background: #f3f4f6; color: #374151; }
+    .severity-moderate { background: #dbeafe; color: #1e40af; }
+    .severity-major { background: #fef3c7; color: #92400e; }
+    .severity-critical { background: #fecaca; color: #991b1b; }
+
+    .current-photo-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .current-photo-container {
+      position: relative;
+      display: inline-block;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .current-photo-container:hover {
+      transform: scale(1.02);
+    }
+
+    .current-photo {
+      max-width: 300px;
+      max-height: 200px;
+      border-radius: 12px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+      color: white;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .current-photo-container:hover .photo-overlay {
+      opacity: 1;
+    }
+
+    .review-sections {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .review-section {
+      padding: 1.5rem;
+      background: var(--surface-light);
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+    }
+
+    .review-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .review-content {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .cancel-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      text-align: center;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .cancel-link:hover {
+      background: var(--surface-light);
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    /* Priority & Severity Styling */
+    .priority-grid, .severity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+    }
+
+    .priority-option, .severity-option {
+      position: relative;
+    }
+
+    .priority-radio, .severity-radio {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .priority-card, .severity-card {
+      display: block;
+      padding: var(--space-6);
+      border: 2px solid var(--gray-300);
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: var(--transition-all);
+      text-align: center;
+      background: white;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+    }
+
+    .priority-card:hover, .severity-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .priority-radio:checked + .priority-card,
+    .severity-radio:checked + .severity-card {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    /* Priority specific colors */
+    .priority-low-card { border-color: #10b981; }
+    .priority-low-card:hover, .priority-radio:checked + .priority-low-card {
+      border-color: #059669;
+      background: #d1fae5;
+    }
+
+    .priority-medium-card { border-color: #f59e0b; }
+    .priority-medium-card:hover, .priority-radio:checked + .priority-medium-card {
+      border-color: #d97706;
+      background: #fef3c7;
+    }
+
+    .priority-high-card { border-color: #f97316; }
+    .priority-high-card:hover, .priority-radio:checked + .priority-high-card {
+      border-color: #ea580c;
+      background: #fed7aa;
+    }
+
+    .priority-critical-card { border-color: #ef4444; }
+    .priority-critical-card:hover, .priority-radio:checked + .priority-critical-card {
+      border-color: #dc2626;
+      background: #fecaca;
+    }
+
+    /* Severity specific colors */
+    .severity-minor-card { border-color: #6b7280; }
+    .severity-minor-card:hover, .severity-radio:checked + .severity-minor-card {
+      border-color: #4b5563;
+      background: #f3f4f6;
+    }
+
+    .severity-moderate-card { border-color: #3b82f6; }
+    .severity-moderate-card:hover, .severity-radio:checked + .severity-moderate-card {
+      border-color: #2563eb;
+      background: #dbeafe;
+    }
+
+    .severity-major-card { border-color: #f59e0b; }
+    .severity-major-card:hover, .severity-radio:checked + .severity-major-card {
+      border-color: #d97706;
+      background: #fef3c7;
+    }
+
+    .severity-critical-card { border-color: #ef4444; }
+    .severity-critical-card:hover, .severity-radio:checked + .severity-critical-card {
+      border-color: #dc2626;
+      background: #fecaca;
+    }
+
+    .priority-icon, .severity-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xl);
+      background: var(--gray-100);
+      color: var(--text-secondary);
+      transition: var(--transition-all);
+    }
+
+    .priority-content h3, .severity-content h3 {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+      color: var(--text-primary);
+    }
+
+    .priority-content p, .severity-content p {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-2);
+    }
+
+    .priority-examples {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .help-text {
+      font-size: var(--text-sm);
+      font-weight: normal;
+      color: var(--text-muted);
+      display: block;
+      margin-top: var(--space-1);
+    }
+
+    /* Priority & Severity display in review */
+    .priority-display, .severity-display {
+      display: inline-flex !important;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    @media (max-width: 768px) {
+      .status-display {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .priority-grid, .severity-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+
+      .priority-card, .severity-card {
+        min-height: 120px;
+        padding: var(--space-4);
+      }
+
+      .priority-content h3, .severity-content h3 {
+        font-size: var(--text-base);
+      }
+
+      .current-photo {
+        max-width: 100%;
+      }
+
+      #map {
+        height: 300px !important;
+      }
+    }
+  </style>
+</body>
+
+</html>

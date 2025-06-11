@@ -2269,3 +2269,18 @@ body.modal-open {
         transform: translateY(-1px);
         box-shadow: var(--shadow-lg);
       }
+
+
+      .btn-edit {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.btn-edit:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  transform: translateY(-1px);
+}
+
+.btn-edit:active {
+  transform: translateY(0);
+}

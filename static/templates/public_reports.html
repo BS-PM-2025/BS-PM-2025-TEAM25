@@ -33,12 +33,14 @@
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
   </a>
-  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+  <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
-         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+        <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid">
+          <span class="liquid-text">CityFix</span>
+        </a>
         <ul class="navbar-nav">
-          {% if user %}
           <li class="nav-item">
             <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
               <i class="bi bi-speedometer2" aria-hidden="true"></i>
@@ -69,26 +71,6 @@
               <span>Logout</span>
             </a>
           </li>
-          {% else %}
-          <li class="nav-item">
-            <a href="{{ url_for('main.about') }}" class="nav-link">
-              <i class="bi bi-info-circle" aria-hidden="true"></i>
-              <span>About</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ url_for('auth.root') }}" class="nav-link">
-              <i class="bi bi-person-plus" aria-hidden="true"></i>
-              <span>Sign Up</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
-              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-              <span>Login</span>
-            </a>
-          </li>
-          {% endif %}
         </ul>
       </div>
     </div>
@@ -97,7 +79,6 @@
   <!-- Mobile Navigation -->
   <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
     <ul class="mobile-nav-list">
-      {% if user %}
       <li class="mobile-nav-item">
         <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
           <i class="mobile-nav-icon bi bi-house"></i>
@@ -105,9 +86,9 @@
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link active">
-          <i class="mobile-nav-icon bi bi-map"></i>
-          <span>Reports</span>
+        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
         </a>
       </li>
       <li class="mobile-nav-item">
@@ -128,38 +109,6 @@
           <span>Profile</span>
         </a>
       </li>
-      {% else %}
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-house"></i>
-          <span>Home</span>
-        </a>
-      </li>
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link active">
-          <i class="mobile-nav-icon bi bi-map"></i>
-          <span>Reports</span>
-        </a>
-      </li>
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link mobile-nav-primary">
-          <i class="mobile-nav-icon bi bi-person-plus"></i>
-          <span>Join</span>
-        </a>
-      </li>
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('main.about') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-info-circle"></i>
-          <span>About</span>
-        </a>
-      </li>
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
-          <span>Login</span>
-        </a>
-      </li>
-      {% endif %}
     </ul>
   </nav>
 
