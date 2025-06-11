@@ -34,65 +34,192 @@
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
   </a>
-  <!-- Desktop Navigation -->  
-  <nav class="navbar" role="navigation" aria-label="Main navigation">
-    <div class="navbar-content">
-      <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
 
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
-            <i class="bi bi-plus-circle" aria-hidden="true"></i>
-            <span>Report Issue</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="{{ url_for('done_reports.done_issue') }}" class="nav-link">
-            <i class="bi bi-check2-all" aria-hidden="true"></i>
-            <span>Done Reports</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="{{ url_for('user_roles.edit_user_roles') }}" class="nav-link">
-            <i class="bi bi-people" aria-hidden="true"></i>
-            <span>Manage Users</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
-            <i class="bi bi-journal-text" aria-hidden="true"></i>
-            <span>My Reports</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="{{ url_for('main.profile') }}" class="nav-link">
-            <i class="bi bi-person-circle" aria-hidden="true"></i>
-            <span>{{ user.name }}</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
-            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-            <span>Logout</span>
-          </a>
-        </li>
-      </ul>
+  <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
+          <div class="circuit-container">
+            <div class="circuit-line"></div>
+            <div class="circuit-dot"></div>
+          </div>
+          CityFix
+        </a>
+        <ul class="navbar-nav">
+          <!-- Conditional navigation based on user role -->
+          {% if user %}
+          {% if user.role == 'admin' %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.admin_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a href="{{ url_for('done_reports.done_issue') }}"
+              class="nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
+              <i class="bi bi-check2-all" aria-hidden="true"></i>
+              <span>Done Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('user_roles.edit_user_roles') }}"
+              class="nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
+              <i class="bi bi-people" aria-hidden="true"></i>
+              <span>Manage Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.admin_problem_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Problems</span>
+              {% if problem_reports_count > 0 %}
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% elif user.role == 'maintenance' %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.maintenance_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
+              <i class="bi bi-tools" aria-hidden="true"></i>
+              <span>Tasks</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.rejected_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+              <i class="bi bi-envelope-exclamation" aria-hidden="true"></i>
+              <span>Rejections</span>
+              {% if rejected_count > 0 %}
+              <span class="nav-badge">{{ rejected_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% else %}
+          <!-- Regular user navigation -->
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}"
+              class="nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          {% endif %}
+
+          <!-- Common navigation items for all logged-in users -->
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}"
+              class="nav-link {% if request.endpoint == 'reports.report_issue' %}active{% endif %}">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}"
+              class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>{{ user.name }}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+          {% else %}
+          <!-- Navigation for non-logged in users -->
+          <li class="nav-item">
+            <a href="{{ url_for('reports.public_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
+              <i class="bi bi-map" aria-hidden="true"></i>
+              <span>View Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.about') }}"
+              class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <span>About</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="nav-link">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              <span>Sign Up</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+              <span>Login</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
     </div>
   </nav>
 
   <!-- Mobile Navigation -->
   <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
     <ul class="mobile-nav-list">
+      {% if user %}
+      {% if user.role == 'admin' %}
       <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link active">
-          <i class="mobile-nav-icon bi bi-journal-text"></i>
-          <span>My Reports</span>
+        <a href="{{ url_for('reports.admin_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
         </a>
       </li>
+      
       <li class="mobile-nav-item">
-        <a href="{{ url_for('done_reports.done_issue') }}" class="mobile-nav-link">
+        <a href="{{ url_for('done_reports.done_issue') }}"
+          class="mobile-nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-check2-all"></i>
-          <span>Done reports</span>
+          <span>Done</span>
         </a>
       </li>
       <li class="mobile-nav-item">
@@ -102,17 +229,137 @@
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('user_roles.edit_user_roles') }}" class="mobile-nav-link">
+        <a href="{{ url_for('user_roles.edit_user_roles') }}"
+          class="mobile-nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-people"></i>
           <span>Users</span>
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+        <a href="{{ url_for('reports.admin_problem_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-exclamation-triangle"></i>
+          <span>Problems</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      {% elif user.role == 'maintenance' %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.maintenance_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-tools"></i>
+          <span>Tasks</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.rejected_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-envelope-exclamation"></i>
+          <span>Rejected</span>
+          {% if rejected_count > 0 %}
+          <div class="mobile-badge">{{ rejected_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-person"></i>
           <span>Profile</span>
         </a>
       </li>
+      {% else %}
+      <!-- Regular user mobile navigation -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      {% endif %}
+      {% else %}
+      <!-- Mobile navigation for non-logged in users -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-person-plus"></i>
+          <span>Join</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.about') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-info-circle"></i>
+          <span>About</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
+          <span>Login</span>
+        </a>
+      </li>
+      {% endif %}
     </ul>
   </nav>
 
@@ -136,6 +383,17 @@
             <i class="bi bi-people" aria-hidden="true"></i>
             <span>Manage Users</span>
           </a>
+
+          <!-- Problem Reports Link with Badge -->
+          <a href="{{ url_for('reports.admin_problem_reports') }}" class="quick-action-btn quick-action-problems"
+            style="position: relative;">
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            <span>Problem Reports</span>
+            {% if problem_reports_count > 0 %}
+            <span class="action-badge">{{ problem_reports_count }}</span>
+            {% endif %}
+          </a>
+
           <a href="/api/priority-stats" class="quick-action-btn" onclick="viewPriorityStats(event)">
             <i class="bi bi-bar-chart" aria-hidden="true"></i>
             <span>Priority Stats</span>
@@ -233,10 +491,9 @@
     </div>
   </section>
 
-  <!-- Main Content -->
-  <main class="container">
-    <div class="main-content">
-      <!-- Reports Table -->
+  <!-- Main Content - Fixed Structure -->
+  <div class="container">
+    <main class="main-content">
       <div class="content-card">
         <div class="content-card-header">
           <h2 class="content-card-title">
@@ -279,6 +536,21 @@
               </select>
             </div>
 
+            <!-- Status Filter -->
+            <div class="filter-group">
+              <label for="status-filter" class="filter-label">
+                <i class="bi bi-check-circle" aria-hidden="true"></i>
+                Status
+              </label>
+              <select id="status-filter" class="filter-select" onchange="applyFilters()">
+                <option value="">All Statuses</option>
+                <option value="pending">⏱️ Pending</option>
+                <option value="assigned">👤 Assigned</option>
+                <option value="in progress">⚙️ In Progress</option>
+                <option value="done">✅ Done</option>
+              </select>
+            </div>
+
             <!-- Enhanced Sort Options -->
             <div class="filter-group">
               <label for="sort-select" class="filter-label">
@@ -286,11 +558,13 @@
                 Sort By
               </label>
               <select id="sort-select" class="filter-select" onchange="applyFilters()">
-                <option value="urgency" {{ 'selected' if current_sort == 'urgency' }}>⚡ Urgency Score</option>
-                <option value="priority" {{ 'selected' if current_sort == 'priority' }}>🔥 Priority (High to Low)</option>
-                <option value="severity" {{ 'selected' if current_sort == 'severity' }}>📊 Severity (High to Low)</option>
-                <option value="newest" {{ 'selected' if current_sort == 'newest' }}>🕒 Newest First</option>
-                <option value="oldest" {{ 'selected' if current_sort == 'oldest' }}>📅 Oldest First</option>
+                <option value="urgency" {{ 'selected' if current_sort=='urgency' }}>⚡ Urgency Score</option>
+                <option value="priority" {{ 'selected' if current_sort=='priority' }}>🔥 Priority (High to Low)
+                </option>
+                <option value="severity" {{ 'selected' if current_sort=='severity' }}>📊 Severity (High to Low)
+                </option>
+                <option value="newest" {{ 'selected' if current_sort=='newest' }}>🕒 Newest First</option>
+                <option value="oldest" {{ 'selected' if current_sort=='oldest' }}>📅 Oldest First</option>
               </select>
             </div>
 
@@ -321,23 +595,26 @@
             <tbody>
               {% if issues %}
               {% for issue in issues %}
-              <tr data-priority="{{ issue.priority or 'medium' }}" 
-                  data-severity="{{ issue.severity or 'moderate' }}" 
-                  data-status="{{ issue.status or 'pending' }}"
-                  data-urgency="{{ '%.2f'|format(issue.urgency_score|default(2.0)) }}"
-                  class="priority-{{ issue.priority or 'medium' }} severity-{{ issue.severity or 'moderate' }}">
-                
+              <tr data-priority="{{ issue.priority or 'medium' }}" data-severity="{{ issue.severity or 'moderate' }}"
+                data-status="{{ issue.status or 'pending' }}"
+                data-urgency="{{ '%.2f'|format(issue.urgency_score|default(2.0)) }}"
+                class="priority-{{ issue.priority or 'medium' }} severity-{{ issue.severity or 'moderate' }} status-{{ issue.status or 'pending' }}">
+
                 <!-- Urgency Score Column -->
                 <td data-label="Urgency">
                   <div class="urgency-score-display">
-                    <div class="urgency-number urgency-{{ 'critical' if issue.urgency_score|default(2.0) >= 3.5 else 'high' if issue.urgency_score|default(2.0) >= 2.5 else 'medium' if issue.urgency_score|default(2.0) >= 1.5 else 'low' }}">
+                    <div
+                      class="urgency-number urgency-{{ 'critical' if issue.urgency_score|default(2.0) >= 3.5 else 'high' if issue.urgency_score|default(2.0) >= 2.5 else 'medium' if issue.urgency_score|default(2.0) >= 1.5 else 'low' }}">
                       {{ '%.1f'|format(issue.urgency_score|default(2.0)) }}
                     </div>
                     <div class="urgency-bar">
-                      <div class="urgency-fill" style="width: {{ ((issue.urgency_score|default(2.0) / 4.0 * 100)|round) }}%"></div>
+                      <div class="urgency-fill"
+                        style="width: {{ ((issue.urgency_score|default(2.0) / 4.0 * 100)|round) }}%"></div>
                     </div>
                     <div class="urgency-label">
-                      {{ 'URGENT' if issue.urgency_score|default(2.0) >= 3.0 else 'HIGH' if issue.urgency_score|default(2.0) >= 2.5 else 'NORMAL' if issue.urgency_score|default(2.0) >= 1.5 else 'LOW' }}
+                      {{ 'URGENT' if issue.urgency_score|default(2.0) >= 3.0 else 'HIGH' if
+                      issue.urgency_score|default(2.0) >= 2.5 else 'NORMAL' if issue.urgency_score|default(2.0) >= 1.5
+                      else 'LOW' }}
                     </div>
                   </div>
                 </td>
@@ -345,42 +622,45 @@
                 <td data-label="Reporter">
                   <div class="reporter-info">
                     <div class="reporter-avatar">
-                      {{ issue.reporter_email[0]|upper }}
+                      {{ issue.reporter_email[0]|upper if issue.reporter_email else 'U' }}
                     </div>
                     <div class="reporter-details">
                       <div class="reporter-name">
-                        {{ issue.reporter_email.split('@')[0]|title }}
+                        {{ issue.reporter_email.split('@')[0]|title if issue.reporter_email else 'Unknown' }}
                       </div>
-                      <div class="reporter-email">{{ issue.reporter_email }}</div>
+                      <div class="reporter-email">{{ issue.reporter_email or 'No email provided' }}</div>
                     </div>
                   </div>
                 </td>
-                
+
                 <td data-label="Description" class="description-cell">
                   <div class="description-text description-truncated" onclick="toggleDescription(this)"
                     title="Click to expand">
                     {{ issue.description }}
                   </div>
                 </td>
-                
+
                 <td data-label="Priority">
                   <div class="priority-badge priority-{{ issue.priority or 'medium' }}">
-                    <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.priority or 'medium') == 'critical' else 'exclamation-circle' if (issue.priority or 'medium') == 'high' else 'dash-circle' if (issue.priority or 'medium') == 'medium' else 'clock' }}" aria-hidden="true"></i>
+                    <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.priority or 'medium') == 'critical' else 'exclamation-circle' if (issue.priority or 'medium') == 'high' else 'dash-circle' if (issue.priority or 'medium') == 'medium' else 'clock' }}"
+                      aria-hidden="true"></i>
                     <span>{{ (issue.priority or 'medium').title() }}</span>
                   </div>
                 </td>
-                
+
                 <td data-label="Severity">
                   <div class="severity-badge severity-{{ issue.severity or 'moderate' }}">
-                    <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.severity or 'moderate') == 'critical' else 'exclamation-circle' if (issue.severity or 'moderate') == 'major' else 'dash-circle' if (issue.severity or 'moderate') == 'moderate' else 'dash' }}" aria-hidden="true"></i>
+                    <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.severity or 'moderate') == 'critical' else 'exclamation-circle' if (issue.severity or 'moderate') == 'major' else 'dash-circle' if (issue.severity or 'moderate') == 'moderate' else 'dash' }}"
+                      aria-hidden="true"></i>
                     <span>{{ (issue.severity or 'moderate').title() }}</span>
                   </div>
                 </td>
-                
+
                 <td data-label="Location">
-                  {% if issue.location %}
-                  <a href="#" onclick="showLocationModal('{{ issue._id }}',{{ issue.location.lat }},{{ issue.location.lng }})"
-                    class="nav-link">
+                  {% if issue.location and issue.location.lat and issue.location.lng %}
+                  <a href="#"
+                    onclick="showLocationModal('{{ issue._id }}',{{ issue.location.lat }},{{ issue.location.lng }})"
+                    class="nav-link location-link">
                     <i class="bi bi-geo-alt" aria-hidden="true"></i>
                     View Map
                   </a>
@@ -392,7 +672,8 @@
                 <td data-label="Image">
                   {% if issue.image_file_id %}
                   <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue Image"
-                    class="image-thumb" onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
+                    class="image-thumb"
+                    onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
                   {% else %}
                   <div class="no-image">
                     <i class="bi bi-image" aria-hidden="true"></i>
@@ -405,12 +686,12 @@
                     class="badge badge-{{ 'success' if issue.status == 'done' else 'warning' if issue.status == 'in progress' else 'info' if issue.status == 'assigned' else 'secondary' }}">
                     <i class="bi bi-{{ 'check-circle' if issue.status == 'done' else 'hourglass-split' if issue.status == 'in progress' else 'person-check' if issue.status == 'assigned' else 'clock' }}"
                       aria-hidden="true"></i>
-                    {{ issue.status|title }}
+                    {{ issue.status|title if issue.status else 'Pending' }}
                   </span>
                 </td>
 
                 <td data-label="Actions">
-                  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                  <div class="action-buttons-container">
                     <form action="{{ url_for('reports.assign_issue', issue_id=issue._id) }}" method="post"
                       class="assign-form">
                       <select name="maintenance_email" class="assign-select">
@@ -429,7 +710,7 @@
 
                     {% if user.role == 'admin' or issue.reporter_email == user.email %}
                     <form action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}" method="post"
-                      onsubmit="return confirm('Are you sure you want to delete this report?');">
+                      onsubmit="return confirm('Are you sure you want to delete this report?');" class="delete-form">
                       <button type="submit" class="delete-btn" title="Delete Report">
                         <i class="bi bi-trash" aria-hidden="true"></i>
                       </button>
@@ -452,175 +733,8 @@
           </table>
         </div>
       </div>
-
-      <!-- Enhanced Priority Analysis Sidebar -->
-      <div class="content-card">
-        <div class="content-card-header">
-          <h2 class="content-card-title">
-            <i class="bi bi-pie-chart" aria-hidden="true"></i>
-            Priority & Urgency Analysis
-          </h2>
-        </div>
-
-        <div class="priority-analysis">
-          <!-- Urgency Distribution -->
-          <div class="analysis-section">
-            <h3 class="analysis-title">Urgency Distribution</h3>
-            <div class="urgency-stats">
-              <div class="urgency-stat critical">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ (issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 3.0)|list|length / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">🔴 Urgent (3.0+)</span>
-                  <span class="stat-count">{{ issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 3.0)|list|length }}</span>
-                </div>
-              </div>
-              
-              <div class="urgency-stat high">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ (issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 2.0)|selectattr('urgency_score', 'lt', 3.0)|list|length / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">🟠 High (2.0-3.0)</span>
-                  <span class="stat-count">{{ issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 2.0)|selectattr('urgency_score', 'lt', 3.0)|list|length }}</span>
-                </div>
-              </div>
-              
-              <div class="urgency-stat normal">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ (issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 1.0)|selectattr('urgency_score', 'lt', 2.0)|list|length / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">🟡 Normal (1.0-2.0)</span>
-                  <span class="stat-count">{{ issues|selectattr('urgency_score', 'defined')|selectattr('urgency_score', 'ge', 1.0)|selectattr('urgency_score', 'lt', 2.0)|list|length }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Priority Distribution -->
-          <div class="analysis-section">
-            <h3 class="analysis-title">Priority Distribution</h3>
-            <div class="priority-stats">
-              <div class="priority-stat critical">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ ((issues|selectattr('priority', 'equalto', 'critical')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">Critical</span>
-                  <span class="stat-count">{{ issues|selectattr('priority', 'equalto', 'critical')|list|length }}</span>
-                </div>
-              </div>
-              
-              <div class="priority-stat high">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ ((issues|selectattr('priority', 'equalto', 'high')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">High</span>
-                  <span class="stat-count">{{ issues|selectattr('priority', 'equalto', 'high')|list|length }}</span>
-                </div>
-              </div>
-              
-              <div class="priority-stat medium">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ ((issues|selectattr('priority', 'equalto', 'medium')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">Medium</span>
-                  <span class="stat-count">{{ issues|selectattr('priority', 'equalto', 'medium')|list|length }}</span>
-                </div>
-              </div>
-              
-              <div class="priority-stat low">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ ((issues|selectattr('priority', 'equalto', 'low')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">Low</span>
-                  <span class="stat-count">{{ issues|selectattr('priority', 'equalto', 'low')|list|length }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Severity Distribution -->
-          <div class="analysis-section">
-            <h3 class="analysis-title">Severity Distribution</h3>
-            <div class="severity-stats">
-              <div class="severity-stat critical">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ ((issues|selectattr('severity', 'equalto', 'critical')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">Critical</span>
-                  <span class="stat-count">{{ issues|selectattr('severity', 'equalto', 'critical')|list|length }}</span>
-                </div>
-              </div>
-              
-              <div class="severity-stat major">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ ((issues|selectattr('severity', 'equalto', 'major')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">Major</span>
-                  <span class="stat-count">{{ issues|selectattr('severity', 'equalto', 'major')|list|length }}</span>
-                </div>
-              </div>
-              
-              <div class="severity-stat moderate">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ ((issues|selectattr('severity', 'equalto', 'moderate')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">Moderate</span>
-                  <span class="stat-count">{{ issues|selectattr('severity', 'equalto', 'moderate')|list|length }}</span>
-                </div>
-              </div>
-              
-              <div class="severity-stat minor">
-                <div class="stat-bar">
-                  <div class="stat-fill" style="width: {{ ((issues|selectattr('severity', 'equalto', 'minor')|list|length) / (issues|length if issues|length > 0 else 1) * 100)|round }}%"></div>
-                </div>
-                <div class="stat-info">
-                  <span class="stat-label">Minor</span>
-                  <span class="stat-count">{{ issues|selectattr('severity', 'equalto', 'minor')|list|length }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Enhanced Quick Actions -->
-          <div class="analysis-section">
-            <h3 class="analysis-title">Quick Actions</h3>
-            <div class="quick-action-buttons">
-              <button class="action-button critical" onclick="filterByUrgency(3.0)">
-                <i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>
-                View Urgent (3.0+)
-              </button>
-              <button class="action-button critical" onclick="filterByPriority('critical')">
-                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-                View Critical Priority
-              </button>
-              <button class="action-button high" onclick="filterByPriority('high')">
-                <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
-                View High Priority
-              </button>
-              <button class="action-button" onclick="sortByUrgency()">
-                <i class="bi bi-sort-numeric-down" aria-hidden="true"></i>
-                Sort by Urgency
-              </button>
-              <button class="action-button" onclick="clearFilters()">
-                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-                Clear Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
+    </main>
+  </div>
 
   <!-- Modals -->
   <!-- Image Modal -->
@@ -687,13 +801,13 @@
     let allRows = [];
 
     // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // Store all table rows for filtering
       const tbody = document.querySelector('#reports-table tbody');
       if (tbody) {
         allRows = Array.from(tbody.getElementsByTagName('tr'));
       }
-      
+
       // Calculate and display average urgency
       calculateAverageUrgency();
     });
@@ -704,15 +818,15 @@
         .filter(row => !row.querySelector('.empty-state'))
         .map(row => parseFloat(row.dataset.urgency || 0))
         .filter(score => !isNaN(score) && score > 0);
-      
+
       if (urgencyScores.length > 0) {
         const avgUrgency = urgencyScores.reduce((a, b) => a + b, 0) / urgencyScores.length;
         const avgElement = document.getElementById('avg-urgency');
         const trendElement = document.getElementById('urgency-trend');
-        
+
         if (avgElement && trendElement) {
           avgElement.textContent = avgUrgency.toFixed(2);
-          
+
           // Update trend based on average
           if (avgUrgency >= 3.0) {
             trendElement.innerHTML = '<i class="bi bi-arrow-up text-red-500"></i><span class="text-red-500">High Risk</span>';
@@ -725,36 +839,38 @@
       }
     }
 
-    // Enhanced filtering functionality
-    function applyFilters() {
-      const priorityFilter = document.getElementById('priority-filter').value;
-      const severityFilter = document.getElementById('severity-filter').value;
-      const sortBy = document.getElementById('sort-select').value;
-      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+ // Enhanced filtering functionality
+  function applyFilters() {
+    const priorityFilter = document.getElementById('priority-filter').value;
+    const severityFilter = document.getElementById('severity-filter').value;
+    const statusFilter = document.getElementById('status-filter').value;
+    const sortBy = document.getElementById('sort-select').value;
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
 
-      let visibleRows = allRows.filter(row => {
-        // Skip empty state row
-        if (row.querySelector('.empty-state')) return false;
+    let visibleRows = allRows.filter(row => {
+      // Skip empty state row
+      if (row.querySelector('.empty-state')) return false;
 
-        const priority = row.dataset.priority;
-        const severity = row.dataset.severity;
-        const text = row.textContent.toLowerCase();
+      const priority = row.dataset.priority;
+      const severity = row.dataset.severity;
+      const status = row.dataset.status;
+      const text = row.textContent.toLowerCase();
 
-        // Apply filters
-        if (priorityFilter && priority !== priorityFilter) return false;
-        if (severityFilter && severity !== severityFilter) return false;
-        if (searchTerm && !text.includes(searchTerm)) return false;
+      // Apply filters
+      if (priorityFilter && priority !== priorityFilter) return false;
+      if (severityFilter && severity !== severityFilter) return false;
+      if (statusFilter && status !== statusFilter) return false;
+      if (searchTerm && !text.includes(searchTerm)) return false;
 
-        return true;
-      });
+      return true;
+    });
 
-      // Sort rows
-      sortRows(visibleRows, sortBy);
+    // Sort rows
+    sortRows(visibleRows, sortBy);
 
-      // Update table display
-      updateTableDisplay(visibleRows);
-    }
-
+    // Update table display
+    updateTableDisplay(visibleRows);
+  }
     function sortRows(rows, sortBy) {
       const priorityOrder = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
       const severityOrder = { 'critical': 4, 'major': 3, 'moderate': 2, 'minor': 1 };
@@ -781,7 +897,7 @@
 
     function updateTableDisplay(visibleRows) {
       const tbody = document.querySelector('#reports-table tbody');
-      
+
       // Hide all rows first
       allRows.forEach(row => row.style.display = 'none');
 
@@ -810,7 +926,7 @@
       // Filter rows by urgency score
       allRows.forEach(row => {
         if (row.querySelector('.empty-state')) return;
-        
+
         const urgency = parseFloat(row.dataset.urgency || 0);
         row.style.display = urgency >= minUrgency ? '' : 'none';
       });
@@ -819,7 +935,7 @@
     function sortByUrgency() {
       document.getElementById('sort-select').value = 'urgency';
       applyFilters();
-      
+
       // Update urgency indicator
       const indicator = document.getElementById('urgency-indicator');
       if (indicator) {
@@ -850,7 +966,7 @@
     // Priority Stats Modal
     function viewPriorityStats(event) {
       event.preventDefault();
-      
+
       fetch('/api/priority-stats')
         .then(response => response.json())
         .then(data => {
@@ -865,7 +981,7 @@
     function showPriorityStatsModal(stats) {
       const modal = document.getElementById('priority-stats-modal');
       const content = document.getElementById('priority-stats-content');
-      
+
       content.innerHTML = `
         <div class="stats-grid">
           <div class="stat-item">
@@ -941,7 +1057,7 @@
           </div>
         </div>
       `;
-      
+
       modal.classList.add('show');
       document.body.style.overflow = 'hidden';
     }
@@ -1135,7 +1251,8 @@
 
   <style>
     /* Enhanced Priority & Severity Badge Styles */
-    .priority-badge, .severity-badge {
+    .priority-badge,
+    .severity-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
@@ -1168,10 +1285,21 @@
       color: white;
     }
 
-    .urgency-number.urgency-critical { background: #ef4444; }
-    .urgency-number.urgency-high { background: #f97316; }
-    .urgency-number.urgency-medium { background: #f59e0b; }
-    .urgency-number.urgency-low { background: #10b981; }
+    .urgency-number.urgency-critical {
+      background: #ef4444;
+    }
+
+    .urgency-number.urgency-high {
+      background: #f97316;
+    }
+
+    .urgency-number.urgency-medium {
+      background: #f59e0b;
+    }
+
+    .urgency-number.urgency-low {
+      background: #10b981;
+    }
 
     .urgency-bar {
       width: 40px;
@@ -1195,16 +1323,46 @@
     }
 
     /* Priority Colors */
-    .priority-critical { background-color: #fecaca; color: #991b1b; }
-    .priority-high { background-color: #fed7aa; color: #9a3412; }
-    .priority-medium { background-color: #fef3c7; color: #92400e; }
-    .priority-low { background-color: #d1fae5; color: #065f46; }
+    .priority-critical {
+      background-color: #fecaca;
+      color: #991b1b;
+    }
+
+    .priority-high {
+      background-color: #fed7aa;
+      color: #9a3412;
+    }
+
+    .priority-medium {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .priority-low {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
 
     /* Severity Colors */
-    .severity-critical { background-color: #fecaca; color: #991b1b; }
-    .severity-major { background-color: #fef3c7; color: #92400e; }
-    .severity-moderate { background-color: #dbeafe; color: #1e40af; }
-    .severity-minor { background-color: #f3f4f6; color: #374151; }
+    .severity-critical {
+      background-color: #fecaca;
+      color: #991b1b;
+    }
+
+    .severity-major {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .severity-moderate {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+
+    .severity-minor {
+      background-color: #f3f4f6;
+      color: #374151;
+    }
 
     /* Row highlighting based on priority */
     tr.priority-critical {
@@ -1289,12 +1447,23 @@
       gap: var(--space-3);
     }
 
-    .urgency-stat.critical .stat-fill { background: #ef4444; }
-    .urgency-stat.high .stat-fill { background: #f97316; }
-    .urgency-stat.normal .stat-fill { background: #f59e0b; }
+    .urgency-stat.critical .stat-fill {
+      background: #ef4444;
+    }
+
+    .urgency-stat.high .stat-fill {
+      background: #f97316;
+    }
+
+    .urgency-stat.normal .stat-fill {
+      background: #f59e0b;
+    }
 
     /* Purple stat card for urgency */
-    .stat-card.purple::before { background: #8b5cf6; }
+    .stat-card.purple::before {
+      background: #8b5cf6;
+    }
+
     .stat-card.purple .stat-icon {
       background: #f3e8ff;
       color: #7c3aed;
@@ -1337,13 +1506,15 @@
       font-weight: 600;
     }
 
-    .distribution-grid, .urgency-ranges {
+    .distribution-grid,
+    .urgency-ranges {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 0.5rem;
     }
 
-    .dist-item, .urgency-range {
+    .dist-item,
+    .urgency-range {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -1352,10 +1523,31 @@
       font-size: 0.875rem;
     }
 
-    .dist-item.critical, .urgency-range.urgent { background: #fecaca; color: #991b1b; }
-    .dist-item.high, .dist-item.major { background: #fed7aa; color: #9a3412; }
-    .dist-item.medium, .dist-item.moderate, .urgency-range.normal { background: #fef3c7; color: #92400e; }
-    .dist-item.low, .dist-item.minor, .urgency-range.low { background: #d1fae5; color: #065f46; }
+    .dist-item.critical,
+    .urgency-range.urgent {
+      background: #fecaca;
+      color: #991b1b;
+    }
+
+    .dist-item.high,
+    .dist-item.major {
+      background: #fed7aa;
+      color: #9a3412;
+    }
+
+    .dist-item.medium,
+    .dist-item.moderate,
+    .urgency-range.normal {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .dist-item.low,
+    .dist-item.minor,
+    .urgency-range.low {
+      background: #d1fae5;
+      color: #065f46;
+    }
 
     /* Mobile responsiveness */
     @media (max-width: 768px) {
@@ -1410,6 +1602,111 @@
       }
     }
   </style>
+  <style>
+  .action-buttons-container {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .assign-form {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  .assign-select {
+    flex: 1;
+    min-width: 120px;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    background: white;
+  }
+
+  .assign-btn {
+    padding: var(--space-2) var(--space-3);
+    background: var(--emerald-500);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-all);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .assign-btn:hover {
+    background: var(--emerald-600);
+    transform: translateY(-1px);
+  }
+
+  .delete-btn {
+    padding: var(--space-2);
+    background: var(--red-500);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: var(--transition-all);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+  }
+
+  .delete-btn:hover {
+    background: var(--red-600);
+    transform: translateY(-1px);
+  }
+  
+  .delete-form {
+    margin: 0;
+  }
+
+  .location-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--primary-600);
+    text-decoration: none;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-lg);
+    background: var(--primary-50);
+    transition: var(--transition-all);
+  }
+
+  .location-link:hover {
+    background: var(--primary-100);
+    color: var(--primary-700);
+    text-decoration: none;
+  }
+
+  /* Row styling based on status */
+  tr.status-pending {
+    background-color: rgba(243, 244, 246, 0.4);
+  }
+
+  tr.status-assigned {
+    background-color: rgba(219, 234, 254, 0.3);
+  }
+
+  tr.status-in-progress {
+    background-color: rgba(254, 243, 199, 0.3);
+  }
+
+  tr.status-done {
+    background-color: rgba(209, 250, 229, 0.3);
+  }
+</style>
 </body>
 
 </html>

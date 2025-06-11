@@ -1,0 +1,1203 @@
+<!-- Improved Reports Problem Page -->
+<!-- This template combines consistent styling with the problem reporting functionality -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Report Problem - CityFix</title>
+  <meta name="description" content="Report problems with maintenance tasks in CityFix.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/reports_problem.css') }}">
+</head>
+
+<body>
+  <!-- Back Link -->
+  <a href="{{ url_for('reports.maintenance_dashboard') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Dashboard</span>
+  </a>
+  <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
+          <div class="circuit-container">
+            <div class="circuit-line"></div>
+            <div class="circuit-dot"></div>
+          </div>
+          CityFix
+        </a>
+
+        <ul class="navbar-nav">
+          <!-- Conditional navigation based on user role -->
+          {% if user %}
+          {% if user.role == 'admin' %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.admin_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a href="{{ url_for('done_reports.done_issue') }}"
+              class="nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
+              <i class="bi bi-check2-all" aria-hidden="true"></i>
+              <span>Done Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('user_roles.edit_user_roles') }}"
+              class="nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
+              <i class="bi bi-people" aria-hidden="true"></i>
+              <span>Manage Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.admin_problem_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Problems</span>
+              {% if problem_reports_count > 0 %}
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% elif user.role == 'maintenance' %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.maintenance_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
+              <i class="bi bi-tools" aria-hidden="true"></i>
+              <span>Tasks</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.rejected_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+              <i class="bi bi-envelope-exclamation" aria-hidden="true"></i>
+              <span>Rejections</span>
+              {% if rejected_count > 0 %}
+              <span class="nav-badge">{{ rejected_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% else %}
+          <!-- Regular user navigation -->
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}"
+              class="nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          {% endif %}
+
+          <!-- Common navigation items for all logged-in users -->
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}"
+              class="nav-link {% if request.endpoint == 'reports.report_issue' %}active{% endif %}">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}"
+              class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>{{ user.name }}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+          {% else %}
+          <!-- Navigation for non-logged in users -->
+          <li class="nav-item">
+            <a href="{{ url_for('reports.public_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
+              <i class="bi bi-map" aria-hidden="true"></i>
+              <span>View Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.about') }}"
+              class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <span>About</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="nav-link">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              <span>Sign Up</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+              <span>Login</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      {% if user %}
+      {% if user.role == 'admin' %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.admin_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('done_reports.done_issue') }}"
+          class="mobile-nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-check2-all"></i>
+          <span>Done</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('user_roles.edit_user_roles') }}"
+          class="mobile-nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-people"></i>
+          <span>Users</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.admin_problem_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-exclamation-triangle"></i>
+          <span>Problems</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      {% elif user.role == 'maintenance' %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.maintenance_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-tools"></i>
+          <span>Tasks</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.rejected_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-envelope-exclamation"></i>
+          <span>Rejected</span>
+          {% if rejected_count > 0 %}
+          <div class="mobile-badge">{{ rejected_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      {% else %}
+      <!-- Regular user mobile navigation -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      {% endif %}
+      {% else %}
+      <!-- Mobile navigation for non-logged in users -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-person-plus"></i>
+          <span>Join</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.about') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-info-circle"></i>
+          <span>About</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
+          <span>Login</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        Report Problem with Issue
+      </h1>
+      <p class="page-subtitle">Use this form to report problems with this issue instead of marking it as complete.</p>
+    </div>
+
+    <div class="card mt-8 mx-auto" style="max-width: 800px;">
+      <div class="card-header bg-danger-subtle">
+        <h2 class="card-title text-danger">
+          <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+          Issue Details
+        </h2>
+      </div>
+
+      <div class="card-body">
+        <div class="alert alert-info mb-4">
+          <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+          <span>This will notify administrators about problems with this task. If you can solve the problem yourself,
+            please do so instead.</span>
+        </div>
+
+        <!-- Issue Summary -->
+        <div class="issue-summary mb-6">
+          <h3 class="section-title font-semibold mb-3">Issue Information</h3>
+          <div class="issue-details-grid">
+            <div class="issue-detail-column">
+              <div class="detail-group mb-3">
+                <label class="detail-label">Description</label>
+                <p class="detail-value">{{ issue.description }}</p>
+              </div>
+              <div class="detail-group mb-3">
+                <label class="detail-label">Location</label>
+                <p class="detail-value">{{ issue.city_street or 'Not specified' }}</p>
+              </div>
+              <div class="detail-group mb-3">
+                <label class="detail-label">Reported By</label>
+                <p class="detail-value">{{ issue.reporter_email }}</p>
+              </div>
+            </div>
+            <div class="issue-detail-column">
+              <div class="detail-group mb-3">
+                <label class="detail-label">Category</label>
+                <p class="detail-value">{{ issue.category|replace('_', ' ')|title if issue.category else 'Not
+                  categorized' }}</p>
+              </div>
+              <div class="detail-group mb-3">
+                <label class="detail-label">Priority/Severity</label>
+                <p class="detail-value">
+                  <span class="badge priority-{{ issue.priority or 'medium' }}">{{ issue.priority|title if
+                    issue.priority else 'Medium' }}</span> /
+                  <span class="badge severity-{{ issue.severity or 'moderate' }}">{{ issue.severity|title if
+                    issue.severity else 'Moderate' }}</span>
+                </p>
+              </div>
+              <div class="detail-group mb-3">
+                <label class="detail-label">Status</label>
+                <span class="status-badge badge-{{ issue.status|lower if issue.status else 'pending' }}">
+                  {{ issue.status|title if issue.status else 'Pending' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {% if issue.image_file_id %}
+          <div class="mt-4">
+            <label class="detail-label">Reported Image</label>
+            <div class="image-container mt-2">
+              <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue image"
+                class="issue-image"
+                onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Problem Report Form -->
+        <form action="{{ url_for('reports.report_issue_problem', issue_id=issue._id) }}" method="POST"
+          enctype="multipart/form-data">
+          <h3 class="section-title font-semibold mb-3">Problem Details</h3>
+
+          <div class="form-group mb-4">
+            <label for="problem_type" class="form-label required">Problem Type</label>
+            <select id="problem_type" name="problem_type" class="form-select" required>
+              <option value="">Select problem type</option>
+              <option value="location_issue">Location Issue (Wrong/Imprecise Location)</option>
+              <option value="description_issue">Description Issue (Unclear/Incomplete)</option>
+              <option value="access_issue">Access Issue (Cannot Access Area)</option>
+              <option value="duplicate_issue">Duplicate Issue (Already Reported)</option>
+              <option value="category_issue">Category Issue (Wrong Classification)</option>
+              <option value="other">Other Problem</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-4">
+            <label for="problem_description" class="form-label required">Problem Description</label>
+            <textarea id="problem_description" name="problem_description" class="form-control"
+              placeholder="Describe the problem in detail..." rows="5" required></textarea>
+            <small class="form-text text-muted">Be specific about what's wrong and how it prevents you from completing
+              the task.</small>
+          </div>
+
+          <div class="form-group mb-4">
+            <label for="problem_image" class="form-label">Upload Image (Optional)</label>
+            <div class="file-upload-container">
+              <input type="file" id="problem_image" name="problem_image" class="file-input" accept="image/*">
+              <label for="problem_image" class="file-upload-label">
+                <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
+                <span>Choose Photo</span>
+              </label>
+              <div class="selected-file-name" id="selected-file-name">No file selected</div>
+            </div>
+            <small class="form-text text-muted">Upload an image showing the problem (max 5MB)</small>
+          </div>
+
+          <div id="locationFieldsContainer" class="form-group mb-4 hidden">
+            <div class="alert alert-warning">
+              <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+              <span>Provide the correct location if the reported location is wrong</span>
+            </div>
+            <div class="location-fields-grid">
+              <div class="form-group">
+                <label for="corrected_lat" class="form-label">Correct Latitude</label>
+                <input type="text" id="corrected_lat" name="corrected_lat" class="form-control"
+                  placeholder="e.g. 31.7683">
+              </div>
+              <div class="form-group">
+                <label for="corrected_lng" class="form-label">Correct Longitude</label>
+                <input type="text" id="corrected_lng" name="corrected_lng" class="form-control"
+                  placeholder="e.g. 35.2137">
+              </div>
+            </div>
+            <div class="mt-2">
+              <label for="corrected_address" class="form-label">Correct Address</label>
+              <input type="text" id="corrected_address" name="corrected_address" class="form-control"
+                placeholder="e.g. 123 Main St, City">
+            </div>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label d-block">Needs Reporter Action?</label>
+            <div class="action-options">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="requires_reporter_action" id="reporter_action_yes"
+                  value="yes">
+                <label class="form-check-label" for="reporter_action_yes">Yes</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="requires_reporter_action" id="reporter_action_no"
+                  value="no" checked>
+                <label class="form-check-label" for="reporter_action_no">No</label>
+              </div>
+            </div>
+            <small class="form-text text-muted">Select "Yes" if the reporter needs to update the issue</small>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+              Submit Problem Report
+            </button>
+            <a href="{{ url_for('reports.maintenance_dashboard') }}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal-backdrop" onclick="closeImageModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Issue Image</h3>
+        <button class="btn-close" onclick="closeImageModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="Issue image">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Show/hide location fields based on problem type
+    document.addEventListener('DOMContentLoaded', function () {
+      // Set up problem type change handler
+      document.getElementById('problem_type').addEventListener('change', function () {
+        const locationType = 'location_issue';
+        const locationContainer = document.getElementById('locationFieldsContainer');
+
+        if (this.value === locationType) {
+          locationContainer.classList.remove('hidden');
+        } else {
+          locationContainer.classList.add('hidden');
+        }
+      });
+
+      // Set up file input handler
+      const fileInput = document.getElementById('problem_image');
+      const fileNameDisplay = document.getElementById('selected-file-name');
+
+      if (fileInput && fileNameDisplay) {
+        fileInput.addEventListener('change', function () {
+          if (this.files.length > 0) {
+            fileNameDisplay.textContent = this.files[0].name;
+            fileNameDisplay.classList.add('file-selected');
+          } else {
+            fileNameDisplay.textContent = 'No file selected';
+            fileNameDisplay.classList.remove('file-selected');
+          }
+        });
+      }
+
+      // Set up form submission handling
+      document.querySelector('form').addEventListener('submit', function (e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          const originalContent = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Submitting...';
+
+          // Re-enable if form doesn't submit after 5s (fallback)
+          setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+          }, 5000);
+        }
+      });
+    });
+
+    // Image modal functions
+    function showImageModal(src) {
+      const modal = document.getElementById('image-modal');
+      const modalImage = document.getElementById('modal-image');
+
+      if (!modal || !modalImage) return;
+
+      modalImage.src = src;
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('image-modal');
+
+      if (!modal) return;
+
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+
+      // Clear src after animation completes
+      setTimeout(() => {
+        const modalImage = document.getElementById('modal-image');
+        if (modalImage) {
+          modalImage.src = '';
+        }
+      }, 300);
+    }
+
+    // Handle escape key for modal
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    });
+  </script>
+
+  <style>
+    /* Enhanced styles for a consistent look with other pages */
+    .page-header {
+      margin-bottom: var(--space-8);
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+      max-width: 800px;
+    }
+
+    /* Mobile badge styles */
+    .mobile-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: #ef4444;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Card styling consistency */
+    .card {
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+      transition: var(--transition-all);
+      margin-bottom: var(--space-12);
+    }
+
+    .card-header {
+      padding: var(--space-6);
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+      border-bottom: 1px solid var(--red-200);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--red-700);
+      margin: 0;
+    }
+
+    .card-body {
+      padding: var(--space-6);
+    }
+
+    /* Alert styling */
+    .alert {
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .alert-info {
+      background-color: var(--blue-50);
+      border: 1px solid var(--blue-200);
+      color: var(--blue-800);
+    }
+
+    .alert-warning {
+      background-color: var(--orange-50);
+      border: 1px solid var(--orange-200);
+      color: var(--orange-800);
+    }
+
+    /* Section titles */
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: var(--space-4);
+    }
+
+    /* Issue details grid */
+    .issue-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-6);
+    }
+
+    /* Detail labels and values */
+    .detail-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: var(--space-1);
+      display: block;
+    }
+
+    .detail-value {
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: var(--space-3);
+    }
+
+    /* Image container */
+    .image-container {
+      width: 100%;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--gray-200);
+      max-width: 400px;
+    }
+
+    .issue-image {
+      width: 100%;
+      max-height: 240px;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .issue-image:hover {
+      transform: scale(1.02);
+    }
+
+    /* Form styling */
+    .form-group {
+      margin-bottom: var(--space-6);
+    }
+
+    .form-label {
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+      display: block;
+      color: var(--text-primary);
+    }
+
+    .form-label.required::after {
+      content: '*';
+      color: var(--red-500);
+      margin-left: 4px;
+    }
+
+    .form-control,
+    .form-select {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      border: 2px solid var(--gray-300);
+      border-radius: var(--radius-lg);
+      font-size: 1rem;
+      transition: var(--transition-all);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px var(--primary-100);
+    }
+
+    .form-text {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-top: var(--space-1);
+    }
+
+    /* File upload styling */
+    .file-upload-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .file-input {
+      position: absolute;
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .file-upload-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      background: var(--gray-100);
+      border: 2px dashed var(--gray-300);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .file-upload-label:hover {
+      background: var(--gray-200);
+      border-color: var(--gray-400);
+      color: var(--text-primary);
+    }
+
+    .selected-file-name {
+      font-size: 0.875rem;
+      margin-top: 4px;
+      color: var(--text-muted);
+    }
+
+    .file-selected {
+      color: var(--primary-600);
+      font-weight: 500;
+    }
+
+    /* Location fields */
+    .location-fields-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+
+    /* Radio options */
+    .action-options {
+      display: flex;
+      gap: var(--space-6);
+      margin-bottom: var(--space-2);
+    }
+
+    .form-check {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .form-check-input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+    }
+
+    .form-check-label {
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+
+    /* Form actions */
+    .form-actions {
+      display: flex;
+      gap: var(--space-4);
+      margin-top: var(--space-8);
+    }
+
+    /* Button styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-6);
+      font-weight: 600;
+      font-size: 0.875rem;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: var(--transition-all);
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      text-decoration: none;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--red-500), var(--red-600));
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, var(--red-600), var(--red-700));
+      color: white;
+    }
+
+    .btn-outline-secondary {
+      background: transparent;
+      border: 2px solid var(--gray-300);
+      color: var(--gray-700);
+    }
+
+    .btn-outline-secondary:hover {
+      background: var(--gray-100);
+      border-color: var(--gray-400);
+      color: var(--gray-900);
+    }
+
+    /* Badge styles */
+    .badge,
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    /* Priority colors */
+    .priority-critical {
+      background-color: var(--red-100);
+      color: var(--red-800);
+    }
+
+    .priority-high {
+      background-color: var(--orange-100);
+      color: var(--orange-800);
+    }
+
+    .priority-medium {
+      background-color: var(--amber-100, #fef3c7);
+      color: var(--amber-800, #92400e);
+    }
+
+    .priority-low {
+      background-color: var(--emerald-100, #d1fae5);
+      color: var(--emerald-800, #065f46);
+    }
+
+    /* Severity colors */
+    .severity-critical {
+      background-color: var(--red-100);
+      color: var(--red-800);
+    }
+
+    .severity-major {
+      background-color: var(--orange-100);
+      color: var(--orange-800);
+    }
+
+    .severity-moderate {
+      background-color: var(--blue-100);
+      color: var(--blue-800);
+    }
+
+    .severity-minor {
+      background-color: var(--gray-100);
+      color: var(--gray-800);
+    }
+
+    /* Status badge */
+    .badge-pending {
+      background-color: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .badge-assigned {
+      background-color: var(--blue-100);
+      color: var(--blue-800);
+    }
+
+    .badge-in-progress {
+      background-color: var(--amber-100, #fef3c7);
+      color: var(--amber-800, #92400e);
+    }
+
+    .badge-done {
+      background-color: var(--emerald-100, #d1fae5);
+      color: var(--emerald-800, #065f46);
+    }
+
+    /* Image modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-backdrop.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: white;
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-2xl);
+      max-width: 90vw;
+      max-height: 90vh;
+      width: auto;
+      overflow: hidden;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-backdrop.show .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: var(--space-6);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--gray-50);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: var(--space-2);
+      border-radius: var(--radius-lg);
+      transition: var(--transition-colors);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-close:hover {
+      color: var(--text-primary);
+      background: var(--gray-200);
+    }
+
+    .modal-body {
+      padding: var(--space-6);
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-100);
+    }
+
+    .modal-body img {
+      max-width: 100%;
+      max-height: calc(90vh - 120px);
+      border-radius: var(--radius-lg);
+      object-fit: contain;
+    }
+
+    /* Helper classes */
+    .hidden {
+      display: none !important;
+    }
+
+    .mt-2 {
+      margin-top: var(--space-2);
+    }
+
+    .mt-4 {
+      margin-top: var(--space-4);
+    }
+
+    .mt-8 {
+      margin-top: var(--space-8);
+    }
+
+    .mb-3 {
+      margin-bottom: var(--space-3);
+    }
+
+    .mb-4 {
+      margin-bottom: var(--space-4);
+    }
+
+    .mb-6 {
+      margin-bottom: var(--space-6);
+    }
+
+    .mx-auto {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .form-actions {
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .issue-details-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+      }
+
+      .location-fields-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .image-container {
+        max-width: 100%;
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+      }
+
+      .section-title {
+        font-size: 1.125rem;
+      }
+
+      .card-header,
+      .card-body {
+        padding: var(--space-4);
+      }
+
+      .action-options {
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+    }
+  </style>
+</body>
+
+</html>

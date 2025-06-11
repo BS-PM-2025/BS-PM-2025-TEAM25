@@ -24,45 +24,142 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
-
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/maintenance_dashboard.css') }}">
 </head>
 
 <body>
-   <!-- Back Link -->
+  <!-- Back Link -->
   <a href="{{ url_for('main.home') }}" class="back-link">
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
   </a>
-  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+  
+  <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
-          <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span>
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
+          <div class="circuit-container">
+            <div class="circuit-line"></div>
+            <div class="circuit-dot"></div>
+          </div>
+          CityFix
         </a>
 
         <ul class="navbar-nav">
+          <!-- Conditional navigation based on user role -->
+          {% if user %}
+          {% if user.role == 'admin' %}
           <li class="nav-item">
-            <a href="{{ url_for('reports.maintenance_dashboard') }}" class="nav-link active">
+            <a href="{{ url_for('reports.admin_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a href="{{ url_for('done_reports.done_issue') }}"
+              class="nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
+              <i class="bi bi-check2-all" aria-hidden="true"></i>
+              <span>Done Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('user_roles.edit_user_roles') }}"
+              class="nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
+              <i class="bi bi-people" aria-hidden="true"></i>
+              <span>Manage Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.admin_problem_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Problems</span>
+              {% if problem_reports_count > 0 %}
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% elif user.role == 'maintenance' %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.maintenance_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
               <i class="bi bi-tools" aria-hidden="true"></i>
               <span>Tasks</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ url_for('main.profile') }}" class="nav-link">
-              <i class="bi bi-person-circle" aria-hidden="true"></i>
-              <span>Profile</span>
+            <a href="{{ url_for('reports.rejected_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+              <i class="bi bi-envelope-exclamation" aria-hidden="true"></i>
+              <span>Rejections</span>
+              {% if rejected_count > 0 %}
+              <span class="nav-badge">{{ rejected_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% else %}
+          <!-- Regular user navigation -->
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}"
+              class="nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
-              <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          {% endif %}
+
+          <!-- Common navigation items for all logged-in users -->
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}"
+              class="nav-link {% if request.endpoint == 'reports.report_issue' %}active{% endif %}">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
               <span>Report Issue</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ url_for('reports.rejected_reports') }}" class="nav-link">
-              <i class="bi bi-envelope-exclamation-fill" aria-hidden="true"></i> 
-              <span>Rejections</span>
+            <a href="{{ url_for('main.profile') }}"
+              class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>{{ user.name }}</span>
             </a>
           </li>
           <li class="nav-item">
@@ -71,6 +168,35 @@
               <span>Logout</span>
             </a>
           </li>
+          {% else %}
+          <!-- Navigation for non-logged in users -->
+          <li class="nav-item">
+            <a href="{{ url_for('reports.public_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
+              <i class="bi bi-map" aria-hidden="true"></i>
+              <span>View Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.about') }}"
+              class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <span>About</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="nav-link">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              <span>Sign Up</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+              <span>Login</span>
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </div>
@@ -79,16 +205,20 @@
   <!-- Mobile Navigation -->
   <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
     <ul class="mobile-nav-list">
+      {% if user %}
+      {% if user.role == 'admin' %}
       <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.maintenance_dashboard') }}" class="mobile-nav-link active">
-          <i class="mobile-nav-icon bi bi-tools"></i>
-          <span>Tasks</span>
+        <a href="{{ url_for('reports.admin_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.rejected_reports') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-envelope-exclamation"></i>
-          <span>Rejected</span>
+        <a href="{{ url_for('done_reports.done_issue') }}"
+          class="mobile-nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-check2-all"></i>
+          <span>Done</span>
         </a>
       </li>
       <li class="mobile-nav-item">
@@ -98,17 +228,136 @@
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+        <a href="{{ url_for('user_roles.edit_user_roles') }}"
+          class="mobile-nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-people"></i>
+          <span>Users</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.admin_problem_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-exclamation-triangle"></i>
+          <span>Problems</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      {% elif user.role == 'maintenance' %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.maintenance_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-tools"></i>
+          <span>Tasks</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.rejected_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-envelope-exclamation"></i>
+          <span>Rejected</span>
+          {% if rejected_count > 0 %}
+          <div class="mobile-badge">{{ rejected_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-house"></i>
           <span>Home</span>
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-person"></i>
           <span>Profile</span>
         </a>
       </li>
+      {% else %}
+      <!-- Regular user mobile navigation -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      {% endif %}
+      {% else %}
+      <!-- Mobile navigation for non-logged in users -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-person-plus"></i>
+          <span>Join</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.about') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-info-circle"></i>
+          <span>About</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
+          <span>Login</span>
+        </a>
+      </li>
+      {% endif %}
     </ul>
   </nav>
 
@@ -126,18 +375,15 @@
 
         <div class="maintenance-stats">
           <div class="maintenance-stat">
-            <span class="maintenance-stat-number">{{ issues|selectattr('status', 'equalto', 'pending')|list|length
-              }}</span>
+            <span class="maintenance-stat-number">{{ issues|selectattr('status', 'equalto', 'pending')|list|length }}</span>
             <span class="maintenance-stat-label">Pending</span>
           </div>
           <div class="maintenance-stat">
-            <span class="maintenance-stat-number">{{ issues|selectattr('status', 'equalto', 'in progress')|list|length
-              }}</span>
+            <span class="maintenance-stat-number">{{ issues|selectattr('status', 'equalto', 'in progress')|list|length }}</span>
             <span class="maintenance-stat-label">In Progress</span>
           </div>
           <div class="maintenance-stat">
-            <span class="maintenance-stat-number">{{ issues|selectattr('status', 'equalto', 'resolved')|list|length
-              }}</span>
+            <span class="maintenance-stat-number">{{ issues|selectattr('status', 'equalto', 'resolved')|list|length }}</span>
             <span class="maintenance-stat-label">Resolved</span>
           </div>
         </div>
@@ -165,7 +411,7 @@
               <option value="oldest">Oldest First</option>
             </select>
           </div>
-          
+
           <!-- Filter Dropdown -->
           <div class="filter-dropdown">
             <select id="taskFilter" class="filter-select" onchange="filterTasks()">
@@ -176,14 +422,18 @@
               <option value="awaiting">Awaiting Approval</option>
             </select>
           </div>
-          
+
           <a href="{{ url_for('reports.report_issue') }}" class="btn-action btn-primary-action">
             <i class="bi bi-plus-circle" aria-hidden="true"></i>
             Report Issue
           </a>
+          
           <a href="{{ url_for('reports.rejected_reports') }}" class="btn-action btn-secondary-action">
             <i class="bi bi-envelope-exclamation" aria-hidden="true"></i>
             View Rejections
+            {% if rejected_count > 0 %}
+            <span class="badge-count">{{ rejected_count }}</span>
+            {% endif %}
           </a>
         </div>
       </div>
@@ -193,26 +443,23 @@
       <div class="tasks-grid" id="tasksContainer">
         {% for issue in issues %}
         <div class="task-card {{ 'awaiting' if issue.awaiting else 'rejected' if issue.rejection_reason else 'completed' if issue.status == 'done' }}"
-             data-status="{{ issue.status }}" 
-             data-priority="{{ 'high' if issue.status == 'pending' else 'medium' if issue.status == 'in progress' else 'low' }}"
-             data-category="{{ issue.category }}"
-             data-timestamp="{{ issue.timestamp }}"
-             data-awaiting="{{ 'true' if issue.awaiting else 'false' }}">
+          data-status="{{ issue.status }}"
+          data-priority="{{ 'high' if issue.status == 'pending' else 'medium' if issue.status == 'in progress' else 'low' }}"
+          data-category="{{ issue.category }}" 
+          data-timestamp="{{ issue.timestamp }}"
+          data-awaiting="{{ 'true' if issue.awaiting else 'false' }}">
+          
           <!-- Task Header -->
           <div class="task-header">
             <div class="task-meta">
               <div class="task-category">
                 {% set cat = issue.category|lower %}
-                <div
-                  class="category-icon category-{{ 'traffic' if cat == 'traffic light failure' else 'water' if cat == 'water leak' else 'power' if cat == 'power cut' else 'road' if cat == 'hole in the road' else 'default' }}">
-                  <i class="bi bi-{{ 'traffic-light-fill' if cat == 'traffic light failure' else 'droplet-fill' if cat == 'water leak' else 'bolt-fill' if cat == 'power cut' else 'slash-circle-fill' if cat == 'hole in the road' else 'exclamation-circle-fill' }}"
-                    aria-hidden="true"></i>
+                <div class="category-icon category-{{ 'traffic' if cat == 'traffic light failure' else 'water' if cat == 'water leak' else 'power' if cat == 'power cut' else 'road' if cat == 'hole in the road' else 'default' }}">
+                  <i class="bi bi-{{ 'traffic-light-fill' if cat == 'traffic light failure' else 'droplet-fill' if cat == 'water leak' else 'bolt-fill' if cat == 'power cut' else 'slash-circle-fill' if cat == 'hole in the road' else 'exclamation-circle-fill' }}" aria-hidden="true"></i>
                 </div>
-                <div class="category-name">{{ issue.category.replace('_', ' ').title() if issue.category else 'General
-                  Task' }}</div>
+                <div class="category-name">{{ issue.category.replace('_', ' ').title() if issue.category else 'General Task' }}</div>
               </div>
-              <div
-                class="task-priority priority-{{ 'high' if issue.status == 'pending' else 'medium' if issue.status == 'in progress' else 'low' }}">
+              <div class="task-priority priority-{{ 'high' if issue.status == 'pending' else 'medium' if issue.status == 'in progress' else 'low' }}">
                 {{ 'High' if issue.status == 'pending' else 'Medium' if issue.status == 'in progress' else 'Low' }}
               </div>
             </div>
@@ -250,10 +497,8 @@
                 <div class="detail-content">
                   <div class="detail-label">Status</div>
                   <div class="detail-value">
-                    <span
-                      class="status-badge status-{{ issue.status.replace(' ', '-') if issue.status else 'pending' }}">
-                      <i class="bi bi-{{ 'clock' if issue.status == 'pending' else 'hourglass-split' if issue.status == 'in progress' else 'check-circle' if issue.status == 'resolved' else 'clock' }}"
-                        aria-hidden="true"></i>
+                    <span class="status-badge status-{{ issue.status.replace(' ', '-') if issue.status else 'pending' }}">
+                      <i class="bi bi-{{ 'clock' if issue.status == 'pending' else 'hourglass-split' if issue.status == 'in progress' else 'check-circle' if issue.status == 'resolved' else 'clock' }}" aria-hidden="true"></i>
                       {{ issue.status.title() if issue.status else 'Pending' }}
                       {% if issue.awaiting %}(Awaiting Approval){% endif %}
                     </span>
@@ -267,9 +512,7 @@
                 <div class="detail-content">
                   <div class="detail-label">Issue Photo</div>
                   <div class="detail-value">
-                    <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue image"
-                      style="width: 100%; max-width: 200px; height: 120px; object-fit: cover; border-radius: var(--radius-lg); cursor: pointer;"
-                      onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
+                    <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue image" class="issue-image" onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
                   </div>
                 </div>
               </div>
@@ -277,7 +520,6 @@
             </div>
           </div>
 
-          <!-- Task Actions -->
           <div class="task-actions">
             {% if issue.status == 'done' %}
             <div class="status-badge status-completed" style="margin-bottom: var(--space-4);">
@@ -290,8 +532,7 @@
               Awaiting Admin Approval
             </div>
             {% else %}
-            <form class="status-form" action="{{ url_for('reports.maintenance_update_status', issue_id=issue._id) }}"
-              method="POST">
+            <form class="status-form" action="{{ url_for('reports.maintenance_update_status', issue_id=issue._id) }}" method="POST">
               <select name="status" class="status-select">
                 <option value="in progress" {% if issue.status=='in progress' %}selected{% endif %}>In Progress</option>
                 <option value="resolved" {% if issue.status=='resolved' %}selected{% endif %}>Resolved</option>
@@ -308,6 +549,14 @@
                 <i class="bi bi-eye" aria-hidden="true"></i>
                 View Details
               </button>
+
+              {% if issue.status not in ['done', 'awaiting'] %}
+              <a href="{{ url_for('reports.report_problem', issue_id=issue._id) }}" class="btn-problem">
+                <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                Report Problem
+              </a>
+              {% endif %}
+
               {% if issue.status not in ['done', 'awaiting'] %}
               <button class="btn-complete" onclick="showCompletionModal('{{ issue._id }}')">
                 <i class="bi bi-check-circle" aria-hidden="true"></i>
@@ -343,47 +592,44 @@
         </button>
       </div>
       <div class="modal-body">
-        <div class="grid grid-cols-2 gap-6">
-          <div>
-            <h4 class="font-semibold mb-3">Issue Information</h4>
-            <div class="space-y-3">
-              <div>
-                <span class="text-sm text-secondary font-semibold">Category:</span>
-                <div>{{ issue.category.replace('_', ' ').title() if issue.category else 'General' }}</div>
+        <div class="modal-details-grid">
+          <div class="modal-details-column">
+            <h4 class="modal-section-title">Issue Information</h4>
+            <div class="modal-detail-items">
+              <div class="modal-detail-item">
+                <span class="modal-detail-label">Category:</span>
+                <div class="modal-detail-value">{{ issue.category.replace('_', ' ').title() if issue.category else 'General' }}</div>
               </div>
-              <div>
-                <span class="text-sm text-secondary font-semibold">Description:</span>
-                <div>{{ issue.description }}</div>
+              <div class="modal-detail-item">
+                <span class="modal-detail-label">Description:</span>
+                <div class="modal-detail-value">{{ issue.description }}</div>
               </div>
-              <div>
-                <span class="text-sm text-secondary font-semibold">Status:</span>
-                <div>{{ issue.status.title() if issue.status else 'Pending' }}</div>
+              <div class="modal-detail-item">
+                <span class="modal-detail-label">Status:</span>
+                <div class="modal-detail-value">{{ issue.status.title() if issue.status else 'Pending' }}</div>
               </div>
               {% if issue.city_street %}
-              <div>
-                <span class="text-sm text-secondary font-semibold">Address:</span>
-                <div>{{ issue.city_street }}</div>
+              <div class="modal-detail-item">
+                <span class="modal-detail-label">Address:</span>
+                <div class="modal-detail-value">{{ issue.city_street }}</div>
               </div>
               {% endif %}
             </div>
           </div>
           {% if issue.location and issue.location.lat and issue.location.lng %}
-          <div>
-            <h4 class="font-semibold mb-3">Location</h4>
-            <div id="map-{{ issue._id }}" style="height: 200px; border-radius: var(--radius-lg);"
-              data-lat="{{ issue.location.lat }}" data-lng="{{ issue.location.lng }}"></div>
+          <div class="modal-details-column">
+            <h4 class="modal-section-title">Location</h4>
+            <div id="map-{{ issue._id }}" class="modal-map" data-lat="{{ issue.location.lat }}" data-lng="{{ issue.location.lng }}"></div>
 
             <!-- Google Maps Link -->
-            <div class="mt-4 space-y-2">
-              <a href="https://www.google.com/maps/search/?api=1&query={{ issue.location.lat }},{{ issue.location.lng }}"
-                target="_blank" class="google-maps-btn" onclick="trackMapClick('view_location', '{{ issue._id }}')">
+            <div class="modal-map-actions">
+              <a href="https://www.google.com/maps/search/?api=1&query={{ issue.location.lat }},{{ issue.location.lng }}" target="_blank" class="google-maps-btn" onclick="trackMapClick('view_location', '{{ issue._id }}')">
                 <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
                 Open in Google Maps
               </a>
 
               <!-- Get Directions Link -->
-              <a href="https://www.google.com/maps/dir/?api=1&destination={{ issue.location.lat }},{{ issue.location.lng }}"
-                target="_blank" class="directions-btn" onclick="trackMapClick('get_directions', '{{ issue._id }}')">
+              <a href="https://www.google.com/maps/dir/?api=1&destination={{ issue.location.lat }},{{ issue.location.lng }}" target="_blank" class="directions-btn" onclick="trackMapClick('get_directions', '{{ issue._id }}')">
                 <i class="bi bi-compass" aria-hidden="true"></i>
                 Get Directions
               </a>
@@ -396,14 +642,14 @@
             </div>
           </div>
           {% else %}
-          <div>
-            <h4 class="font-semibold mb-3">Location</h4>
+          <div class="modal-details-column">
+            <h4 class="modal-section-title">Location</h4>
             <div class="no-location-display">
-              <div class="text-center">
-                <i class="bi bi-geo-alt text-4xl mb-2 opacity-50" aria-hidden="true"></i>
+              <div class="no-location-content">
+                <i class="bi bi-geo-alt" aria-hidden="true"></i>
                 <p>No location coordinates available</p>
                 {% if issue.city_street %}
-                <p class="text-sm mt-2">Address: {{ issue.city_street }}</p>
+                <p class="address-text">Address: {{ issue.city_street }}</p>
                 {% endif %}
               </div>
             </div>
@@ -416,9 +662,7 @@
           Close
         </button>
         {% if issue.location and issue.location.lat and issue.location.lng %}
-        <a href="https://www.google.com/maps/search/?api=1&query={{ issue.location.lat }},{{ issue.location.lng }}"
-          target="_blank" class="btn btn-primary inline-flex items-center gap-2"
-          style="text-decoration: none; color: white;" onclick="trackMapClick('quick_view', '{{ issue._id }}')">
+        <a href="https://www.google.com/maps/search/?api=1&query={{ issue.location.lat }},{{ issue.location.lng }}" target="_blank" class="btn btn-primary" onclick="trackMapClick('quick_view', '{{ issue._id }}')">
           <i class="bi bi-map" aria-hidden="true"></i>
           View on Map
         </a>
@@ -428,11 +672,9 @@
   </div>
 
   <!-- Completion Modal -->
-  <div id="completion-modal-{{ issue._id }}" class="modal-backdrop"
-    onclick="closeModal('completion-modal-{{ issue._id }}')">
+  <div id="completion-modal-{{ issue._id }}" class="modal-backdrop" onclick="closeModal('completion-modal-{{ issue._id }}')">
     <div class="modal" onclick="event.stopPropagation()">
-      <form action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}" method="POST"
-        enctype="multipart/form-data">
+      <form action="{{ url_for('reports.maintenance_complete_issue', issue_id=issue._id) }}" method="POST" enctype="multipart/form-data">
         <div class="modal-header">
           <h3 class="modal-title">Mark Task Complete</h3>
           <button type="button" class="btn-close" onclick="closeModal('completion-modal-{{ issue._id }}')">
@@ -440,19 +682,34 @@
           </button>
         </div>
         <div class="modal-body">
-          <div class="form-group mb-4">
-            <label class="form-label">Work Description</label>
-            <textarea name="completion_description" class="form-control" rows="4"
-              placeholder="Describe the work completed..." required></textarea>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="completion-form">
             <div class="form-group">
-              <label class="form-label">Before Photo</label>
-              <input type="file" name="before_image" accept="image/*" class="form-control" required>
+              <label class="form-label">Work Description</label>
+              <textarea name="completion_description" class="form-control" rows="4" placeholder="Describe the work completed..." required></textarea>
             </div>
-            <div class="form-group">
-              <label class="form-label">After Photo</label>
-              <input type="file" name="after_image" accept="image/*" class="form-control" required>
+            <div class="image-upload-grid">
+              <div class="form-group">
+                <label class="form-label">Before Photo</label>
+                <div class="file-upload-container">
+                  <input type="file" name="before_image" id="before-image-{{ issue._id }}" accept="image/*" class="form-control file-input" required>
+                  <label for="before-image-{{ issue._id }}" class="file-upload-label">
+                    <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
+                    <span>Choose Photo</span>
+                  </label>
+                  <div class="selected-file-name" id="before-file-name-{{ issue._id }}">No file selected</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">After Photo</label>
+                <div class="file-upload-container">
+                  <input type="file" name="after_image" id="after-image-{{ issue._id }}" accept="image/*" class="form-control file-input" required>
+                  <label for="after-image-{{ issue._id }}" class="file-upload-label">
+                    <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
+                    <span>Choose Photo</span>
+                  </label>
+                  <div class="selected-file-name" id="after-file-name-{{ issue._id }}">No file selected</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -480,8 +737,7 @@
         </button>
       </div>
       <div class="modal-body text-center">
-        <img id="modal-image" src="" alt="Issue image"
-          style="max-width: 100%; height: auto; border-radius: var(--radius-xl);">
+        <img id="modal-image" src="" alt="Issue image" class="modal-image">
       </div>
     </div>
   </div>
@@ -493,28 +749,31 @@
     let allTasks = [];
 
     // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // Store all task cards for filtering and sorting
       const tasksContainer = document.getElementById('tasksContainer');
       if (tasksContainer) {
         allTasks = Array.from(tasksContainer.getElementsByClassName('task-card'));
       }
-      
+
       // Set up modal behavior
       setupModalBehavior();
+      
+      // Set up file input handlers
+      setupFileInputs();
     });
 
     // Set up modal behavior to ensure proper event handling
     function setupModalBehavior() {
       // Make sure clicks inside modals don't close them
       document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
           e.stopPropagation();
         });
       });
-      
+
       // Handle escape key for all modals
-      document.addEventListener('keydown', function(e) {
+      document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
           document.querySelectorAll('.modal-backdrop.show').forEach(modal => {
             const modalId = modal.id;
@@ -527,12 +786,30 @@
         }
       });
     }
+    
+    // Set up file input handlers for better UX
+    function setupFileInputs() {
+      document.querySelectorAll('.file-input').forEach(input => {
+        input.addEventListener('change', function(e) {
+          const fileNameDisplay = document.getElementById(this.id.replace('image', 'file-name'));
+          if (fileNameDisplay) {
+            if (this.files.length > 0) {
+              fileNameDisplay.textContent = this.files[0].name;
+              fileNameDisplay.classList.add('file-selected');
+            } else {
+              fileNameDisplay.textContent = 'No file selected';
+              fileNameDisplay.classList.remove('file-selected');
+            }
+          }
+        });
+      });
+    }
 
     // Modal functions
     function showTaskModal(taskId) {
       const modal = document.getElementById(`task-modal-${taskId}`);
       if (!modal) return;
-      
+
       modal.classList.add('show');
       document.body.style.overflow = 'hidden';
 
@@ -550,7 +827,7 @@
               }).addTo(map);
               L.marker([lat, lng]).addTo(map);
               maps[taskId] = map;
-              
+
               // Make sure map renders correctly
               setTimeout(() => {
                 if (maps[taskId]) {
@@ -568,7 +845,7 @@
     function showCompletionModal(taskId) {
       const modal = document.getElementById(`completion-modal-${taskId}`);
       if (!modal) return;
-      
+
       modal.classList.add('show');
       document.body.style.overflow = 'hidden';
     }
@@ -576,7 +853,7 @@
     function closeModal(modalId) {
       const modal = document.getElementById(modalId);
       if (!modal) return;
-      
+
       modal.classList.remove('show');
       document.body.style.overflow = 'auto';
     }
@@ -589,7 +866,7 @@
       modalImage.src = src;
       modal.classList.add('show');
       document.body.style.overflow = 'hidden';
-      
+
       // Focus on close button for accessibility
       setTimeout(() => {
         const closeBtn = modal.querySelector('.btn-close');
@@ -600,7 +877,7 @@
     function closeImageModal() {
       const modal = document.getElementById('image-modal');
       if (!modal) return;
-      
+
       modal.classList.remove('show');
       document.body.style.overflow = 'auto';
 
@@ -615,12 +892,12 @@
       const sortBy = document.getElementById('taskSort').value;
       const tasksContainer = document.getElementById('tasksContainer');
       if (!tasksContainer || !allTasks || allTasks.length === 0) return;
-      
+
       // Create a new array for sorting to maintain the original list
       const sortedTasks = [...allTasks];
-      
+
       // Sort based on the selected option
-      switch(sortBy) {
+      switch (sortBy) {
         case 'priority':
           const priorityValues = { 'high': 3, 'medium': 2, 'low': 1 };
           sortedTasks.sort((a, b) => {
@@ -649,12 +926,12 @@
           });
           break;
       }
-      
+
       // Reorder DOM elements
       sortedTasks.forEach(task => {
         tasksContainer.appendChild(task);
       });
-      
+
       // Apply current filter to newly sorted tasks
       filterTasks();
     }
@@ -662,12 +939,12 @@
     // Filter tasks based on selected option
     function filterTasks() {
       const filterValue = document.getElementById('taskFilter').value;
-      
+
       // Show all tasks initially
       allTasks.forEach(task => {
         task.style.display = 'block';
       });
-      
+
       // Apply filter
       if (filterValue !== 'all') {
         allTasks.forEach(task => {
@@ -681,11 +958,11 @@
           }
         });
       }
-      
+
       // Check if any tasks are visible
       const visibleTasks = allTasks.filter(task => task.style.display !== 'none');
       const tasksContainer = document.getElementById('tasksContainer');
-      
+
       // Show empty state if no tasks match the filter
       if (visibleTasks.length === 0 && tasksContainer) {
         if (!document.getElementById('no-tasks-message')) {
@@ -757,36 +1034,17 @@
         </div>
       `;
 
-      // Add toast styles
-      toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #4285f4, #34a853);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        font-size: 14px;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-      `;
-
+      // Add toast to document
       document.body.appendChild(toast);
 
       // Animate in
       setTimeout(() => {
-        toast.style.transform = 'translateX(0)';
+        toast.classList.add('show');
       }, 100);
 
       // Remove after 3 seconds
       setTimeout(() => {
-        toast.style.transform = 'translateX(100%)';
+        toast.classList.remove('show');
         setTimeout(() => {
           if (toast.parentNode) {
             toast.parentNode.removeChild(toast);
@@ -796,7 +1054,7 @@
     }
 
     // Form submission handling
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function (e) {
           const submitBtn = this.querySelector('button[type="submit"]');
@@ -812,7 +1070,7 @@
           }
         });
       });
-      
+
       // Animation on scroll
       const observerOptions = {
         threshold: 0.1,
@@ -822,8 +1080,7 @@
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            entry.target.classList.add('visible');
           }
         });
       }, observerOptions);
@@ -839,17 +1096,15 @@
   </script>
 
   <style>
-    /* Rejection Badge Styles */
-    .rejection-badge {
-      background-color: #ef4444;
-      color: white;
-      border-radius: 50%;
-      padding: 0.25rem 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      margin-left: 0.5rem;
+    /* Enhancements for better styling */
+    
+    /* Add visible class for animations */
+    .task-card.visible {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
     }
     
+    /* Mobile Rejection Badge */
     .mobile-rejection-badge {
       position: absolute;
       top: 0;
@@ -864,7 +1119,7 @@
       align-items: center;
       justify-content: center;
     }
-    
+
     /* Badge counter for action buttons */
     .badge-count {
       background: #ef4444;
@@ -874,7 +1129,7 @@
       font-size: 0.75rem;
       margin-left: 0.25rem;
     }
-    
+
     /* Active Link for Desktop Nav */
     .nav-link.active {
       color: var(--primary-600);
@@ -882,90 +1137,290 @@
       background: rgba(59, 130, 246, 0.1);
       border-radius: 6px;
     }
-    
-    /* Sort & Filter Dropdowns */
-    .sort-dropdown, .filter-dropdown {
+
+    /* File upload improvements */
+    .file-upload-container {
       position: relative;
-    }
-    
-    .sort-select, .filter-select {
-      padding: 0.5rem 0.75rem;
-      border: 2px solid var(--gray-300);
-      border-radius: 0.5rem;
-      background: white;
-      font-size: 0.875rem;
-      min-width: 180px;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.5rem center;
-      background-size: 1rem;
-      cursor: pointer;
-    }
-    
-    .sort-select:focus, .filter-select:focus {
-      outline: none;
-      border-color: var(--primary-500);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    /* Empty state for filtered results */
-    #no-tasks-message {
       width: 100%;
-      text-align: center;
-      padding: 3rem 1rem;
-      background: white;
-      border-radius: 1rem;
-      margin-top: 1rem;
-      box-shadow: var(--shadow-lg);
     }
-    
-    #no-tasks-message button {
-      margin-top: 1rem;
-    }
-    
-    /* Modal improvements */
-    .modal {
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      transform: scale(0.95);
+
+    .file-input {
+      position: absolute;
+      width: 0.1px;
+      height: 0.1px;
       opacity: 0;
+      overflow: hidden;
+      z-index: -1;
     }
-    
-    .modal-backdrop.show .modal {
-      transform: scale(1);
-      opacity: 1;
-    }
-    
-    /* Improved form controls */
-    .form-control {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid var(--gray-300);
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
+
+    .file-upload-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      background: var(--gray-100);
+      border: 2px dashed var(--gray-300);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      font-weight: 500;
+      cursor: pointer;
       transition: all 0.2s ease;
     }
-    
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary-500);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+
+    .file-upload-label:hover {
+      background: var(--gray-200);
+      border-color: var(--gray-400);
+      color: var(--text-primary);
     }
-    
-    /* Responsive adjustments */
+
+    .selected-file-name {
+      font-size: 0.875rem;
+      margin-top: 4px;
+      color: var(--text-muted);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .file-selected {
+      color: var(--primary-600);
+      font-weight: 500;
+    }
+
+    /* Image upload grid */
+    .image-upload-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    /* Modal improvements */
+    .modal-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .modal-details-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-section-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .modal-detail-items {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-detail-item {
+      margin-bottom: 8px;
+    }
+
+    .modal-detail-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .modal-detail-value {
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .modal-map {
+      height: 200px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--gray-200);
+    }
+
+    .modal-map-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .modal-image {
+      max-width: 100%;
+      max-height: calc(90vh - 120px);
+      border-radius: var(--radius-lg);
+      object-fit: contain;
+    }
+
+    .no-location-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      background: var(--gray-100);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+    }
+
+    .no-location-content {
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .no-location-content i {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+
+    .address-text {
+      font-size: 0.875rem;
+      margin-top: 8px;
+    }
+
+    /* Toast notification */
+    .toast-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      transform: translateX(120%);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .toast-notification.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    /* Enhanced issue image style */
+    .issue-image {
+      width: 100%;
+      max-height: 120px;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .issue-image:hover {
+      transform: scale(1.05);
+    }
+
+    /* Task card improvements */
+    .task-card {
+      background: white;
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      margin-bottom: 24px;
+    }
+
+    .task-card:hover {
+      transform: translateY(-4px) !important;
+      box-shadow: var(--shadow-2xl);
+    }
+
+    /* Fix for the button overlap issue */
+    .task-card .btn-complete {
+      position: relative !important;
+      margin-top: 0 !important;
+      width: auto !important;
+      display: flex !important;
+    }
+
+    /* Action buttons grid for better mobile layout */
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    /* Completion form improvements */
+    .completion-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Responsive improvements */
     @media (max-width: 768px) {
-      .dashboard-actions {
+      .dashboard-header {
         flex-direction: column;
-        align-items: stretch;
-        gap: 0.5rem;
+        align-items: flex-start;
+        gap: 16px;
       }
-      
-      .sort-select, .filter-select {
+
+      .dashboard-actions {
         width: 100%;
-        min-width: auto;
+        flex-wrap: wrap;
+        gap: 8px;
       }
-      
-      .sort-dropdown, .filter-dropdown {
+
+      .sort-dropdown,
+      .filter-dropdown {
+        width: 100%;
+      }
+
+      .sort-select,
+      .filter-select {
+        width: 100%;
+      }
+
+      .btn-action {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .action-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-details-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .google-maps-btn,
+      .directions-btn {
+        padding: 12px;
+        font-size: 14px;
+      }
+
+      .status-form {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .status-select {
+        width: 100%;
+      }
+
+      .btn-update {
         width: 100%;
       }
     }

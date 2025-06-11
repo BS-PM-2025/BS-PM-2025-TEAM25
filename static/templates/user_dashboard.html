@@ -30,29 +30,133 @@
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
   </a>
+
   <!-- Desktop Navigation -->
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
-        <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
+          <div class="circuit-container">
+            <div class="circuit-line"></div>
+            <div class="circuit-dot"></div>
+          </div>
+          CityFix
+        </a>
 
         <ul class="navbar-nav">
+          <!-- Conditional navigation based on user role -->
+          {% if user %}
+          {% if user.role == 'admin' %}
           <li class="nav-item">
-            <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+            <a href="{{ url_for('reports.admin_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a href="{{ url_for('done_reports.done_issue') }}"
+              class="nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
+              <i class="bi bi-check2-all" aria-hidden="true"></i>
+              <span>Done Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('user_roles.edit_user_roles') }}"
+              class="nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
+              <i class="bi bi-people" aria-hidden="true"></i>
+              <span>Manage Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.admin_problem_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Problems</span>
+              {% if problem_reports_count > 0 %}
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% elif user.role == 'maintenance' %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.maintenance_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
+              <i class="bi bi-tools" aria-hidden="true"></i>
+              <span>Tasks</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.rejected_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+              <i class="bi bi-envelope-exclamation" aria-hidden="true"></i>
+              <span>Rejections</span>
+              {% if rejected_count > 0 %}
+              <span class="nav-badge">{{ rejected_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% else %}
+          <!-- Regular user navigation -->
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}"
+              class="nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
               <i class="bi bi-speedometer2" aria-hidden="true"></i>
               <span>Dashboard</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          {% endif %}
+
+          <!-- Common navigation items for all logged-in users -->
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}"
+              class="nav-link {% if request.endpoint == 'reports.report_issue' %}active{% endif %}">
               <i class="bi bi-plus-circle" aria-hidden="true"></i>
               <span>Report Issue</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ url_for('main.profile') }}" class="nav-link">
+            <a href="{{ url_for('main.profile') }}"
+              class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
               <i class="bi bi-person-circle" aria-hidden="true"></i>
-              <span>Profile</span>
+              <span>{{ user.name }}</span>
             </a>
           </li>
           <li class="nav-item">
@@ -61,6 +165,35 @@
               <span>Logout</span>
             </a>
           </li>
+          {% else %}
+          <!-- Navigation for non-logged in users -->
+          <li class="nav-item">
+            <a href="{{ url_for('reports.public_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
+              <i class="bi bi-map" aria-hidden="true"></i>
+              <span>View Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.about') }}"
+              class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <span>About</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="nav-link">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              <span>Sign Up</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+              <span>Login</span>
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </div>
@@ -69,16 +202,20 @@
   <!-- Mobile Navigation -->
   <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
     <ul class="mobile-nav-list">
+      {% if user %}
+      {% if user.role == 'admin' %}
       <li class="mobile-nav-item">
-        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-house"></i>
-          <span>Home</span>
+        <a href="{{ url_for('reports.admin_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link active">
-          <i class="mobile-nav-icon bi bi-journal-text"></i>
-          <span>Reports</span>
+        <a href="{{ url_for('done_reports.done_issue') }}"
+          class="mobile-nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-check2-all"></i>
+          <span>Done</span>
         </a>
       </li>
       <li class="mobile-nav-item">
@@ -88,19 +225,139 @@
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+        <a href="{{ url_for('user_roles.edit_user_roles') }}"
+          class="mobile-nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-people"></i>
+          <span>Users</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.admin_problem_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-exclamation-triangle"></i>
+          <span>Problems</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      {% elif user.role == 'maintenance' %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.maintenance_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-tools"></i>
+          <span>Tasks</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.rejected_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-envelope-exclamation"></i>
+          <span>Rejected</span>
+          {% if rejected_count > 0 %}
+          <div class="mobile-badge">{{ rejected_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      {% else %}
+      <!-- Regular user mobile navigation -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-speedometer2"></i>
           <span>Dashboard</span>
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+        <a href="{{ url_for('reports.my_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-person"></i>
           <span>Profile</span>
         </a>
       </li>
+      {% endif %}
+      {% else %}
+      <!-- Mobile navigation for non-logged in users -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-person-plus"></i>
+          <span>Join</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.about') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-info-circle"></i>
+          <span>About</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
+          <span>Login</span>
+        </a>
+      </li>
+      {% endif %}
     </ul>
   </nav>
+
 
   <!-- User Hero -->
   <section class="user-hero">
@@ -116,7 +373,8 @@
 
         <div class="user-stats">
           <div class="user-stat">
-            <span class="user-stat-number">{{ issues|selectattr('priority', 'equalto', 'critical')|list|length + issues|selectattr('priority', 'equalto', 'high')|list|length }}</span>
+            <span class="user-stat-number">{{ issues|selectattr('priority', 'equalto', 'critical')|list|length +
+              issues|selectattr('priority', 'equalto', 'high')|list|length }}</span>
             <span class="user-stat-label">High Priority</span>
           </div>
           <div class="user-stat">
@@ -139,15 +397,48 @@
       <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-      {% for category, message in messages %}
-      <div class="alert alert-{{ category }} mb-6">
-        <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' if category == 'info' else 'x-circle' }}"
-          aria-hidden="true"></i>
-        {{ message }}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' if category == 'info' else 'x-circle' }}"
+            aria-hidden="true"></i>
+          {{ message }}
+          <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+            <i class="bi bi-x" aria-hidden="true"></i>
+          </button>
+        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
       {% endif %}
       {% endwith %}
+
+      <!-- Problem Alert Banner -->
+      {% if problem_reports_count > 0 %}
+      <div class="problem-alert-banner">
+        <div class="container">
+          <div class="problem-alert-content">
+            <div class="problem-alert-icon">
+              <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            </div>
+            <div class="problem-alert-text">
+              <h4>{{ problem_reports_count }} Report{{ 's' if problem_reports_count != 1 else '' }} Need{{ 's' if
+                problem_reports_count == 1 else '' }} Your Attention</h4>
+              <p>Our maintenance team has identified issues with some of your reports that require your input.</p>
+            </div>
+            <div class="problem-alert-actions">
+              <a href="{{ url_for('reports.my_report_problems') }}" class="btn-alert-primary">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+                Review Issues
+              </a>
+              <button class="btn-alert-secondary" onclick="dismissAlert()">
+                <i class="bi bi-x" aria-hidden="true"></i>
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
 
       <!-- Dashboard Header -->
       <div class="dashboard-header">
@@ -160,50 +451,80 @@
             <i class="bi bi-plus-circle" aria-hidden="true"></i>
             New Report
           </a>
-          <!-- Priority Filter -->
-          <div class="filter-dropdown">
-            <button class="btn-action btn-secondary-action" onclick="toggleFilterDropdown()">
-              <i class="bi bi-funnel" aria-hidden="true"></i>
-              Filter
-              <i class="bi bi-chevron-down" aria-hidden="true"></i>
-            </button>
-            <div class="filter-dropdown-menu" id="filter-dropdown">
-              <div class="filter-section">
-                <h4>Priority</h4>
-                <label class="filter-option">
-                  <input type="checkbox" value="critical" onchange="applyFilters()"> Critical
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" value="high" onchange="applyFilters()"> High
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" value="medium" onchange="applyFilters()"> Medium
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" value="low" onchange="applyFilters()"> Low
-                </label>
-              </div>
-              <div class="filter-section">
-                <h4>Status</h4>
-                <label class="filter-option">
-                  <input type="checkbox" value="pending" onchange="applyFilters()"> Pending
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" value="in progress" onchange="applyFilters()"> In Progress
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" value="done" onchange="applyFilters()"> Completed
-                </label>
-              </div>
-              <div class="filter-actions">
-                <button class="btn-clear" onclick="clearFilters()">Clear All</button>
+
+          <!-- Problem Reports Link with Badge -->
+          {% if problem_reports_count > 0 %}
+          <a href="{{ url_for('reports.my_report_problems') }}" class="btn-action btn-warning-action"
+            style="position: relative;">
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            Issues Need Attention
+            <span class="action-badge">{{ problem_reports_count }}</span>
+          </a>
+          {% endif %}
+
+          <!-- Filter & Sort Controls -->
+          <div class="filter-controls">
+            <!-- Sort Dropdown -->
+            <div class="sort-dropdown">
+              <select id="reportSort" class="sort-select" onchange="sortReports()">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="priority">Highest Priority</option>
+                <option value="status">By Status</option>
+                <option value="category">By Category</option>
+              </select>
+            </div>
+
+            <!-- Filter Dropdown -->
+            <div class="filter-dropdown">
+              <button type="button" class="btn-action btn-secondary-action" onclick="toggleFilterDropdown()">
+                <i class="bi bi-funnel" aria-hidden="true"></i>
+                Filter
+                <i class="bi bi-chevron-down" aria-hidden="true"></i>
+              </button>
+              <div class="filter-dropdown-menu" id="filter-dropdown">
+                <div class="filter-section">
+                  <h4>Priority</h4>
+                  <div class="filter-options">
+                    <label class="filter-option">
+                      <input type="checkbox" value="critical" onchange="applyFilters()"> Critical
+                    </label>
+                    <label class="filter-option">
+                      <input type="checkbox" value="high" onchange="applyFilters()"> High
+                    </label>
+                    <label class="filter-option">
+                      <input type="checkbox" value="medium" onchange="applyFilters()"> Medium
+                    </label>
+                    <label class="filter-option">
+                      <input type="checkbox" value="low" onchange="applyFilters()"> Low
+                    </label>
+                  </div>
+                </div>
+                <div class="filter-section">
+                  <h4>Status</h4>
+                  <div class="filter-options">
+                    <label class="filter-option">
+                      <input type="checkbox" value="pending" onchange="applyFilters()"> Pending
+                    </label>
+                    <label class="filter-option">
+                      <input type="checkbox" value="in progress" onchange="applyFilters()"> In Progress
+                    </label>
+                    <label class="filter-option">
+                      <input type="checkbox" value="done" onchange="applyFilters()"> Completed
+                    </label>
+                  </div>
+                </div>
+                <div class="filter-actions">
+                  <button class="btn-clear" onclick="clearFilters()">Clear All</button>
+                </div>
               </div>
             </div>
+
+            <a href="{{ url_for('reports.public_reports') }}" class="btn-action btn-secondary-action">
+              <i class="bi bi-map" aria-hidden="true"></i>
+              View All Reports
+            </a>
           </div>
-          <a href="{{ url_for('reports.public_reports') }}" class="btn-action btn-secondary-action">
-            <i class="bi bi-map" aria-hidden="true"></i>
-            View All Reports
-          </a>
         </div>
       </div>
 
@@ -211,16 +532,25 @@
       {% if issues %}
       <div class="reports-grid" id="reports-grid">
         {% for issue in issues %}
-        <article class="report-card" data-priority="{{ issue.priority or 'medium' }}" data-status="{{ issue.status or 'pending' }}">
-          <!-- Priority Badge Overlay -->
-          <div class="priority-overlay">
-            <div class="priority-badge priority-{{ issue.priority or 'medium' }}">
-              <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.priority or 'medium') == 'critical' else 'exclamation-circle' if (issue.priority or 'medium') == 'high' else 'dash-circle' if (issue.priority or 'medium') == 'medium' else 'clock' }}" aria-hidden="true"></i>
-              {{ (issue.priority or 'medium').title() }}
+        <article class="report-card" data-priority="{{ issue.priority or 'medium' }}"
+          data-status="{{ issue.status or 'pending' }}" data-category="{{ issue.category or 'general' }}">
+          <div class="report-card-header">
+            <div class="report-status status-{{ issue.status.replace(' ', '-') if issue.status else 'pending' }}">
+              <i class="bi bi-{{ 'hourglass' if issue.status == 'pending' else 'arrow-repeat' if issue.status == 'in progress' else 'check-circle-fill' if issue.status == 'done' else 'clock' }}"
+                aria-hidden="true"></i>
+              {{ issue.status.title() if issue.status else 'Pending' }}
             </div>
-            <div class="severity-badge severity-{{ issue.severity or 'moderate' }}">
-              <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.severity or 'moderate') == 'critical' else 'exclamation-circle' if (issue.severity or 'moderate') == 'major' else 'dash-circle' if (issue.severity or 'moderate') == 'moderate' else 'dash' }}" aria-hidden="true"></i>
-              {{ (issue.severity or 'moderate').title() }}
+            <div class="report-badges">
+              <div class="priority-badge priority-{{ issue.priority or 'medium' }}">
+                <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.priority or 'medium') == 'critical' else 'exclamation-circle' if (issue.priority or 'medium') == 'high' else 'dash-circle' if (issue.priority or 'medium') == 'medium' else 'clock' }}"
+                  aria-hidden="true"></i>
+                {{ (issue.priority or 'medium').title() }}
+              </div>
+              <div class="severity-badge severity-{{ issue.severity or 'moderate' }}">
+                <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.severity or 'moderate') == 'critical' else 'exclamation-circle' if (issue.severity or 'moderate') == 'major' else 'dash-circle' if (issue.severity or 'moderate') == 'moderate' else 'dash' }}"
+                  aria-hidden="true"></i>
+                {{ (issue.severity or 'moderate').title() }}
+              </div>
             </div>
           </div>
 
@@ -228,16 +558,10 @@
           {% if issue.image_file_id %}
           <div class="report-image-container">
             <img src="{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}" alt="Issue image"
-              class="report-image">
-            <div class="report-status-overlay status-{{ issue.status.replace(' ', '-') }}">
-              {{ issue.status }}
-            </div>
+              class="report-image" onclick="showImageModal('{{ url_for('reports.serve_upload', file_id=issue.image_file_id) }}')">
           </div>
           {% else %}
           <div class="no-image-placeholder">
-            <div class="report-status-overlay status-{{ issue.status.replace(' ', '-') }}">
-              {{ issue.status }}
-            </div>
             <i class="bi bi-image no-image-icon" aria-hidden="true"></i>
             <span class="no-image-text">No Image</span>
           </div>
@@ -245,28 +569,13 @@
 
           <!-- Report Body -->
           <div class="report-card-body">
-            <div class="report-header-section">
-              <div class="report-category">
-                <i class="bi bi-{{ 'traffic-light' if issue.category == 'traffic_light_failure' else 'droplet' if issue.category == 'water_leak' else 'cone-striped' if issue.category == 'pothole' else 'lightbulb' if issue.category == 'street_lighting' else 'exclamation-circle' }} category-icon"
-                  aria-hidden="true"></i>
-                {{ issue.category.replace('_', ' ').title() if issue.category else 'General Issue' }}
-              </div>
-
-              <!-- Priority & Severity Indicators -->
-              <div class="priority-severity-row">
-                <div class="priority-indicator priority-{{ issue.priority or 'medium' }}">
-                  <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.priority or 'medium') == 'critical' else 'exclamation-circle' if (issue.priority or 'medium') == 'high' else 'dash-circle' if (issue.priority or 'medium') == 'medium' else 'clock' }}" aria-hidden="true"></i>
-                  <span>{{ (issue.priority or 'medium').title() }}</span>
-                </div>
-                <div class="severity-indicator severity-{{ issue.severity or 'moderate' }}">
-                  <i class="bi bi-{{ 'exclamation-triangle-fill' if (issue.severity or 'moderate') == 'critical' else 'exclamation-circle' if (issue.severity or 'moderate') == 'major' else 'dash-circle' if (issue.severity or 'moderate') == 'moderate' else 'dash' }}" aria-hidden="true"></i>
-                  <span>{{ (issue.severity or 'moderate').title() }}</span>
-                </div>
-              </div>
+            <div class="report-category">
+              <i class="bi bi-{{ 'traffic-light' if issue.category == 'traffic_light_failure' else 'droplet' if issue.category == 'water_leak' else 'cone-striped' if issue.category == 'pothole' else 'lightbulb' if issue.category == 'street_lighting' else 'exclamation-circle' }} category-icon"
+                aria-hidden="true"></i>
+              {{ issue.category.replace('_', ' ').title() if issue.category else 'General Issue' }}
             </div>
 
-            <h3 class="report-title">{{ issue.description[:60] }}{{ '...' if issue.description|length > 60 else '' }}
-            </h3>
+            <h3 class="report-title">{{ issue.description[:60] }}{{ '...' if issue.description|length > 60 else '' }}</h3>
 
             <p class="report-description">{{ issue.description }}</p>
 
@@ -288,17 +597,17 @@
                 <i class="bi bi-eye" aria-hidden="true"></i>
                 View Details
               </a>
-              <!-- Edit Button -->
+              
               {% if issue.status not in ['done', 'completed', 'closed'] %}
               <a href="{{ url_for('reports.edit_issue', issue_id=issue._id) }}" class="btn-report-action btn-edit">
                 <i class="bi bi-pencil" aria-hidden="true"></i>
                 Edit
               </a>
               {% endif %}
+              
               <form action="{{ url_for('reports.delete_issue', issue_id=issue._id) }}" method="POST"
-                onsubmit="return confirm('Are you sure you want to delete this report? This action cannot be undone.');"
-                style="flex: 1;">
-                <button type="submit" class="btn-report-action btn-delete" style="width: 100%;">
+                onsubmit="return confirm('Are you sure you want to delete this report? This action cannot be undone.');" class="delete-form">
+                <button type="submit" class="btn-report-action btn-delete">
                   <i class="bi bi-trash" aria-hidden="true"></i>
                   Delete
                 </button>
@@ -325,14 +634,30 @@
     </div>
   </main>
 
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal-backdrop" onclick="closeImageModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Issue Image</h3>
+        <button class="btn-close" onclick="closeImageModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modal-image" src="" alt="Issue image">
+      </div>
+    </div>
+  </div>
+
   <script>
     let allReports = [];
 
-    // Auto-dismiss flash messages
+    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function () {
       // Store all report cards for filtering
       allReports = Array.from(document.querySelectorAll('.report-card'));
 
+      // Auto-dismiss flash messages
       setTimeout(() => {
         document.querySelectorAll('.alert').forEach(alert => {
           alert.style.transition = 'opacity 0.5s ease';
@@ -342,15 +667,42 @@
       }, 5000);
 
       // Close filter dropdown when clicking outside
-      document.addEventListener('click', function(event) {
+      document.addEventListener('click', function (event) {
         const dropdown = document.getElementById('filter-dropdown');
         const button = event.target.closest('[onclick="toggleFilterDropdown()"]');
-        
-        if (!dropdown.contains(event.target) && !button) {
+
+        if (dropdown && !dropdown.contains(event.target) && !button) {
           dropdown.classList.remove('show');
         }
       });
+
+      // Set up animations for report cards
+      setupReportCardAnimations();
     });
+
+    // Set up animations for report cards
+    function setupReportCardAnimations() {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, observerOptions);
+
+      // Observe report cards
+      document.querySelectorAll('.report-card').forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+        observer.observe(el);
+      });
+    }
 
     // Filter dropdown functionality
     function toggleFilterDropdown() {
@@ -358,6 +710,7 @@
       dropdown.classList.toggle('show');
     }
 
+    // Apply filters to reports
     function applyFilters() {
       const priorityFilters = Array.from(document.querySelectorAll('.filter-dropdown input[value="critical"], .filter-dropdown input[value="high"], .filter-dropdown input[value="medium"], .filter-dropdown input[value="low"]'))
         .filter(input => input.checked)
@@ -386,57 +739,157 @@
         card.style.display = showCard ? 'block' : 'none';
       });
 
-      updateReportCount();
+      updateEmptyState();
     }
 
+    // Sort reports
+    function sortReports() {
+      const sortBy = document.getElementById('reportSort').value;
+      const reportsGrid = document.getElementById('reports-grid');
+      
+      if (!reportsGrid || !allReports || allReports.length === 0) return;
+
+      // Create a new array for sorting to maintain the original list
+      const sortedReports = [...allReports];
+
+      // Sort based on the selected option
+      switch (sortBy) {
+        case 'priority': {
+          const priorityValues = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
+          sortedReports.sort((a, b) => {
+            return priorityValues[b.dataset.priority] - priorityValues[a.dataset.priority];
+          });
+          break;
+        }
+        case 'status': {
+          const statusValues = { 'pending': 3, 'in progress': 2, 'done': 1 };
+          sortedReports.sort((a, b) => {
+            return statusValues[a.dataset.status] - statusValues[b.dataset.status];
+          });
+          break;
+        }
+        case 'category': {
+          sortedReports.sort((a, b) => {
+            return a.dataset.category.localeCompare(b.dataset.category);
+          });
+          break;
+        }
+        case 'oldest': {
+          sortedReports.sort((a, b) => {
+            const dateA = a.querySelector('.report-date')?.textContent.trim() || '';
+            const dateB = b.querySelector('.report-date')?.textContent.trim() || '';
+            return dateA.localeCompare(dateB);
+          });
+          break;
+        }
+        case 'newest': {
+          sortedReports.sort((a, b) => {
+            const dateA = a.querySelector('.report-date')?.textContent.trim() || '';
+            const dateB = b.querySelector('.report-date')?.textContent.trim() || '';
+            return dateB.localeCompare(dateA);
+          });
+          break;
+        }
+      }
+
+      // Reorder DOM elements
+      sortedReports.forEach(report => {
+        reportsGrid.appendChild(report);
+      });
+    }
+
+    // Clear filters
     function clearFilters() {
       document.querySelectorAll('.filter-dropdown input').forEach(input => {
         input.checked = false;
       });
-      applyFilters();
-    }
-
-    function updateReportCount() {
-      const visibleReports = allReports.filter(card => card.style.display !== 'none').length;
-      const totalReports = allReports.length;
-      
-      // You could add a count display here if needed
-      console.log(`Showing ${visibleReports} of ${totalReports} reports`);
-    }
-
-    // Animation on scroll
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-        }
+      allReports.forEach(card => {
+        card.style.display = 'block';
       });
-    }, observerOptions);
+      updateEmptyState();
+    }
 
-    // Observe report cards
-    document.querySelectorAll('.report-card').forEach((el, index) => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(20px)';
-      el.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
-      observer.observe(el);
+    // Update empty state based on visible reports
+    function updateEmptyState() {
+      const visibleReports = allReports.filter(card => card.style.display !== 'none').length;
+      const reportsGrid = document.getElementById('reports-grid');
+      
+      // Remove existing empty message if it exists
+      const existingEmpty = document.getElementById('no-results-message');
+      if (existingEmpty) {
+        existingEmpty.remove();
+      }
+      
+      // Show empty state if no reports match the filter
+      if (visibleReports === 0 && reportsGrid) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.id = 'no-results-message';
+        emptyMessage.className = 'empty-filter-message';
+        emptyMessage.innerHTML = `
+          <i class="bi bi-filter-circle" aria-hidden="true"></i>
+          <h3>No Matching Reports</h3>
+          <p>No reports match your current filter settings.</p>
+          <button class="btn-action btn-secondary-action" onclick="clearFilters()">
+            <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+            Clear Filters
+          </button>
+        `;
+        reportsGrid.appendChild(emptyMessage);
+      }
+    }
+
+    // Dismiss problem alert
+    function dismissAlert() {
+      const alertBanner = document.querySelector('.problem-alert-banner');
+      if (alertBanner) {
+        alertBanner.style.animation = 'slideUp 0.3s ease-out forwards';
+        setTimeout(() => {
+          alertBanner.remove();
+        }, 300);
+      }
+    }
+
+    // Image modal functions
+    function showImageModal(src) {
+      const modal = document.getElementById('image-modal');
+      const modalImage = document.getElementById('modal-image');
+      if (!modal || !modalImage) return;
+
+      modalImage.src = src;
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('image-modal');
+      if (!modal) return;
+
+      modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+
+      setTimeout(() => {
+        const modalImage = document.getElementById('modal-image');
+        if (modalImage) modalImage.src = '';
+      }, 300);
+    }
+
+    // Handle escape key for modal
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
     });
 
-    // Enhanced form submission
+    // Form submission handling
     document.querySelectorAll('form').forEach(form => {
       form.addEventListener('submit', function (e) {
         const submitBtn = this.querySelector('button[type="submit"]');
         if (submitBtn) {
           submitBtn.disabled = true;
           const originalContent = submitBtn.innerHTML;
-          submitBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Deleting...';
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Processing...';
 
-          // Re-enable if form doesn't submit (fallback)
+          // Re-enable if form doesn't submit within 5 seconds (failsafe)
           setTimeout(() => {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalContent;
@@ -447,93 +900,123 @@
   </script>
 
   <style>
-    /* Priority & Severity Badge Styles */
-    .priority-badge, .severity-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.375rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: capitalize;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-    .priority-overlay {
+    /* Mobile Badge */
+    .mobile-badge {
       position: absolute;
-      top: 0.75rem;
-      right: 0.75rem;
+      top: 0;
+      right: 0;
+      background-color: #ef4444;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
       display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      z-index: 10;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Priority Colors */
-    .priority-critical { background: rgba(239, 68, 68, 0.9); color: white; }
-    .priority-high { background: rgba(249, 115, 22, 0.9); color: white; }
-    .priority-medium { background: rgba(245, 158, 11, 0.9); color: white; }
-    .priority-low { background: rgba(34, 197, 94, 0.9); color: white; }
-
-    /* Severity Colors */
-    .severity-critical { background: rgba(239, 68, 68, 0.9); color: white; }
-    .severity-major { background: rgba(245, 158, 11, 0.9); color: white; }
-    .severity-moderate { background: rgba(59, 130, 246, 0.9); color: white; }
-    .severity-minor { background: rgba(107, 114, 128, 0.9); color: white; }
-
-    /* Priority & Severity Indicators in Card Body */
-    .report-header-section {
-      margin-bottom: var(--space-4);
+    /* Flash Messages */
+    .flash-messages {
+      margin-bottom: var(--space-6);
     }
 
-    .priority-severity-row {
+    .alert {
+      padding: var(--space-4) var(--space-6);
+      border-radius: var(--radius-xl);
+      margin-bottom: var(--space-3);
       display: flex;
-      gap: 0.5rem;
-      margin-top: 0.75rem;
+      align-items: center;
+      gap: var(--space-3);
+      position: relative;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .alert-success {
+      background-color: var(--emerald-100);
+      border: 1px solid var(--emerald-200);
+      color: var(--emerald-800);
+    }
+
+    .alert-warning {
+      background-color: var(--orange-100);
+      border: 1px solid var(--orange-200);
+      color: var(--orange-800);
+    }
+
+    .alert-danger {
+      background-color: var(--red-100);
+      border: 1px solid var(--red-200);
+      color: var(--red-800);
+    }
+
+    .alert-info {
+      background-color: var(--blue-100);
+      border: 1px solid var(--blue-200);
+      color: var(--blue-800);
+    }
+
+    .alert-close {
+      position: absolute;
+      right: var(--space-4);
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: currentColor;
+      cursor: pointer;
+      opacity: 0.7;
+      padding: var(--space-1);
+      border-radius: var(--radius-full);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .alert-close:hover {
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Filter Controls */
+    .filter-controls {
+      display: flex;
+      gap: var(--space-3);
       flex-wrap: wrap;
     }
 
-    .priority-indicator, .severity-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      font-size: 0.625rem;
-      font-weight: 600;
-      text-transform: capitalize;
+    .sort-dropdown {
+      position: relative;
     }
 
-    .priority-indicator.priority-critical,
-    .severity-indicator.severity-critical {
-      background: #fecaca;
-      color: #991b1b;
+    .sort-select {
+      padding: var(--space-3) var(--space-6) var(--space-3) var(--space-4);
+      border: 2px solid var(--gray-300);
+      border-radius: var(--radius-xl);
+      background: white;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    .priority-indicator.priority-high,
-    .severity-indicator.severity-major {
-      background: #fed7aa;
-      color: #9a3412;
-    }
-
-    .priority-indicator.priority-medium,
-    .severity-indicator.severity-moderate {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    .priority-indicator.priority-low,
-    .severity-indicator.severity-minor {
-      background: #d1fae5;
-      color: #065f46;
+    .sort-select:focus {
+      outline: none;
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     /* Filter Dropdown */
     .filter-dropdown {
       position: relative;
-      display: inline-block;
     }
 
     .filter-dropdown-menu {
@@ -542,14 +1025,16 @@
       right: 0;
       background: white;
       border: 1px solid var(--gray-300);
-      border-radius: 8px;
+      border-radius: var(--radius-xl);
       box-shadow: var(--shadow-xl);
-      min-width: 200px;
+      min-width: 250px;
       z-index: 1000;
       opacity: 0;
       visibility: hidden;
       transform: translateY(-10px);
       transition: all 0.2s ease;
+      margin-top: var(--space-2);
+      overflow: hidden;
     }
 
     .filter-dropdown-menu.show {
@@ -559,7 +1044,7 @@
     }
 
     .filter-section {
-      padding: 1rem;
+      padding: var(--space-4);
       border-bottom: 1px solid var(--gray-200);
     }
 
@@ -570,131 +1055,545 @@
     .filter-section h4 {
       font-size: 0.875rem;
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      margin-bottom: var(--space-3);
       color: var(--text-primary);
+    }
+
+    .filter-options {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
     }
 
     .filter-option {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.25rem 0;
+      gap: var(--space-2);
       font-size: 0.875rem;
       cursor: pointer;
       color: var(--text-secondary);
     }
 
     .filter-option input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
       margin: 0;
     }
 
     .filter-actions {
-      padding: 0.75rem 1rem;
+      padding: var(--space-3) var(--space-4);
       display: flex;
       justify-content: center;
+      background: var(--gray-50);
     }
 
     .btn-clear {
       background: var(--gray-100);
       color: var(--text-secondary);
       border: 1px solid var(--gray-300);
-      border-radius: 6px;
-      padding: 0.5rem 1rem;
+      border-radius: var(--radius-lg);
+      padding: var(--space-2) var(--space-4);
       font-size: 0.875rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: var(--transition-all);
+      transition: all 0.2s ease;
     }
 
     .btn-clear:hover {
       background: var(--gray-200);
       color: var(--text-primary);
+      transform: translateY(-1px);
     }
 
-    /* Edit Button Styling */
-    .btn-edit {
-      background: var(--orange-100) !important;
-      color: var(--orange-700) !important;
-      border: 2px solid var(--orange-200) !important;
+    /* Empty filter message */
+    .empty-filter-message {
+      text-align: center;
+      padding: var(--space-12) var(--space-6);
+      grid-column: 1 / -1;
+      animation: fadeIn 0.5s ease-out;
     }
 
-    .btn-edit:hover {
-      background: var(--orange-200) !important;
-      color: var(--orange-800) !important;
-      border-color: var(--orange-300) !important;
+    .empty-filter-message i {
+      font-size: 3rem;
+      margin-bottom: var(--space-4);
+      opacity: 0.3;
+      color: var(--gray-400);
     }
 
-    /* Enhanced report card styling */
+    .empty-filter-message h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+      color: var(--text-secondary);
+    }
+
+    .empty-filter-message p {
+      color: var(--text-muted);
+      margin-bottom: var(--space-6);
+    }
+
+    /* Improved report card styling */
     .report-card {
       position: relative;
-      transition: var(--transition-all);
+      background: white;
+      border-radius: var(--radius-2xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      transition: all 0.3s ease;
+      border: 1px solid var(--gray-200);
     }
 
-    .report-card:hover .priority-overlay {
+    .report-card.visible {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+
+    .report-card:hover {
+      transform: translateY(-4px) !important;
+      box-shadow: var(--shadow-xl);
+    }
+
+    .report-card-header {
+      padding: var(--space-4);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .report-status {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background-color: var(--gray-200);
+      color: var(--gray-700);
+    }
+
+    .status-in-progress {
+      background-color: var(--blue-100);
+      color: var(--blue-700);
+    }
+
+    .status-done {
+      background-color: var(--emerald-100);
+      color: var(--emerald-700);
+    }
+
+    .report-badges {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .priority-badge,
+    .severity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .priority-critical {
+      background-color: var(--red-100);
+      color: var(--red-800);
+    }
+
+    .priority-high {
+      background-color: var(--orange-100);
+      color: var(--orange-800);
+    }
+
+    .priority-medium {
+      background-color: var(--amber-100, #fef3c7);
+      color: var(--amber-800, #92400e);
+    }
+
+    .priority-low {
+      background-color: var(--emerald-100);
+      color: var(--emerald-800);
+    }
+
+    .severity-critical {
+      background-color: var(--red-100);
+      color: var(--red-800);
+    }
+
+    .severity-major {
+      background-color: var(--orange-100);
+      color: var(--orange-800);
+    }
+
+    .severity-moderate {
+      background-color: var(--blue-100);
+      color: var(--blue-800);
+    }
+
+    .severity-minor {
+      background-color: var(--gray-100);
+      color: var(--gray-800);
+    }
+
+    .report-image-container {
+      height: 180px;
+      overflow: hidden;
+    }
+
+    .report-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .report-image:hover {
       transform: scale(1.05);
     }
 
-    /* Mobile responsiveness */
+    .no-image-placeholder {
+      height: 180px;
+      background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+
+    .no-image-icon {
+      font-size: 2rem;
+      margin-bottom: var(--space-2);
+      opacity: 0.5;
+    }
+
+    .report-card-body {
+      padding: var(--space-4);
+    }
+
+    .report-category {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .category-icon {
+      color: var(--primary-500);
+    }
+
+    .report-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-2);
+      line-height: 1.3;
+    }
+
+    .report-description {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin-bottom: var(--space-3);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+
+    .report-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin-bottom: var(--space-4);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .report-date,
+    .report-location {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .report-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: var(--space-2);
+    }
+
+    .btn-report-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      border: none;
+    }
+
+    .btn-view {
+      background-color: var(--primary-100);
+      color: var(--primary-700);
+      border: 1px solid var(--primary-200);
+    }
+
+    .btn-view:hover {
+      background-color: var(--primary-200);
+      color: var(--primary-800);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .btn-edit {
+      background-color: var(--orange-100);
+      color: var(--orange-700);
+      border: 1px solid var(--orange-200);
+    }
+
+    .btn-edit:hover {
+      background-color: var(--orange-200);
+      color: var(--orange-800);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .btn-delete {
+      background-color: var(--red-100);
+      color: var(--red-700);
+      border: 1px solid var(--red-200);
+    }
+
+    .btn-delete:hover {
+      background-color: var(--red-200);
+      color: var(--red-800);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    /* Delete form fixes */
+    .delete-form {
+      margin: 0;
+      flex: 1;
+    }
+
+    /* Active nav link */
+    .nav-link.active {
+      color: var(--primary-600);
+      font-weight: 600;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: var(--radius-lg);
+    }
+
+    /* Image Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-backdrop.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: white;
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-2xl);
+      max-width: 90vw;
+      max-height: 90vh;
+      width: auto;
+      overflow: hidden;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-backdrop.show .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: var(--space-6);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--gray-50);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: var(--space-2);
+      border-radius: var(--radius-lg);
+      transition: var(--transition-colors);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-close:hover {
+      color: var(--text-primary);
+      background: var(--gray-200);
+    }
+
+    .modal-body {
+      padding: var(--space-6);
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-100);
+    }
+
+    .modal-body img {
+      max-width: 100%;
+      max-height: calc(90vh - 120px);
+      border-radius: var(--radius-lg);
+      object-fit: contain;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 200px;
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-20px);
+        max-height: 0;
+      }
+    }
+
+    /* Responsive adjustments */
     @media (max-width: 768px) {
-      .priority-overlay {
-        top: 0.5rem;
-        right: 0.5rem;
-        gap: 0.25rem;
-      }
-
-      .priority-badge, .severity-badge {
-        font-size: 0.625rem;
-        padding: 0.125rem 0.5rem;
-      }
-
-      .priority-severity-row {
+      .dashboard-header {
         flex-direction: column;
-        gap: 0.25rem;
-      }
-
-      .priority-indicator, .severity-indicator {
-        font-size: 0.5rem;
-        padding: 0.125rem 0.375rem;
-      }
-
-      .filter-dropdown-menu {
-        right: auto;
-        left: 0;
-        min-width: 250px;
+        align-items: flex-start;
+        gap: var(--space-4);
       }
 
       .dashboard-actions {
-        flex-direction: column;
-        gap: 0.5rem;
         width: 100%;
+        flex-wrap: wrap;
+        gap: var(--space-2);
       }
 
       .btn-action {
         width: 100%;
         justify-content: center;
       }
-    }
 
-    /* High Priority Card Highlight */
-    .report-card[data-priority="critical"],
-    .report-card[data-priority="high"] {
-      border-left: 4px solid;
-    }
+      .filter-controls {
+        width: 100%;
+      }
 
-    .report-card[data-priority="critical"] {
-      border-left-color: #ef4444;
-    }
+      .sort-dropdown,
+      .filter-dropdown {
+        width: 100%;
+      }
 
-    .report-card[data-priority="high"] {
-      border-left-color: #f97316;
-    }
+      .sort-select {
+        width: 100%;
+      }
 
-    /* Color Variables */
-    :root {
-      --orange-100: #fff7ed;
-      --orange-200: #fed7aa;
-      --orange-300: #fdba74;
-      --orange-700: #c2410c;
-      --orange-800: #9a3412;
+      .filter-dropdown-menu {
+        width: 100%;
+        left: 0;
+        right: 0;
+      }
+
+      .report-badges {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+      }
+
+      .priority-badge,
+      .severity-badge {
+        font-size: 0.625rem;
+        padding: 1px 4px;
+      }
+
+      .report-actions {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </body>

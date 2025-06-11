@@ -1107,3 +1107,399 @@ def inject_rejected_count():
 @reports_bp.route("/tracking")
 def tracking():
     return render_template("tracking.html")
+
+
+
+
+# ---------- Maintenance: Report problem with issue ----------
+@reports_bp.route("/maintenance/report_problem/<issue_id>", methods=["GET"])
+def report_problem(issue_id):
+    """Display form for maintenance to report problems with issues"""
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+    
+    mongo = current_app.mongo
+    user = mongo.db.users.find_one({"email": session["user"]})
+    if not user or user.get("role") != "maintenance":
+        flash("Access denied.", "danger")
+        return redirect(url_for("auth.dashboard"))
+    
+    try:
+        oid = ObjectId(issue_id)
+    except:
+        abort(404)
+    
+    issue = mongo.db.issues.find_one({"_id": oid})
+    if not issue or issue.get("assigned_to") != session["user"]:
+        flash("Access denied.", "danger")
+        return redirect(url_for("reports.maintenance_dashboard"))
+    
+    # Serialize the issue for template
+    serialized_issue = serialize_issue_for_json(issue)
+    
+    return render_template("reports_problem.html", issue=serialized_issue)
+
+# ---------- Submit problem report ----------
+@reports_bp.route("/maintenance/report_issue_problem/<issue_id>", methods=["POST"])
+def report_issue_problem(issue_id):
+    """Process and save problem reports from maintenance staff"""
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+    
+    mongo = current_app.mongo
+    user = mongo.db.users.find_one({"email": session["user"]})
+    if not user or user.get("role") != "maintenance":
+        flash("Access denied.", "danger")
+        return redirect(url_for("auth.dashboard"))
+    
+    try:
+        oid = ObjectId(issue_id)
+    except:
+        abort(404)
+    
+    issue = mongo.db.issues.find_one({"_id": oid})
+    if not issue or issue.get("assigned_to") != session["user"]:
+        flash("Access denied.", "danger")
+        return redirect(url_for("reports.maintenance_dashboard"))
+    
+    # Get form data
+    problem_type = request.form.get("problem_type", "").strip()
+    problem_description = request.form.get("problem_description", "").strip()
+    requires_reporter_action = request.form.get("requires_reporter_action") == "yes"
+    
+    # Optional location correction
+    corrected_lat = request.form.get("corrected_lat", "").strip()
+    corrected_lng = request.form.get("corrected_lng", "").strip()
+    corrected_address = request.form.get("corrected_address", "").strip()
+    
+    # Validate
+    if not problem_type or not problem_description:
+        flash("Problem type and description are required.", "danger")
+        return redirect(url_for("reports.report_problem", issue_id=issue_id))
+    
+    # Handle optional image upload
+    fs = GridFS(mongo.db)
+    problem_image_id = None
+    
+    if "problem_image" in request.files:
+        file = request.files["problem_image"]
+        if file and file.filename:
+            if allowed_file(file.filename):
+                try:
+                    filename = secure_filename(file.filename)
+                    problem_image_id = fs.put(
+                        file.stream,
+                        filename=filename,
+                        content_type=file.content_type or "application/octet-stream"
+                    )
+                except Exception as e:
+                    current_app.logger.error(f"File upload error: {e}")
+                    flash("Error uploading image. Please try again.", "danger")
+                    return redirect(url_for("reports.report_problem", issue_id=issue_id))
+    
+    # Create problem report document
+    problem_report = {
+        "original_issue_id": str(issue_id),
+        "problem_type": problem_type,
+        "problem_description": problem_description,
+        "problem_image_id": problem_image_id,
+        "technician": session["user"],
+        "timestamp": datetime.utcnow().isoformat(),
+        "requires_reporter_action": requires_reporter_action,
+        "status": "pending"
+    }
+    
+    # Add location correction if provided
+    if problem_type == "location_issue" and corrected_lat and corrected_lng:
+        try:
+            problem_report["corrected_lat"] = float(corrected_lat)
+            problem_report["corrected_lng"] = float(corrected_lng)
+            problem_report["corrected_address"] = corrected_address
+        except ValueError:
+            flash("Invalid location coordinates. Please provide valid numbers.", "danger")
+            return redirect(url_for("reports.report_problem", issue_id=issue_id))
+    
+    # Insert the problem report
+    result = mongo.db.issue_problems.insert_one(problem_report)
+    
+    # Update the issue status to indicate a problem
+    mongo.db.issues.update_one(
+        {"_id": oid},
+        {"$set": {
+            "has_problem_report": True,
+            "problem_report_id": str(result.inserted_id)
+        }}
+    )
+    
+    # Notify admin about problem report
+    try:
+        admin_emails = [u["email"] for u in mongo.db.users.find({"role": "admin"})]
+        for admin_email in admin_emails:
+            send_email(
+                admin_email,
+                f"Problem Report: {problem_type.replace('_', ' ').title()}",
+                f"A maintenance technician has reported a problem with issue #{issue_id}.\n\n"
+                f"Problem Type: {problem_type.replace('_', ' ').title()}\n"
+                f"Technician: {session['user']}\n"
+                f"Description: {problem_description}\n\n"
+                f"Requires Reporter Action: {'Yes' if requires_reporter_action else 'No'}\n\n"
+                f"View problem reports: {url_for('reports.admin_problem_reports', _external=True)}"
+            )
+    except Exception as e:
+        current_app.logger.error(f"Email notification error: {e}")
+    
+    flash("Problem report submitted successfully. An admin will review it.", "success")
+    return redirect(url_for("reports.maintenance_dashboard"))
+
+# ---------- Admin: View problem reports ----------
+@reports_bp.route("/admin/problem_reports")
+def admin_problem_reports():
+    """Admin interface to view and manage problem reports"""
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+    
+    mongo = current_app.mongo
+    user_data = mongo.db.users.find_one({"email": session["user"]})
+    if not user_data or user_data.get("role") != "admin":
+        flash("Admins only.", "danger")
+        return redirect(url_for("auth.dashboard"))
+    
+    # Get all problem reports with newest first
+    problem_reports = list(mongo.db.issue_problems.find().sort("timestamp", -1))
+    
+    # Populate each problem report with the associated issue details
+    for problem in problem_reports:
+        try:
+            # Convert ObjectId to string for template
+            problem["_id"] = str(problem["_id"])
+            
+            # Get original issue
+            original_issue = mongo.db.issues.find_one({"_id": ObjectId(problem["original_issue_id"])})
+            if original_issue:
+                problem["issue"] = serialize_issue_for_json(original_issue)
+            else:
+                problem["issue"] = {"_id": "Not found"}
+                
+        except Exception as e:
+            current_app.logger.error(f"Error processing problem report: {e}")
+            problem["issue"] = {"_id": "Error"}
+    
+    return render_template(
+        "admin_problem_reports.html",
+        problem_reports=problem_reports,
+        user=user_data
+    )
+
+# ---------- Admin: Notify reporter about problem ----------
+@reports_bp.route("/admin/notify_reporter/<problem_id>", methods=["POST"])
+def notify_reporter_problem(problem_id):
+    """Send notification to reporter about issues with their report"""
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+    
+    mongo = current_app.mongo
+    user_data = mongo.db.users.find_one({"email": session["user"]})
+    if not user_data or user_data.get("role") != "admin":
+        flash("Admins only.", "danger")
+        return redirect(url_for("auth.dashboard"))
+    
+    try:
+        problem = mongo.db.issue_problems.find_one({"_id": ObjectId(problem_id)})
+        if not problem:
+            flash("Problem report not found.", "danger")
+            return redirect(url_for("reports.admin_problem_reports"))
+        
+        # Get original issue
+        original_issue = mongo.db.issues.find_one({"_id": ObjectId(problem["original_issue_id"])})
+        if not original_issue:
+            flash("Original issue not found.", "danger")
+            return redirect(url_for("reports.admin_problem_reports"))
+        
+        reporter_email = original_issue.get("reporter_email")
+        if not reporter_email:
+            flash("Reporter email not found in the original issue.", "danger")
+            return redirect(url_for("reports.admin_problem_reports"))
+        
+        # Generate appropriate email based on problem type
+        problem_type = problem.get("problem_type", "").replace("_", " ").title()
+        problem_description = problem.get("problem_description", "")
+        
+        subject = f"Action Required: Problem with your CityFix Report #{problem['original_issue_id']}"
+        
+        # Customize email body based on problem type
+        if problem.get("problem_type") == "location_issue":
+            body = (
+                f"Hello,\n\nOur maintenance team has reported an issue with the location information in your report.\n\n"
+                f"Problem: {problem_type}\n"
+                f"Details: {problem_description}\n\n"
+            )
+            
+            if problem.get("corrected_lat") and problem.get("corrected_lng"):
+                body += (
+                    f"Suggested Location: {problem.get('corrected_address', 'Not specified')}\n"
+                    f"Coordinates: {problem.get('corrected_lat')}, {problem.get('corrected_lng')}\n\n"
+                )
+                
+            body += (
+                f"Please update your report with the correct location information by clicking the link below:\n"
+                f"{url_for('reports.edit_issue', issue_id=problem['original_issue_id'], _external=True)}\n\n"
+                f"Thank you for helping keep our records accurate.\n\n"
+                f"CityFix Team"
+            )
+        else:
+            body = (
+                f"Hello,\n\nOur maintenance team has reported an issue with your report.\n\n"
+                f"Problem Type: {problem_type}\n"
+                f"Details: {problem_description}\n\n"
+                f"Please update your report by clicking the link below:\n"
+                f"{url_for('reports.edit_issue', issue_id=problem['original_issue_id'], _external=True)}\n\n"
+                f"Thank you for your cooperation.\n\n"
+                f"CityFix Team"
+            )
+        
+        # Send email
+        send_email(reporter_email, subject, body)
+        
+        # Update problem status
+        mongo.db.issue_problems.update_one(
+            {"_id": ObjectId(problem_id)},
+            {"$set": {"status": "notified", "notified_at": datetime.utcnow().isoformat()}}
+        )
+        
+        flash(f"Reporter notified successfully about the {problem_type} problem.", "success")
+        
+    except Exception as e:
+        current_app.logger.error(f"Error notifying reporter: {e}")
+        flash("Error notifying reporter. Please try again.", "danger")
+    
+    return redirect(url_for("reports.admin_problem_reports"))
+
+# ---------- Admin: Resolve problem ----------
+@reports_bp.route("/admin/resolve_problem/<problem_id>", methods=["POST"])
+def resolve_problem(problem_id):
+    """Mark a problem as resolved"""
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+    
+    mongo = current_app.mongo
+    user_data = mongo.db.users.find_one({"email": session["user"]})
+    if not user_data or user_data.get("role") != "admin":
+        flash("Admins only.", "danger")
+        return redirect(url_for("auth.dashboard"))
+    
+    try:
+        problem = mongo.db.issue_problems.find_one({"_id": ObjectId(problem_id)})
+        if not problem:
+            flash("Problem report not found.", "danger")
+            return redirect(url_for("reports.admin_problem_reports"))
+        
+        # Update problem status
+        mongo.db.issue_problems.update_one(
+            {"_id": ObjectId(problem_id)},
+            {"$set": {
+                "status": "resolved",
+                "resolved_at": datetime.utcnow().isoformat(),
+                "resolved_by": session["user"]
+            }}
+        )
+        
+        # Update original issue
+        mongo.db.issues.update_one(
+            {"_id": ObjectId(problem["original_issue_id"])},
+            {"$set": {"has_problem_report": False}}
+        )
+        
+        flash("Problem marked as resolved successfully.", "success")
+        
+    except Exception as e:
+        current_app.logger.error(f"Error resolving problem: {e}")
+        flash("Error resolving problem. Please try again.", "danger")
+    
+    return redirect(url_for("reports.admin_problem_reports"))
+
+# ---------- Reporter: View problems with their reports ----------
+@reports_bp.route("/my_reports/problems")
+def my_report_problems():
+    """View problems with user's reports that need attention"""
+    if "user" not in session:
+        flash("Please log in first", "warning")
+        return redirect(url_for("auth.root"))
+    
+    mongo = current_app.mongo
+    
+    # Find all active problems for this user's reports that require action
+    user_reports = mongo.db.issues.find({"reporter_email": session["user"]})
+    user_report_ids = [str(report["_id"]) for report in user_reports]
+    
+    problem_reports = list(mongo.db.issue_problems.find({
+        "original_issue_id": {"$in": user_report_ids},
+        "requires_reporter_action": True,
+        "status": {"$in": ["pending", "notified"]}
+    }).sort("timestamp", -1))
+    
+    # Get user data for template
+    user_data = mongo.db.users.find_one({"email": session["user"]})
+    if user_data:
+        user_data.pop("password", None)
+    
+    # Enrich problem reports with issue data
+    for problem in problem_reports:
+        problem["_id"] = str(problem["_id"])
+        try:
+            original_issue = mongo.db.issues.find_one({"_id": ObjectId(problem["original_issue_id"])})
+            if original_issue:
+                problem["issue"] = serialize_issue_for_json(original_issue)
+            else:
+                problem["issue"] = None
+        except:
+            problem["issue"] = None
+    
+    return render_template(
+        "my_report_problems.html",
+        problem_reports=problem_reports,
+        user=user_data
+    )
+
+# Add to context processor
+@reports_bp.context_processor
+def inject_problem_reports_count():
+    """Add problem reports count to template context for the current user"""
+    if "user" not in session:
+        return dict(problem_reports_count=0)
+    
+    mongo = current_app.mongo
+    user_role = mongo.db.users.find_one({"email": session["user"]})
+    
+    if not user_role:
+        return dict(problem_reports_count=0)
+    
+    if user_role.get("role") == "admin":
+        # For admins: count of all pending problem reports
+        count = mongo.db.issue_problems.count_documents({"status": "pending"})
+    else:
+        # For reporters: count of problems with their reports that need action
+        user_reports = mongo.db.issues.find({"reporter_email": session["user"]})
+        user_report_ids = [str(report["_id"]) for report in user_reports]
+        
+        count = mongo.db.issue_problems.count_documents({
+            "original_issue_id": {"$in": user_report_ids},
+            "requires_reporter_action": True,
+            "status": {"$in": ["pending", "notified"]}
+        })
+    
+    return dict(problem_reports_count=count)
+
+
+@reports_bp.app_template_filter('format_date')
+def format_date(date_string):
+    """Format an ISO date string to human-readable format"""
+    try:
+        date = datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+        return date.strftime('%Y-%m-%d %H:%M')
+    except:
+        return date_string

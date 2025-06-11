@@ -35,30 +35,126 @@
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
-        <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+         <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
+          <div class="circuit-container">
+            <div class="circuit-line"></div>
+            <div class="circuit-dot"></div>
+          </div>
+          CityFix
+        </a>
 
         <ul class="navbar-nav">
+          <!-- Conditional navigation based on user role -->
           {% if user %}
+          {% if user.role == 'admin' %}
           <li class="nav-item">
-            <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+            <a href="{{ url_for('reports.admin_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a href="{{ url_for('done_reports.done_issue') }}"
+              class="nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
+              <i class="bi bi-check2-all" aria-hidden="true"></i>
+              <span>Done Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('user_roles.edit_user_roles') }}"
+              class="nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
+              <i class="bi bi-people" aria-hidden="true"></i>
+              <span>Manage Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.admin_problem_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Problems</span>
+              {% if problem_reports_count > 0 %}
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% elif user.role == 'maintenance' %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.maintenance_dashboard') }}"
+              class="nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
+              <i class="bi bi-tools" aria-hidden="true"></i>
+              <span>Tasks</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.rejected_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+              <i class="bi bi-envelope-exclamation" aria-hidden="true"></i>
+              <span>Rejections</span>
+              {% if rejected_count > 0 %}
+              <span class="nav-badge">{{ rejected_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% else %}
+          <!-- Regular user navigation -->
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}"
+              class="nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
               <i class="bi bi-speedometer2" aria-hidden="true"></i>
               <span>Dashboard</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+            <a href="{{ url_for('reports.my_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          {% if problem_reports_count > 0 %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_report_problems') }}"
+              class="nav-link nav-link-warning {% if request.endpoint == 'reports.my_report_problems' %}active{% endif %}"
+              style="position: relative;">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>Issues</span>
+              <span class="nav-badge">{{ problem_reports_count }}</span>
+            </a>
+          </li>
+          {% endif %}
+          {% endif %}
+
+          <!-- Common navigation items for all logged-in users -->
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}"
+              class="nav-link {% if request.endpoint == 'reports.report_issue' %}active{% endif %}">
               <i class="bi bi-plus-circle" aria-hidden="true"></i>
               <span>Report Issue</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
-              <i class="bi bi-journal-text" aria-hidden="true"></i>
-              <span>My Reports</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ url_for('main.profile') }}" class="nav-link">
+            <a href="{{ url_for('main.profile') }}"
+              class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
               <i class="bi bi-person-circle" aria-hidden="true"></i>
               <span>{{ user.name }}</span>
             </a>
@@ -70,14 +166,17 @@
             </a>
           </li>
           {% else %}
+          <!-- Navigation for non-logged in users -->
           <li class="nav-item">
-            <a href="{{ url_for('reports.public_reports') }}" class="nav-link">
+            <a href="{{ url_for('reports.public_reports') }}"
+              class="nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
               <i class="bi bi-map" aria-hidden="true"></i>
               <span>View Reports</span>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ url_for('main.about') }}" class="nav-link">
+            <a href="{{ url_for('main.about') }}"
+              class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
               <i class="bi bi-info-circle" aria-hidden="true"></i>
               <span>About</span>
             </a>
@@ -104,16 +203,19 @@
   <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
     <ul class="mobile-nav-list">
       {% if user %}
+      {% if user.role == 'admin' %}
       <li class="mobile-nav-item">
-        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+        <a href="{{ url_for('reports.admin_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_dashboard' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-speedometer2"></i>
           <span>Dashboard</span>
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-journal-text"></i>
-          <span>My Reports</span>
+        <a href="{{ url_for('done_reports.done_issue') }}"
+          class="mobile-nav-link {% if request.endpoint == 'done_reports.done_issue' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-check2-all"></i>
+          <span>Done</span>
         </a>
       </li>
       <li class="mobile-nav-item">
@@ -123,26 +225,112 @@
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-person"></i>
-          <span>Profile</span>
+        <a href="{{ url_for('user_roles.edit_user_roles') }}"
+          class="mobile-nav-link {% if request.endpoint == 'user_roles.edit_user_roles' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-people"></i>
+          <span>Users</span>
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('auth.logout') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-box-arrow-right"></i>
-          <span>Logout</span>
+        <a href="{{ url_for('reports.admin_problem_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.admin_problem_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-exclamation-triangle"></i>
+          <span>Problems</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
         </a>
       </li>
-      {% else %}
+      {% elif user.role == 'maintenance' %}
       <li class="mobile-nav-item">
-        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+        <a href="{{ url_for('reports.maintenance_dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.maintenance_dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-tools"></i>
+          <span>Tasks</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.rejected_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.rejected_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-envelope-exclamation"></i>
+          <span>Rejected</span>
+          {% if rejected_count > 0 %}
+          <div class="mobile-badge">{{ rejected_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-house"></i>
           <span>Home</span>
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      {% else %}
+      <!-- Regular user mobile navigation -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}"
+          class="mobile-nav-link {% if request.endpoint == 'auth.dashboard' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+          {% if problem_reports_count > 0 %}
+          <div class="mobile-badge">{{ problem_reports_count }}</div>
+          {% endif %}
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      {% endif %}
+      {% else %}
+      <!-- Mobile navigation for non-logged in users -->
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}"
+          class="mobile-nav-link {% if request.endpoint == 'reports.public_reports' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-map"></i>
           <span>Reports</span>
         </a>
@@ -154,7 +342,8 @@
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('main.about') }}" class="mobile-nav-link">
+        <a href="{{ url_for('main.about') }}"
+          class="mobile-nav-link {% if request.endpoint == 'main.about' %}active{% endif %}">
           <i class="mobile-nav-icon bi bi-info-circle"></i>
           <span>About</span>
         </a>
@@ -168,6 +357,7 @@
       {% endif %}
     </ul>
   </nav>
+
 
   <!-- Hero Section -->
   <section class="reports-hero">

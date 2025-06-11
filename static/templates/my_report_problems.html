@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,8 +6,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
-  <title>Completed Reports - CityFix</title>
-  <meta name="description" content="Review and approve completed maintenance work reports in CityFix.">
+  <title>Issues Needing Attention - CityFix</title>
+  <meta name="description" content="Reports that need your attention in CityFix.">
 
   <!-- Favicon -->
   <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
@@ -21,9 +22,7 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/done_reports.css') }}">
-
- 
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/reports_problem.css') }}">
 </head>
 
 <body>
@@ -32,7 +31,7 @@
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
   </a>
-    <!-- Desktop Navigation -->
+   <!-- Desktop Navigation -->
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
@@ -359,354 +358,119 @@
     </ul>
   </nav>
 
-  <!-- Reports Hero -->
-  <section class="reports-hero">
-    <div class="container">
-      <div class="reports-content">
-        <h1 class="reports-title">Completed Work Reports</h1>
-        <p class="reports-subtitle">
-          Review maintenance work completed by technicians.
-          Approve quality work or provide feedback for improvements.
-        </p>
 
-        <div class="filter-tabs">
-          <button class="filter-tab active" onclick="filterReports('all')">
-            <i class="bi bi-list-ul" aria-hidden="true"></i>
-            <span>All Reports</span>
-          </button>
-          <button class="filter-tab" onclick="filterReports('pending')">
-            <i class="bi bi-clock" aria-hidden="true"></i>
-            <span>Pending Review</span>
-          </button>
-          <button class="filter-tab" onclick="filterReports('approved')">
-            <i class="bi bi-check-circle" aria-hidden="true"></i>
-            <span>Approved</span>
-          </button>
-          <button class="filter-tab" onclick="filterReports('rejected')">
-            <i class="bi bi-x-circle" aria-hidden="true"></i>
-            <span>Rejected</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Reports Container -->
+  <!-- Main Content -->
   <main class="container">
-    <div class="reports-container">
-      {% if done_reports %}
-      <div class="reports-grid" id="reports-grid">
-        {% for dr in done_reports %}
-        <div class="report-card" data-status="{{ 'approved' if dr.issue_status == 'done' else 'pending' }}">
-          <!-- Report Header -->
-          <div class="report-header">
-            <div class="report-meta">
-              <div class="technician-info">
-                <div class="technician-avatar">
-                  {{ dr.technician[0]|upper if dr.technician else 'T' }}
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        Reports Needing Attention
+      </h1>
+      <p class="page-subtitle">
+        Our maintenance team encountered problems with these reports that need your input
+      </p>
+    </div>
+
+    <!-- Problem Reports List -->
+    <div class="reports-list mt-8">
+      {% if problem_reports %}
+        {% for problem in problem_reports %}
+          <div class="problem-notification">
+            <div class="problem-notification-header">
+              <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+              <span>{{ problem.problem_type|replace('_', ' ')|title }} - Action Required</span>
+            </div>
+            
+            <div class="problem-notification-body">
+              <div class="mb-3">
+                <strong>Problem Details:</strong> {{ problem.problem_description }}
+              </div>
+              
+              {% if problem.issue %}
+                <div class="mb-3">
+                  <strong>Report:</strong> {{ problem.issue.description|truncate(100) }}
                 </div>
-                <div class="technician-details">
-                  <div class="technician-name">{{ dr.technician or 'Unknown Technician' }}</div>
-                  <div class="report-date">
-                    <i class="bi bi-calendar3" aria-hidden="true"></i>
-                    {{ dr.display_date }} at {{ dr.display_time }}
+                
+                {% if problem.problem_type == 'location_issue' %}
+                  <div class="alert alert-info mb-3">
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    <strong>Location Issue:</strong>
+                    {% if problem.corrected_lat and problem.corrected_lng %}
+                      <div class="mt-2">
+                        <p>Our maintenance team suggests the following location:</p>
+                        <ul class="mt-1">
+                          <li>Coordinates: {{ problem.corrected_lat }}, {{ problem.corrected_lng }}</li>
+                          <li>Address: {{ problem.corrected_address }}</li>
+                        </ul>
+                      </div>
+                    {% else %}
+                      <div class="mt-1">
+                        <p>The location provided was incorrect or imprecise. Please update with the correct location.</p>
+                      </div>
+                    {% endif %}
                   </div>
-                </div>
+                {% endif %}
+                
+                {% if problem.problem_image_id %}
+                  <div class="mb-3">
+                    <strong>Problem Evidence:</strong>
+                    <div class="mt-2">
+                      <img src="{{ url_for('reports.serve_upload', file_id=problem.problem_image_id) }}" 
+                           alt="Problem image" class="problem-image">
+                    </div>
+                  </div>
+                {% endif %}
+              {% endif %}
+              
+              <div class="text-muted mt-3">
+                <small>Reported by maintenance on {{ problem.timestamp|format_date }}</small>
               </div>
-
-              <span class="status-badge {{ 'status-approved' if dr.issue_status == 'done' else 'status-pending' }}">
-                <i class="bi bi-{{ 'check-circle' if dr.issue_status == 'done' else 'clock' }}" aria-hidden="true"></i>
-                {{ 'Approved' if dr.issue_status == 'done' else 'Pending Review' }}
-              </span>
             </div>
-
-            <div class="report-description" onclick="toggleDescription(this)">
-              {{ dr.completion_description or 'No description provided.' }}
+            
+            <div class="problem-notification-footer">
+              {% if problem.issue %}
+                <a href="{{ url_for('reports.edit_issue', issue_id=problem.original_issue_id) }}" class="btn btn-primary">
+                  <i class="bi bi-pencil" aria-hidden="true"></i>
+                  Edit Report
+                </a>
+                <a href="{{ url_for('reports.report_detail', issue_id=problem.original_issue_id) }}" class="btn btn-outline-secondary">
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                  View Report
+                </a>
+              {% else %}
+                <span class="text-danger">Original report not found</span>
+              {% endif %}
             </div>
           </div>
-
-          <!-- Report Images -->
-          <div class="report-images">
-            <div class="images-grid">
-              <!-- Before Image -->
-              <div class="image-container"onclick="showImageModal('{{ url_for('done_reports.serve_done_upload', file_id=dr.before_file_id) if dr.before_file_id }}')">
-                {% if dr.before_file_id %}
-                <img src="{{ url_for('done_reports.serve_done_upload', file_id=dr.before_file_id) }}"
-                  alt="Before image">
-                <div class="image-label before">Before</div>
-                {% else %}
-                <div class="no-image">
-                  <i class="bi bi-image" aria-hidden="true"></i>
-                  <span>No Before Image</span>
-                </div>
-                {% endif %}
-              </div>
-
-              <!-- After Image -->
-              <div class="image-container"onclick="showImageModal('{{ url_for('done_reports.serve_done_upload', file_id=dr.after_file_id) if dr.after_file_id }}')">
-                {% if dr.after_file_id %}
-                <img src="{{ url_for('done_reports.serve_done_upload', file_id=dr.after_file_id) }}" alt="After image">
-                <div class="image-label after">After</div>
-                {% else %}
-                <div class="no-image">
-                  <i class="bi bi-image" aria-hidden="true"></i>
-                  <span>No After Image</span>
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-
-          <!-- Report Actions -->
-          <div class="report-actions">
-            {% if dr.issue_status != 'done' %}
-            <form action="{{ url_for('done_reports.review_done_report', dr_id=dr._id) }}" method="post"
-              style="flex: 1;">
-              <input type="hidden" name="status" value="accepted">
-              <button type="submit" class="action-btn btn-approve">
-                <i class="bi bi-check-circle" aria-hidden="true"></i>
-                Approve Work
-              </button>
-            </form>
-
-            <button class="action-btn btn-reject" onclick="showRejectModal('{{ dr._id }}')">
-              <i class="bi bi-x-circle" aria-hidden="true"></i>
-              Reject Work
-            </button>
-            {% else %}
-            <span class="action-btn btn-details" style="cursor: default;">
-              <i class="bi bi-check-all" aria-hidden="true"></i>
-              Work Approved
-            </span>
-            {% endif %}
-
-            <button class="action-btn btn-details"onclick="showDescriptionModal('{{ dr.completion_description or 'No description provided.' }}', '{{ dr.technician }}', '{{ dr.display_date }} {{ dr.display_time }}')">
-              <i class="bi bi-eye" aria-hidden="true"></i>
-              View Details
-            </button>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+          <h3>No Issues Needing Attention</h3>
+          <p>All your reports are in good shape! There are no reports that require your attention at this time.</p>
+          <div class="mt-8">
+            <a href="{{ url_for('reports.my_reports') }}" class="btn btn-primary">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              View My Reports
+            </a>
+            <a href="{{ url_for('reports.report_issue') }}" class="btn btn-outline-primary ml-4">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              Report New Issue
+            </a>
           </div>
         </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="empty-state">
-        <i class="bi bi-clipboard-check" aria-hidden="true"></i>
-        <h3>No Completed Reports</h3>
-        <p>There are no completed work reports to review at this time. Reports will appear here once technicians submit
-          their completed work.</p>
-      </div>
       {% endif %}
     </div>
   </main>
 
-  <!-- Image Modal -->
-  <div id="image-modal" class="modal-backdrop" onclick="closeImageModal()">
-    <div class="modal" onclick="event.stopPropagation()" style="max-width: 80vw;">
-      <div class="modal-header">
-        <h3 class="modal-title">Work Image</h3>
-        <button class="btn-close" onclick="closeImageModal()">
-          <i class="bi bi-x-lg" aria-hidden="true"></i>
-        </button>
-      </div>
-      <div class="modal-body text-center">
-        <img id="modal-image" src="" alt="Work image"
-          style="max-width: 100%; height: auto; border-radius: var(--radius-xl);">
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-8 mt-12">
+    <div class="container">
+      <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+        <p>&copy; 2025 CityFix. All rights reserved. Built for better cities.</p>
       </div>
     </div>
-  </div>
-
-  <!-- Description Modal -->
-  <div id="description-modal" class="modal-backdrop" onclick="closeDescriptionModal()">
-    <div class="modal" onclick="event.stopPropagation()" style="max-width: 600px;">
-      <div class="modal-header">
-        <h3 class="modal-title">Work Report Details</h3>
-        <button class="btn-close" onclick="closeDescriptionModal()">
-          <i class="bi bi-x-lg" aria-hidden="true"></i>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-4">
-          <strong>Technician:</strong> <span id="modal-technician"></span>
-        </div>
-        <div class="mb-4">
-          <strong>Completed:</strong> <span id="modal-date"></span>
-        </div>
-        <div>
-          <strong>Description:</strong>
-          <p id="modal-description" class="mt-2 p-4 bg-gray-50 rounded-xl"></p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Reject Modal -->
-  <div id="reject-modal" class="modal-backdrop" onclick="closeRejectModal()">
-    <div class="modal" onclick="event.stopPropagation()" style="max-width: 500px;">
-      <form id="reject-form" method="post">
-        <div class="modal-header">
-          <h3 class="modal-title">Reject Work Report</h3>
-          <button type="button" class="btn-close" onclick="closeRejectModal()">
-            <i class="bi bi-x-lg" aria-hidden="true"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="rejection-form">
-            <label for="rejection-reason">
-              Please explain why this work is being rejected:
-            </label>
-            <textarea id="rejection-reason" name="rejection_reason"
-              placeholder="Explain what needs to be improved or redone..." required></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">
-            Cancel
-          </button>
-          <button type="submit" class="btn btn-danger">
-            <i class="bi bi-x-circle" aria-hidden="true"></i>
-            Reject Work
-          </button>
-        </div>
-        <input type="hidden" name="status" value="rejected">
-      </form>
-    </div>
-  </div>
-
-  <script>
-    // Filter functionality
-    function filterReports(status) {
-      const tabs = document.querySelectorAll('.filter-tab');
-      const cards = document.querySelectorAll('.report-card');
-
-      // Update active tab
-      tabs.forEach(tab => tab.classList.remove('active'));
-      event.target.classList.add('active');
-
-      // Filter cards
-      cards.forEach(card => {
-        if (status === 'all') {
-          card.style.display = 'block';
-        } else {
-          const cardStatus = card.dataset.status;
-          card.style.display = cardStatus === status ? 'block' : 'none';
-        }
-      });
-    }
-
-    // Toggle description
-    function toggleDescription(element) {
-      element.classList.toggle('expanded');
-    }
-
-    // Image modal
-    function showImageModal(src) {
-      if (!src) return;
-      document.getElementById('modal-image').src = src;
-      document.getElementById('image-modal').classList.add('show');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeImageModal() {
-      document.getElementById('image-modal').classList.remove('show');
-      document.body.style.overflow = 'auto';
-    }
-
-    // Description modal
-    function showDescriptionModal(description, technician, date) {
-      document.getElementById('modal-description').textContent = description;
-      document.getElementById('modal-technician').textContent = technician;
-      document.getElementById('modal-date').textContent = date;
-      document.getElementById('description-modal').classList.add('show');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeDescriptionModal() {
-      document.getElementById('description-modal').classList.remove('show');
-      document.body.style.overflow = 'auto';
-    }
-
-    // Reject modal
-    function showRejectModal(reportId) {
-      const form = document.getElementById('reject-form');
-      form.action = `/admin/review_done_report/${reportId}`;
-      document.getElementById('reject-modal').classList.add('show');
-      document.body.style.overflow = 'hidden';
-      document.getElementById('rejection-reason').focus();
-    }
-
-    function closeRejectModal() {
-      document.getElementById('reject-modal').classList.remove('show');
-      document.body.style.overflow = 'auto';
-      document.getElementById('rejection-reason').value = '';
-    }
-
-    // Handle escape key
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        closeImageModal();
-        closeDescriptionModal();
-        closeRejectModal();
-      }
-    });
-
-    // Form submission handling
-    document.addEventListener('DOMContentLoaded', function () {
-      // Add loading states to forms
-      document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', function () {
-          const submitBtn = this.querySelector('button[type="submit"]');
-          if (submitBtn) {
-            submitBtn.disabled = true;
-            const originalContent = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Processing...';
-
-            // Re-enable after 3 seconds if form doesn't redirect
-            setTimeout(() => {
-              submitBtn.disabled = false;
-              submitBtn.innerHTML = originalContent;
-            }, 3000);
-          }
-        });
-      });
-
-      // Auto-resize textareas
-      document.querySelectorAll('textarea').forEach(textarea => {
-        textarea.addEventListener('input', function () {
-          this.style.height = 'auto';
-          this.style.height = (this.scrollHeight) + 'px';
-        });
-      });
-
-      // Confirmation dialogs for approvals
-      document.querySelectorAll('form[action*="review_done_report"]').forEach(form => {
-        if (form.querySelector('input[value="accepted"]')) {
-          form.addEventListener('submit', function (e) {
-            if (!confirm('Are you sure you want to approve this work? This action will mark the original report as completed.')) {
-              e.preventDefault();
-            }
-          });
-        }
-      });
-    });
-
-    // Auto-refresh every 2 minutes
-    setInterval(() => {
-      // You can implement live updates here
-      console.log('Checking for new reports...');
-    }, 120000);
-
-    // Keyboard shortcuts  
-    document.addEventListener('keydown', function (e) {
-      // 1-4 keys for filter tabs
-      if (e.key >= '1' && e.key <= '4') {
-        const tabs = document.querySelectorAll('.filter-tab');
-        const index = parseInt(e.key) - 1;
-        if (tabs[index]) {
-          tabs[index].click();
-        }
-      }
-    });
-  </script>
+  </footer>
 </body>
 
 </html>

@@ -765,65 +765,64 @@
       }
     }
 
-    /* Liquid Animation Brand Style */
-    .navbar-brand-liquid {
-      display: inline-flex;
-      align-items: center;
-      text-decoration: none;
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: 26px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 8px 16px;
-      border-radius: 12px;
-    }
+    
 
-    .liquid-text {
-      position: relative;
-      color: white;
-      z-index: 2;
-      overflow: hidden;
-      border-radius: 12px;
-      padding: 12px 20px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
 
-    .liquid-text::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, #3b82f6, #10b981, #2563eb);
-      z-index: -1;
-      animation: liquid 4s ease-in-out infinite;
-      border-radius: inherit;
-    }
 
-    @keyframes liquid {
+    /* Problem Report Button */
+  .btn-problem {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--orange-100);
+    color: var(--orange-700);
+    border: 2px solid var(--orange-200);
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: var(--transition-all);
+    text-decoration: none;
+  }
 
-      0%,
-      100% {
-        left: -100%;
-        transform: skewX(0deg);
-      }
+  .btn-problem:hover {
+    background: var(--orange-200);
+    color: var(--orange-800);
+    text-decoration: none;
+    transform: translateY(-1px);
+    border-color: var(--orange-300);
+  }
 
-      50% {
-        left: 100%;
-        transform: skewX(20deg);
-      }
-    }
+  /* Enhanced Dashboard Actions with Problem Reports Count */
+  .dashboard-actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    position: relative;
+  }
 
-    /* Hover Effects */
-    .navbar-brand-liquid:hover {
-      text-decoration: none;
-      transform: scale(1.02);
-    }
+  .action-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+  }
 
-    .navbar-brand-liquid:hover .liquid-text::before {
-      animation-duration: 1s;
-    }
-
-   
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }

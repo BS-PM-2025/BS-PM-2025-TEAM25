@@ -5,14 +5,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
-  <title>About CityFix - Modern Infrastructure Reporting</title>
-  <meta name="description" content="Learn about CityFix - the modern platform connecting citizens, municipalities, and maintenance teams for better infrastructure management.">
+  <title>Issue Problems - Admin Dashboard - CityFix</title>
+  <meta name="description" content="Manage maintenance problem reports in CityFix.">
 
   <!-- Favicon -->
   <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
 
   <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
 
   <!-- Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -20,11 +21,11 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/about.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/reports_problem.css') }}">
 </head>
 
 <body>
-   <!-- Back Link -->
+    <!-- Back Link -->
   <a href="{{ url_for('main.home') }}" class="back-link">
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
@@ -33,7 +34,7 @@
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
-         <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
+        <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
           <div class="circuit-container">
             <div class="circuit-line"></div>
             <div class="circuit-dot"></div>
@@ -52,7 +53,7 @@
               <span>Dashboard</span>
             </a>
           </li>
-           <li class="nav-item">
+          <li class="nav-item">
             <a href="{{ url_for('reports.my_reports') }}"
               class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
               <i class="bi bi-journal-text" aria-hidden="true"></i>
@@ -356,392 +357,205 @@
     </ul>
   </nav>
 
-  <!-- About Hero -->
-  <section class="about-hero">
-    <div class="container">
-      <div class="about-content">
-        <h1 class="about-title">Building Better Cities Together</h1>
-        <p class="about-subtitle">
-          CityFix is a modern, open-source platform that bridges the gap between citizens, 
-          municipalities, and maintenance teams. We believe in the power of community-driven 
-          solutions to create safer, more efficient, and better-maintained urban environments.
-        </p>
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        Maintenance Problem Reports
+      </h1>
+      <p class="page-subtitle">Manage and resolve problem reports from maintenance teams</p>
+    </div>
 
-        <div class="about-stats">
-          <div class="about-stat">
-            <span class="about-stat-number">10K+</span>
-            <span class="about-stat-label">Issues Resolved</span>
-          </div>
-          <div class="about-stat">
-            <span class="about-stat-number">50+</span>
-            <span class="about-stat-label">Cities Served</span>
-          </div>
-          <div class="about-stat">
-            <span class="about-stat-number">500+</span>
-            <span class="about-stat-label">Active Users</span>
-          </div>
-          <div class="about-stat">
-            <span class="about-stat-number">24/7</span>
-            <span class="about-stat-label">Platform Availability</span>
-          </div>
-        </div>
+    <!-- Filter & Search Bar -->
+    <div class="filter-bar">
+      <div>
+        <span class="filter-label">Filter by Type:</span>
+        <select id="problemTypeFilter" class="filter-select" onchange="filterProblems()">
+          <option value="all">All Problems</option>
+          <option value="location_issue">Location Issues</option>
+          <option value="description_issue">Description Issues</option>
+          <option value="access_issue">Access Issues</option>
+          <option value="duplicate_issue">Duplicate Issues</option>
+          <option value="category_issue">Category Issues</option>
+          <option value="other">Other Problems</option>
+        </select>
+      </div>
+      <div>
+        <span class="filter-label">Filter by Status:</span>
+        <select id="statusFilter" class="filter-select" onchange="filterProblems()">
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="notified">Reporter Notified</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+      <div class="search-box">
+        <i class="bi bi-search search-icon" aria-hidden="true"></i>
+        <input type="text" id="problemSearch" class="search-input" placeholder="Search problems..."
+          onkeyup="filterProblems()">
       </div>
     </div>
-  </section>
 
-  <!-- Mission Section -->
-  <section class="section">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">Our Mission</h2>
-        <p class="section-description">
-          To democratize urban infrastructure management by providing a transparent, 
-          efficient, and community-driven platform that empowers every stakeholder 
-          in the urban ecosystem.
-        </p>
-      </div>
-
-      <div class="values-grid">
-        <div class="value-item">
-          <div class="value-icon">
-            <i class="bi bi-transparency" aria-hidden="true"></i>
+    <!-- Problem Reports Grid -->
+    <div class="problems-container" id="problemsContainer">
+      {% if problem_reports %}
+      {% for problem in problem_reports %}
+      <div class="problem-card" data-problem-type="{{ problem.problem_type }}" data-status="{{ problem.status }}">
+        <div class="problem-card-header">
+          <div class="problem-card-title">
+            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+            <span>{{ problem.problem_type|replace('_', ' ')|title }}</span>
           </div>
-          <h3 class="value-title">Transparency</h3>
-          <p class="value-description">
-            Every report, every update, every resolution is visible to the community, 
-            fostering trust and accountability.
-          </p>
+          <span class="status-badge badge-{{ problem.status|lower }}">
+            {{ problem.status|title }}
+          </span>
         </div>
+        <div class="problem-card-body">
+          <div class="problem-meta">
+            <div class="problem-meta-item">
+              <span class="problem-meta-label">Original Issue</span>
+              <span class="problem-meta-value">{{ problem.issue._id[:8] }}...</span>
+            </div>
+            <div class="problem-meta-item">
+              <span class="problem-meta-label">Reported By</span>
+              <span class="problem-meta-value">{{ problem.technician }}</span>
+            </div>
+            <div class="problem-meta-item">
 
-        <div class="value-item">
-          <div class="value-icon">
-            <i class="bi bi-lightning-charge" aria-hidden="true"></i>
+            </div>
+            <div class="problem-meta-item">
+              <span class="problem-meta-label">Date</span>
+              <span class="problem-meta-value">{{ problem.timestamp|format_date }}</span>
+            </div>
+            {% if problem.requires_reporter_action %}
+            <div class="problem-meta-item">
+              <span class="action-required-tag">
+                <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                Reporter Action Required
+              </span>
+            </div>
+            {% endif %}
           </div>
-          <h3 class="value-title">Efficiency</h3>
-          <p class="value-description">
-            Streamlined workflows and automated processes ensure issues are 
-            resolved quickly and resources are used optimally.
-          </p>
-        </div>
-
-        <div class="value-item">
-          <div class="value-icon">
-            <i class="bi bi-people-fill" aria-hidden="true"></i>
+          <div class="problem-meta-item">
+            <span class="problem-meta-label">Description</span>
+            <span class="problem-meta-value">{{ problem.problem_description|truncate(100) }}</span>
           </div>
-          <h3 class="value-title">Community</h3>
-          <p class="value-description">
-            Citizens are at the heart of everything we do, from reporting issues 
-            to tracking their resolution.
-          </p>
-        </div>
 
-        <div class="value-item">
-          <div class="value-icon">
-            <i class="bi bi-shield-check" aria-hidden="true"></i>
+          {% if problem.problem_image_id %}
+          <div class="problem-meta-item">
+            <span class="problem-meta-label">Image</span>
+          <div class="problem-image-container">
+            <img src="{{ url_for('reports.serve_upload', file_id=problem.problem_image_id) }}" alt="Problem image"
+              class="problem-image">
+          </div></div>
+          {% endif %}
+
+          {% if problem.corrected_lat and problem.corrected_lng %}
+          <div class="location-correction mt-4">
+            <div class="alert alert-info">
+              <i class="bi bi-geo-alt" aria-hidden="true"></i>
+              <strong>Suggested Location Correction:</strong>
+              <div class="mt-2">
+                <span>Lat: {{ problem.corrected_lat }}, Lng: {{ problem.corrected_lng }}</span>
+                <div>Address: {{ problem.corrected_address }}</div>
+              </div>
+            </div>
           </div>
-          <h3 class="value-title">Reliability</h3>
-          <p class="value-description">
-            Our platform is built for scale and reliability, ensuring it's always 
-            available when communities need it most.
-          </p>
+          {% endif %}
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- For Citizens Section -->
-  <section id="citizens" class="section section-alternate">
-    <div class="container">
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="bi bi-people" aria-hidden="true"></i>
-          </div>
-          <h3 class="feature-title">For Citizens</h3>
-          <p class="feature-description">
-            Empowering residents to actively participate in maintaining their communities 
-            through easy-to-use reporting tools and real-time tracking.
-          </p>
-          <ul class="feature-list">
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Report issues instantly with photos and location data</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Track progress of your reports in real-time</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Receive automatic notifications on status updates</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>View community-wide infrastructure improvements</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Engage with neighbors on local issues</span>
-            </li>
-          </ul>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="bi bi-building" aria-hidden="true"></i>
-          </div>
-          <h3 class="feature-title">For Municipalities</h3>
-          <p class="feature-description">
-            Providing city officials with powerful tools to efficiently manage infrastructure 
-            requests, allocate resources, and engage with constituents.
-          </p>
-          <ul class="feature-list">
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Centralized dashboard for all infrastructure reports</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Priority-based assignment and workflow management</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Analytics and reporting for better resource allocation</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Integration with existing municipal systems</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Public transparency and accountability tools</span>
-            </li>
-          </ul>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="bi bi-tools" aria-hidden="true"></i>
-          </div>
-          <h3 class="feature-title">For Maintenance Teams</h3>
-          <p class="feature-description">
-            Streamlining fieldwork with mobile-friendly tools, clear instructions, 
-            and documentation features that help teams work more effectively.
-          </p>
-          <ul class="feature-list">
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Mobile-optimized interface for field work</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Detailed issue information with photos and maps</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Progress tracking and documentation tools</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Before-and-after photo requirements for quality control</span>
-            </li>
-            <li>
-              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-              <span>Performance metrics and recognition systems</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- How It Works Section -->
-  <section class="section">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">How CityFix Works</h2>
-        <p class="section-description">
-          Our streamlined process ensures that infrastructure issues are reported, 
-          tracked, and resolved efficiently with full transparency.
-        </p>
-      </div>
-
-      <div class="process-grid">
-        <div class="process-card">
-          <div class="process-number">1</div>
-          <div class="process-icon">
-            <i class="bi bi-camera" aria-hidden="true"></i>
-          </div>
-          <h3 class="process-title">Report Issue</h3>
-          <p class="process-description">
-            Citizens report infrastructure problems using our intuitive interface. 
-            Photos, location data, and detailed descriptions help create comprehensive reports.
-          </p>
-        </div>
-
-        <div class="process-card">
-          <div class="process-number">2</div>
-          <div class="process-icon">
-            <i class="bi bi-clipboard-check" aria-hidden="true"></i>
-          </div>
-          <h3 class="process-title">Review & Assign</h3>
-          <p class="process-description">
-            Municipal officials review reports, verify details, prioritize based on urgency, 
-            and assign them to appropriate maintenance teams.
-          </p>
-        </div>
-
-        <div class="process-card">
-          <div class="process-number">3</div>
-          <div class="process-icon">
-            <i class="bi bi-tools" aria-hidden="true"></i>
-          </div>
-          <h3 class="process-title">Execute Work</h3>
-          <p class="process-description">
-            Maintenance teams receive detailed work orders, complete the repairs, 
-            and document their work with before-and-after photos.
-          </p>
-        </div>
-
-        <div class="process-card">
-          <div class="process-number">4</div>
-          <div class="process-icon">
-            <i class="bi bi-check-circle" aria-hidden="true"></i>
-          </div>
-          <h3 class="process-title">Verify & Close</h3>
-          <p class="process-description">
-            Work is reviewed for quality, citizens are notified of completion, 
-            and the report is closed with full documentation of the resolution.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Open Source Section -->
-  <section class="section section-alternate">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">Open Source & Community Driven</h2>
-        <p class="section-description">
-          CityFix is built by the community, for the community. Our open-source 
-          approach ensures transparency, security, and continuous improvement.
-        </p>
-      </div>
-
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="bi bi-github" aria-hidden="true"></i>
-          </div>
-          <h3 class="feature-title">Open Source</h3>
-          <p class="feature-description">
-            Our entire codebase is available on GitHub, allowing developers worldwide 
-            to contribute, audit, and improve the platform.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="bi bi-puzzle" aria-hidden="true"></i>
-          </div>
-          <h3 class="feature-title">Extensible</h3>
-          <p class="feature-description">
-            Plugin architecture and APIs make it easy to integrate with existing 
-            systems and add custom functionality.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <i class="bi bi-globe" aria-hidden="true"></i>
-          </div>
-          <h3 class="feature-title">Global Community</h3>
-          <p class="feature-description">
-            Join thousands of developers, city officials, and citizens working 
-            together to improve urban infrastructure worldwide.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA Section -->
-  <section class="section cta-section">
-    <div class="container">
-      <div class="cta-content">
-        <h2 class="cta-title">Ready to Transform Your City?</h2>
-        <p class="cta-description">
-          Join the growing community of cities using CityFix to improve 
-          infrastructure management and citizen engagement.
-        </p>
-
-        <div class="cta-buttons">
-          <a href="{{ url_for('auth.root') }}" class="btn-cta btn-cta-primary">
-            <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
-            Get Started Today
+        <div class="problem-card-footer">
+          <a href="{{ url_for('reports.report_detail', issue_id=problem.original_issue_id) }}" class="btn-action">
+            <i class="bi bi-eye" aria-hidden="true"></i>
+            View Original Issue
           </a>
-          <a href="{{ url_for('reports.public_reports') }}" class="btn-cta btn-cta-outline">
-            <i class="bi bi-binoculars" aria-hidden="true"></i>
-            Explore Platform
-          </a>
+          {% if problem.status == 'pending' and problem.requires_reporter_action %}
+          <form action="{{ url_for('reports.notify_reporter_problem', problem_id=problem._id) }}" method="POST"
+            style="display: inline;">
+            <button type="submit" class="btn-action btn-contact">
+              <i class="bi bi-envelope" aria-hidden="true"></i>
+              Notify Reporter
+            </button>
+          </form>
+          {% endif %}
+          {% if problem.status != 'resolved' %}
+          <form action="{{ url_for('reports.resolve_problem', problem_id=problem._id) }}" method="POST"
+            style="display: inline;">
+            <button type="submit" class="btn-action btn-resolve">
+              <i class="bi bi-check-circle" aria-hidden="true"></i>
+              Mark Resolved
+            </button>
+          </form>
+          {% endif %}
         </div>
       </div>
+      {% endfor %}
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+        <h3>No Problem Reports</h3>
+        <p>There are no maintenance problem reports to display at this time.</p>
+      </div>
+      {% endif %}
     </div>
-  </section>
+  </main>
 
   <!-- Footer -->
-  <footer class="bg-gray-900 text-white py-12" role="contentinfo">
+  <footer class="bg-gray-900 text-white py-8 mt-12">
     <div class="container">
-      <div class="text-center">
-        <div class="flex items-center justify-center gap-3 mb-6">
-          <img src="{{ url_for('static', filename='images/cityfixlogo.png') }}" alt="CityFix Logo" width="32" height="32" class="rounded-lg">
-          <span class="font-bold text-xl">CityFix</span>
-        </div>
-        <p class="text-gray-400 mb-4">
-          Making cities better, one report at a time.
-        </p>
-        <p class="text-gray-500 text-sm">
-          &copy; {{ year }} CityFix. All rights reserved. Built with ❤️ for better cities.
-        </p>
+      <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+        <p>&copy; 2025 CityFix. All rights reserved. Built for better cities.</p>
       </div>
     </div>
   </footer>
 
   <script>
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
+    function filterProblems() {
+      const typeFilter = document.getElementById('problemTypeFilter').value;
+      const statusFilter = document.getElementById('statusFilter').value;
+      const searchQuery = document.getElementById('problemSearch').value.toLowerCase();
+
+      const problemCards = document.querySelectorAll('.problem-card');
+      let visibleCount = 0;
+
+      problemCards.forEach(card => {
+        const problemType = card.getAttribute('data-problem-type');
+        const status = card.getAttribute('data-status');
+        const cardText = card.textContent.toLowerCase();
+
+        const matchesType = typeFilter === 'all' || problemType === typeFilter;
+        const matchesStatus = statusFilter === 'all' || status === statusFilter;
+        const matchesSearch = searchQuery === '' || cardText.includes(searchQuery);
+
+        if (matchesType && matchesStatus && matchesSearch) {
+          card.style.display = 'block';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
         }
       });
-    });
 
-    // Animation on scroll
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
+      // Show empty state if no results
+      const container = document.getElementById('problemsContainer');
+      if (visibleCount === 0 && container) {
+        // Check if empty state already exists
+        if (!container.querySelector('.no-results')) {
+          container.innerHTML += `
+            <div class="no-results">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <h3>No Matching Results</h3>
+              <p>Try adjusting your search or filter criteria.</p>
+            </div>
+          `;
         }
-      });
-    }, observerOptions);
-
-    // Observe feature cards and process cards
-    document.querySelectorAll('.feature-card, .process-card, .value-item').forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(20px)';
-      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-      observer.observe(el);
-    });
+      } else {
+        // Remove any existing no-results message
+        const noResults = container.querySelector('.no-results');
+        if (noResults) {
+          noResults.remove();
+        }
+      }
+    }
   </script>
 </body>
 

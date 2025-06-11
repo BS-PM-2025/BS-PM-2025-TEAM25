@@ -18,6 +18,42 @@ done_reports_bp = Blueprint(
     template_folder="../templates"
 )
 
+# ---------- Context processor: problem reports count for done_reports blueprint ----------
+@done_reports_bp.context_processor
+def inject_problem_reports_count():
+    """Add problem reports count to template context for the current user"""
+    if "user" not in session:
+        return dict(problem_reports_count=0)
+    
+    mongo = current_app.mongo
+    user_role = mongo.db.users.find_one({"email": session["user"]})
+    
+    if not user_role:
+        return dict(problem_reports_count=0)
+    
+    try:
+        if user_role.get("role") == "admin":
+            # For admins: count of all pending problem reports
+            count = mongo.db.issue_problems.count_documents({"status": "pending"})
+        else:
+            # For reporters: count of problems with their reports that need action
+            user_reports = list(mongo.db.issues.find({"reporter_email": session["user"]}))
+            user_report_ids = [str(report["_id"]) for report in user_reports]
+            
+            if user_report_ids:
+                count = mongo.db.issue_problems.count_documents({
+                    "original_issue_id": {"$in": user_report_ids},
+                    "requires_reporter_action": True,
+                    "status": {"$in": ["pending", "notified"]}
+                })
+            else:
+                count = 0
+    except Exception as e:
+        current_app.logger.error(f"Error calculating problem reports count: {e}")
+        count = 0
+    
+    return dict(problem_reports_count=count)
+
 # ---------- Serve before/after images from GridFS ----------
 @done_reports_bp.route("/done_uploads/<file_id>")
 def serve_done_upload(file_id):
