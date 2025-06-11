@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Completed Reports - CityFix</title>
+  <meta name="description" content="View successfully completed maintenance work across the city in CityFix.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/done_reports_public.css') }}">
+</head>
+
+<body>
+  <!-- Back Link -->
+  <a href="{{ url_for('main.home') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back to Home</span>
+  </a>
+
+  <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
+
+        <ul class="navbar-nav">
+          {% if user %}
+          <li class="nav-item">
+            <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Report Issue</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
+              <i class="bi bi-journal-text" aria-hidden="true"></i>
+              <span>My Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.profile') }}" class="nav-link">
+              <i class="bi bi-person-circle" aria-hidden="true"></i>
+              <span>{{ user.name }}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a href="{{ url_for('reports.public_reports') }}" class="nav-link">
+              <i class="bi bi-map" aria-hidden="true"></i>
+              <span>View Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('main.about') }}" class="nav-link">
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <span>About</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="nav-link">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              <span>Sign Up</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+              <span>Login</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" role="navigation" aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      {% if user %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.my_reports') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-journal-text"></i>
+          <span>My Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-plus"></i>
+          <span>Report</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.logout') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.home') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-house"></i>
+          <span>Home</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('reports.public_reports') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-map"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link mobile-nav-primary">
+          <i class="mobile-nav-icon bi bi-person-plus"></i>
+          <span>Join</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('main.about') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-info-circle"></i>
+          <span>About</span>
+        </a>
+      </li>
+      <li class="mobile-nav-item">
+        <a href="{{ url_for('auth.root') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-box-arrow-in-right"></i>
+          <span>Login</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="reports-hero">
+    <div class="container">
+      <div class="reports-content">
+        <h1 class="reports-title">Before & After Success Stories</h1>
+        <p class="reports-subtitle">
+          See the impact of our community's efforts. Browse completed maintenance work and infrastructure improvements.
+        </p>
+
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterReports('all')">
+            <i class="bi bi-list-ul" aria-hidden="true"></i>
+            <span>All Completed Work</span>
+          </button>
+          <button class="filter-tab" onclick="filterByDate('recent')">
+            <i class="bi bi-calendar-recent" aria-hidden="true"></i>
+            <span>Recent</span>
+          </button>
+          <button class="filter-tab" onclick="filterByRating('high')">
+            <i class="bi bi-star-fill" aria-hidden="true"></i>
+            <span>Highest Rated</span>
+          </button>
+          <button class="filter-tab" onclick="filterByCategory('road')">
+            <i class="bi bi-signpost-split" aria-hidden="true"></i>
+            <span>Road Repairs</span>
+          </button>
+          <button class="filter-tab" onclick="filterByCategory('lighting')">
+            <i class="bi bi-lightbulb" aria-hidden="true"></i>
+            <span>Lighting</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reports Container -->
+  <main class="container">
+    <div class="reports-container">
+      <div class="reports-search-bar">
+        <div class="search-box">
+          <i class="bi bi-search search-icon" aria-hidden="true"></i>
+          <input type="text" id="reportSearch" class="search-input" placeholder="Search completed work..." onkeyup="searchReports()">
+        </div>
+      </div>
+
+      <div class="reports-grid" id="reports-grid">
+        <!-- Reports will be dynamically loaded here -->
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading completed reports...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Image Modal -->
+  <div id="image-modal" class="modal-backdrop" onclick="closeImageModal()">
+    <div class="modal image-modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Before & After</h3>
+        <button class="btn-close" onclick="closeImageModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="comparison-container">
+          <div class="comparison-image before">
+            <h4>Before</h4>
+            <img id="modal-before-image" src="" alt="Before image">
+          </div>
+          <div class="comparison-image after">
+            <h4>After</h4>
+            <img id="modal-after-image" src="" alt="After image">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Description Modal -->
+  <div id="description-modal" class="modal-backdrop" onclick="closeDescriptionModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Repair Details</h3>
+        <button class="btn-close" onclick="closeDescriptionModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-4">
+          <strong>Technician:</strong> <span id="modal-technician"></span>
+        </div>
+        <div class="mb-4">
+          <strong>Completed:</strong> <span id="modal-date"></span>
+        </div>
+        <div>
+          <strong>Description:</strong>
+          <p id="modal-description" class="mt-2 p-4 bg-gray-50 rounded-xl"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rating Modal -->
+  <div id="rating-modal" class="modal-backdrop" onclick="closeRatingModal()">
+    <div class="modal rating-modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Rate This Repair</h3>
+        <button class="btn-close" onclick="closeRatingModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="text-center mb-4">How would you rate the quality of this repair work?</p>
+        
+        <div class="rating-stars-large">
+          <i class="bi bi-star rating-star" data-rating="1"></i>
+          <i class="bi bi-star rating-star" data-rating="2"></i>
+          <i class="bi bi-star rating-star" data-rating="3"></i>
+          <i class="bi bi-star rating-star" data-rating="4"></i>
+          <i class="bi bi-star rating-star" data-rating="5"></i>
+        </div>
+        
+        <div class="rating-label text-center mt-2 mb-4">Select a rating</div>
+        
+        <div class="rating-submit-container">
+          <button id="submitRatingBtn" class="btn btn-primary" disabled>Submit Rating</button>
+        </div>
+        
+        <div class="rating-stats mt-6">
+          <h4 class="text-center mb-3">Community Ratings</h4>
+          <div class="rating-distribution">
+            <!-- Rating bars will be added here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div id="empty-state" class="empty-state" style="display: none;">
+    <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+    <h3>No Completed Reports</h3>
+    <p>There are no completed work reports to display at this time. Check back later as maintenance teams complete more work.</p>
+  </div>
+
+  <!-- Login Prompt Modal -->
+  <div id="login-prompt-modal" class="modal-backdrop" onclick="closeLoginPromptModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Login Required</h3>
+        <button class="btn-close" onclick="closeLoginPromptModal()">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="login-prompt-icon mb-4">
+          <i class="bi bi-person-lock"></i>
+        </div>
+        <h4 class="mb-3">Please Log In to Rate Repairs</h4>
+        <p class="mb-6">You need to be logged in to rate completed repairs. Your feedback helps improve our community services.</p>
+        <div class="flex justify-center gap-4">
+          <a href="{{ url_for('auth.root') }}" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Log In
+          </a>
+          <a href="{{ url_for('auth.root') }}" class="btn btn-outline-primary">
+            <i class="bi bi-person-plus"></i>
+            Sign Up
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-12">
+    <div class="container">
+      <div class="grid grid-cols-3 gap-8 mb-8">
+        <!-- Brand Column -->
+        <div class="col-span-1">
+          <h4 class="font-semibold mb-4">CityFix</h4>
+          <p class="text-gray-400 mb-6">
+            Making cities better, one report at a time. Join thousands of citizens
+            working together to improve infrastructure and community safety.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="font-semibold mb-4">Quick Links</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="{{ url_for('reports.report_issue') }}" class="hover:text-white transition-colors">Report Issue</a></li>
+            <li><a href="{{ url_for('reports.public_reports') }}" class="hover:text-white transition-colors">View Reports</a></li>
+            <li><a href="{{ url_for('main.home') }}" class="hover:text-white transition-colors">Home</a></li>
+          </ul>
+        </div>
+
+        <!-- Support -->
+        <div>
+          <h4 class="font-semibold mb-4">About</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="{{ url_for('main.about') }}" class="hover:text-white transition-colors">About Us</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Copyright -->
+      <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+        <p>&copy; 2025 CityFix. All rights reserved. Built for better cities.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Global variables
+    let allReports = [];
+    let filteredReports = [];
+    let currentReportId = null;
+    let isUserLoggedIn ={% if user %}true{% else %}false{% endif %};
+
+    // Document ready
+    document.addEventListener('DOMContentLoaded', function() {
+      loadDoneReports();
+      setupRatingEvents();
+    });
+
+    // Load all done reports from API
+    function loadDoneReports() {
+      fetch('/api/done_reports')
+        .then(response => response.json())
+        .then(data => {
+          allReports = data.done_reports || [];
+          filteredReports = [...allReports];
+          
+          if (allReports.length === 0) {
+            document.getElementById('reports-grid').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'block';
+          } else {
+            renderReports(allReports);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading done reports:', error);
+          document.getElementById('reports-grid').innerHTML = `
+            <div class="error-state">
+              <i class="bi bi-exclamation-triangle"></i>
+              <h3>Error Loading Reports</h3>
+              <p>We encountered a problem loading the completed reports. Please try again later.</p>
+            </div>
+          `;
+        });
+    }
+
+    // Render reports to the grid
+    function renderReports(reports) {
+      const grid = document.getElementById('reports-grid');
+      
+      if (reports.length === 0) {
+        grid.innerHTML = `
+          <div class="no-results">
+            <i class="bi bi-search"></i>
+            <h3>No Matching Reports</h3>
+            <p>Try adjusting your search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      grid.innerHTML = reports.map(report => {
+        // Process timestamp
+        const date = new Date(report.timestamp);
+        const formattedDate = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+        const formattedTime = date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        // Create technician initial for avatar
+        const techInitial = report.technician ? report.technician[0].toUpperCase() : 'T';
+
+        // Handle images with error fallbacks
+        const beforeImageHTML = report.before_file_id ?
+          `<div class="image-container">
+            <img src="/done_uploads/${report.before_file_id}" alt="Before image" loading="lazy"
+                 onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\\'no-image\\'><i class=\\'bi bi-image\\'></i><span>No Before Image</span></div>';">
+            <div class="image-label before">Before</div>
+          </div>` :
+          `<div class="image-container">
+            <div class="no-image">
+              <i class="bi bi-image"></i>
+              <span>No Before Image</span>
+            </div>
+          </div>`;
+
+        const afterImageHTML = report.after_file_id ?
+          `<div class="image-container">
+            <img src="/done_uploads/${report.after_file_id}" alt="After image" loading="lazy"
+                 onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\\'no-image\\'><i class=\\'bi bi-image\\'></i><span>No After Image</span></div>';">
+            <div class="image-label after">After</div>
+          </div>` :
+          `<div class="image-container">
+            <div class="no-image">
+              <i class="bi bi-image"></i>
+              <span>No After Image</span>
+            </div>
+          </div>`;
+
+        // Generate rating stars
+        const ratingHTML = generateRatingStars(report.avg_rating, report.rating_count);
+
+        return `
+          <div class="report-card" data-id="${report._id}" data-date="${report.timestamp}" data-category="${report.category || ''}" data-rating="${report.avg_rating || 0}">
+            <div class="report-header">
+              <div class="report-meta">
+                <div class="technician-info">
+                  <div class="technician-avatar">
+                    ${techInitial}
+                  </div>
+                  <div class="technician-details">
+                    <div class="technician-name">${escapeHtml(report.technician || 'Maintenance Team')}</div>
+                    <div class="report-date">
+                      <i class="bi bi-calendar3" aria-hidden="true"></i>
+                      ${formattedDate} at ${formattedTime}
+                    </div>
+                  </div>
+                </div>
+                <span class="status-badge status-approved">
+                  <i class="bi bi-check-circle" aria-hidden="true"></i>
+                  Completed
+                </span>
+              </div>
+              <div class="report-description" onclick="toggleDescription(this)">
+                ${escapeHtml(report.completion_description || 'No description provided.')}
+              </div>
+              <div class="report-rating">
+                ${ratingHTML}
+              </div>
+            </div>
+            <div class="report-images">
+              <div class="images-grid">
+                ${beforeImageHTML}
+                ${afterImageHTML}
+              </div>
+            </div>
+            <div class="report-actions">
+              <button class="action-btn btn-view-comparison" onclick="showComparisonModal('${report.before_file_id || ''}', '${report.after_file_id || ''}')">
+                <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+                Compare Before/After
+              </button>
+              <button class="action-btn btn-details" onclick="showDescriptionModal('${escapeHtml(report.completion_description || 'No description provided.')}', '${escapeHtml(report.technician || 'Maintenance Team')}', '${formattedDate} at ${formattedTime}')">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+                View Details
+              </button>
+              <button class="action-btn btn-rate" onclick="showRatingModal('${report._id}', ${report.avg_rating || 0}, ${report.rating_count || 0}, ${report.user_rating || 'null'})">
+                <i class="bi bi-star" aria-hidden="true"></i>
+                Rate This Repair
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Generate rating stars HTML
+    function generateRatingStars(rating, count) {
+      if (!rating) rating = 0;
+      if (!count) count = 0;
+      
+      const fullStars = Math.floor(rating);
+      const hasHalfStar = rating % 1 >= 0.5;
+      const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+      
+      let starsHTML = '';
+      
+      // Full stars
+      for (let i = 0; i < fullStars; i++) {
+        starsHTML += '<i class="bi bi-star-fill"></i>';
+      }
+      
+      // Half star
+      if (hasHalfStar) {
+        starsHTML += '<i class="bi bi-star-half"></i>';
+      }
+      
+      // Empty stars
+      for (let i = 0; i < emptyStars; i++) {
+        starsHTML += '<i class="bi bi-star"></i>';
+      }
+      
+      return `
+        <div class="rating-stars">
+          ${starsHTML}
+          <span class="rating-score">${rating.toFixed(1)}</span>
+          <span class="rating-count">(${count})</span>
+        </div>
+      `;
+    }
+
+    // Filter reports by various criteria
+    function filterReports(filter) {
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+      
+      if (filter === 'all') {
+        filteredReports = [...allReports];
+      } else {
+        // Custom filtering will be implemented in other functions
+      }
+      
+      renderReports(filteredReports);
+    }
+
+    // Filter by date
+    function filterByDate(timeframe) {
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+      
+      const now = new Date();
+      
+      if (timeframe === 'recent') {
+        // Filter reports from the last 30 days
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        filteredReports = allReports.filter(report => {
+          return new Date(report.timestamp) >= thirtyDaysAgo;
+        });
+      } else {
+        filteredReports = [...allReports];
+      }
+      
+      renderReports(filteredReports);
+    }
+
+    // Filter by rating
+    function filterByRating(level) {
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+      
+      // Make a copy of all reports
+      filteredReports = [...allReports];
+      
+      // Sort by rating (highest first)
+      filteredReports.sort((a, b) => {
+        const ratingA = a.avg_rating || 0;
+        const ratingB = b.avg_rating || 0;
+        
+        // First sort by rating
+        if (ratingB !== ratingA) {
+          return ratingB - ratingA;
+        }
+        
+        // If ratings are equal, sort by number of ratings
+        const countA = a.rating_count || 0;
+        const countB = b.rating_count || 0;
+        return countB - countA;
+      });
+      
+      // If filtering for top rated, keep only 4+ star ratings with at least 3 reviews
+      if (level === 'top') {
+        filteredReports = filteredReports.filter(report => {
+          const rating = report.avg_rating || 0;
+          const count = report.rating_count || 0;
+          return rating >= 4 && count >= 3;
+        });
+      }
+      
+      renderReports(filteredReports);
+    }
+
+    // Filter by category
+    function filterByCategory(category) {
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+      
+      // Filter by category attribute (to be added in the backend)
+      filteredReports = allReports.filter(report => {
+        return report.category === category || 
+               (report.original_issue && report.original_issue.category === category);
+      });
+      
+      renderReports(filteredReports);
+    }
+
+    // Search functionality
+    function searchReports() {
+      const searchTerm = document.getElementById('reportSearch').value.toLowerCase();
+      
+      if (searchTerm.trim() === '') {
+        // If search is empty, reset to current filter
+        renderReports(filteredReports);
+        return;
+      }
+      
+      // Search within the filtered reports
+      const searchResults = filteredReports.filter(report => {
+        const description = (report.completion_description || '').toLowerCase();
+        const technician = (report.technician || '').toLowerCase();
+        
+        return description.includes(searchTerm) || technician.includes(searchTerm);
+      });
+      
+      renderReports(searchResults);
+    }
+
+    // Toggle description expansion
+    function toggleDescription(element) {
+      element.classList.toggle('expanded');
+    }
+
+    // Show image comparison modal
+    function showComparisonModal(beforeId, afterId) {
+      const beforeImg = document.getElementById('modal-before-image');
+      const afterImg = document.getElementById('modal-after-image');
+      
+      // Set image sources with error handling
+      if (beforeId) {
+        beforeImg.src = `/done_uploads/${beforeId}`;
+        beforeImg.style.display = 'block';
+      } else {
+        beforeImg.style.display = 'none';
+        beforeImg.parentElement.innerHTML = `
+          <h4>Before</h4>
+          <div class="no-image-large">
+            <i class="bi bi-image"></i>
+            <span>No Before Image</span>
+          </div>
+        `;
+      }
+      
+      if (afterId) {
+        afterImg.src = `/done_uploads/${afterId}`;
+        afterImg.style.display = 'block';
+      } else {
+        afterImg.style.display = 'none';
+        afterImg.parentElement.innerHTML = `
+          <h4>After</h4>
+          <div class="no-image-large">
+            <i class="bi bi-image"></i>
+            <span>No After Image</span>
+          </div>
+        `;
+      }
+      
+      document.getElementById('image-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close image modal
+    function closeImageModal() {
+      document.getElementById('image-modal').classList.remove('show');
+      document.body.style.overflow = 'auto';
+    }
+
+    // Show description modal
+    function showDescriptionModal(description, technician, date) {
+      document.getElementById('modal-description').textContent = description;
+      document.getElementById('modal-technician').textContent = technician;
+      document.getElementById('modal-date').textContent = date;
+      document.getElementById('description-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close description modal
+    function closeDescriptionModal() {
+      document.getElementById('description-modal').classList.remove('show');
+      document.body.style.overflow = 'auto';
+    }
+
+    // Show rating modal
+    function showRatingModal(reportId, avgRating, ratingCount, userRating) {
+      // Check if user is logged in
+      if (!isUserLoggedIn) {
+        showLoginPromptModal();
+        return;
+      }
+      
+      currentReportId = reportId;
+      
+      // Reset stars
+      document.querySelectorAll('.rating-stars-large .rating-star').forEach(star => {
+        star.classList.remove('bi-star-fill', 'bi-star-half', 'active');
+        star.classList.add('bi-star');
+      });
+      
+      // Set user's previous rating if it exists
+      if (userRating !== null) {
+        for (let i = 1; i <= userRating; i++) {
+          const star = document.querySelector(`.rating-stars-large .rating-star[data-rating="${i}"]`);
+          star.classList.remove('bi-star');
+          star.classList.add('bi-star-fill', 'active');
+        }
+        document.querySelector('.rating-label').textContent = `Your rating: ${userRating} star${userRating !== 1 ? 's' : ''}`;
+        document.getElementById('submitRatingBtn').disabled = false;
+      } else {
+        document.querySelector('.rating-label').textContent = 'Select a rating';
+        document.getElementById('submitRatingBtn').disabled = true;
+      }
+      
+      // Get detailed rating information
+      fetch(`/api/report_ratings/${reportId}`)
+        .then(response => response.json())
+        .then(data => {
+          // Create rating distribution bars
+          const distribution = data.distribution;
+          const totalRatings = data.rating_count;
+          
+          let distributionHTML = '';
+          for (let i = 5; i >= 1; i--) {
+            const count = distribution[i] || 0;
+            const percentage = totalRatings > 0 ? (count / totalRatings) * 100 : 0;
+            
+            distributionHTML += `
+              <div class="rating-bar-container">
+                <div class="rating-bar-label">${i} <i class="bi bi-star-fill"></i></div>
+                <div class="rating-bar-wrapper">
+                  <div class="rating-bar" style="width: ${percentage}%"></div>
+                </div>
+                <div class="rating-bar-count">${count}</div>
+              </div>
+            `;
+          }
+          
+          document.querySelector('.rating-distribution').innerHTML = distributionHTML;
+        })
+        .catch(error => {
+          console.error('Error loading rating details:', error);
+          document.querySelector('.rating-distribution').innerHTML = '<p class="text-center text-muted">Error loading ratings</p>';
+        });
+      
+      document.getElementById('rating-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close rating modal
+    function closeRatingModal() {
+      document.getElementById('rating-modal').classList.remove('show');
+      document.body.style.overflow = 'auto';
+    }
+
+    // Show login prompt modal
+    function showLoginPromptModal() {
+      document.getElementById('login-prompt-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close login prompt modal
+    function closeLoginPromptModal() {
+      document.getElementById('login-prompt-modal').classList.remove('show');
+      document.body.style.overflow = 'auto';
+    }
+
+    // Setup rating events
+    function setupRatingEvents() {
+      // Set up star hover and click events
+      document.querySelectorAll('.rating-stars-large .rating-star').forEach(star => {
+        // Hover effect
+        star.addEventListener('mouseenter', function() {
+          const rating = parseInt(this.getAttribute('data-rating'));
+          
+          // Reset all stars
+          document.querySelectorAll('.rating-stars-large .rating-star').forEach(s => {
+            s.classList.remove('bi-star-fill', 'hover');
+            s.classList.add('bi-star');
+          });
+          
+          // Fill stars up to hovered one
+          for (let i = 1; i <= rating; i++) {
+            const s = document.querySelector(`.rating-stars-large .rating-star[data-rating="${i}"]`);
+            s.classList.remove('bi-star');
+            s.classList.add('bi-star-fill', 'hover');
+          }
+          
+          // Update label
+          document.querySelector('.rating-label').textContent = `${rating} star${rating !== 1 ? 's' : ''}`;
+        });
+        
+        // Mouseleave effect
+        star.addEventListener('mouseleave', function() {
+          // Reset hover effect
+          document.querySelectorAll('.rating-stars-large .rating-star').forEach(s => {
+            s.classList.remove('hover');
+            if (!s.classList.contains('active')) {
+              s.classList.remove('bi-star-fill');
+              s.classList.add('bi-star');
+            }
+          });
+          
+          // Restore label
+          const activeStars = document.querySelectorAll('.rating-stars-large .rating-star.active').length;
+          if (activeStars > 0) {
+            document.querySelector('.rating-label').textContent = `Your rating: ${activeStars} star${activeStars !== 1 ? 's' : ''}`;
+          } else {
+            document.querySelector('.rating-label').textContent = 'Select a rating';
+          }
+        });
+        
+        // Click event
+        star.addEventListener('click', function() {
+          const rating = parseInt(this.getAttribute('data-rating'));
+          
+          // Reset all stars
+          document.querySelectorAll('.rating-stars-large .rating-star').forEach(s => {
+            s.classList.remove('bi-star-fill', 'active');
+            s.classList.add('bi-star');
+          });
+          
+          // Fill stars up to clicked one
+          for (let i = 1; i <= rating; i++) {
+            const s = document.querySelector(`.rating-stars-large .rating-star[data-rating="${i}"]`);
+            s.classList.remove('bi-star');
+            s.classList.add('bi-star-fill', 'active');
+          }
+          
+          // Update label and enable submit button
+          document.querySelector('.rating-label').textContent = `Your rating: ${rating} star${rating !== 1 ? 's' : ''}`;
+          document.getElementById('submitRatingBtn').disabled = false;
+        });
+      });
+      
+      // Set up submit button
+      document.getElementById('submitRatingBtn').addEventListener('click', function() {
+        const activeStars = document.querySelectorAll('.rating-stars-large .rating-star.active').length;
+        
+        if (activeStars > 0 && currentReportId) {
+          submitRating(currentReportId, activeStars);
+        }
+      });
+    }
+
+    // Submit rating to server
+    function submitRating(reportId, rating) {
+      // Disable submit button to prevent multiple submissions
+      document.getElementById('submitRatingBtn').disabled = true;
+      
+      fetch('/api/rate_report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          report_id: reportId,
+          rating: rating
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show success message
+          document.querySelector('.rating-label').textContent = `Rating submitted successfully!`;
+          
+          // Update the report in the list
+          updateReportRating(reportId, data.avg_rating, data.rating_count, rating);
+          
+          // Close modal after a short delay
+          setTimeout(() => {
+            closeRatingModal();
+          }, 1500);
+        } else {
+          document.querySelector('.rating-label').textContent = `Error: ${data.message}`;
+          document.getElementById('submitRatingBtn').disabled = false;
+        }
+      })
+      .catch(error => {
+        console.error('Error submitting rating:', error);
+        document.querySelector('.rating-label').textContent = 'Error submitting rating. Please try again.';
+        document.getElementById('submitRatingBtn').disabled = false;
+      });
+    }
+
+    // Update report rating in the list
+    function updateReportRating(reportId, avgRating, ratingCount, userRating) {
+      // Update in allReports array
+      const reportIndex = allReports.findIndex(r => r._id === reportId);
+      if (reportIndex !== -1) {
+        allReports[reportIndex].avg_rating = avgRating;
+        allReports[reportIndex].rating_count = ratingCount;
+        allReports[reportIndex].user_rating = userRating;
+      }
+      
+      // Update in filteredReports array
+      const filteredIndex = filteredReports.findIndex(r => r._id === reportId);
+      if (filteredIndex !== -1) {
+        filteredReports[filteredIndex].avg_rating = avgRating;
+        filteredReports[filteredIndex].rating_count = ratingCount;
+        filteredReports[filteredIndex].user_rating = userRating;
+      }
+      
+      // Update displayed reports
+      renderReports(filteredReports);
+    }
+
+    // Utility function to escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Handle escape key for modals
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeImageModal();
+        closeDescriptionModal();
+        closeRatingModal();
+        closeLoginPromptModal();
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -49,13 +49,14 @@
 
 <body>
 
-  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+  <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
         <!-- Brand -->
         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
 
-      
+
 
         <!-- Navigation Links -->
         <ul class="navbar-nav" id="navMenu" role="menubar">
@@ -129,7 +130,7 @@
     <ul class="mobile-nav-list">
       {% if user %}
       <li class="mobile-nav-item">
-          <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
           <i class="mobile-nav-icon bi bi-speedometer2"></i>
           <span>Dashboard</span>
         </a>
@@ -147,13 +148,13 @@
         </a>
       </li>
       <li class="mobile-nav-item">
-         <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
+        <a href="{{ url_for('main.profile') }}" class="mobile-nav-link">
           <i class="mobile-nav-icon bi bi-person"></i>
           <span>Profile</span>
         </a>
       </li>
       <li class="mobile-nav-item" role="none">
-         <a href="{{ url_for('auth.logout') }}" class="mobile-nav-link" role="menuitem">
+        <a href="{{ url_for('auth.logout') }}" class="mobile-nav-link" role="menuitem">
           <i class="mobile-nav-icon bi bi-box-arrow-right" aria-hidden="true"></i>
           <span>Logout</span>
         </a>
@@ -374,6 +375,30 @@
                 Browse Reports
               </a>
               {% endif %}
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold mb-0">Done Reports</h3>
+                <a href="/done_reports_public"
+                  class="text-primary-600 hover:text-primary-700 text-sm font-semibold flex items-center gap-1">
+                  <i class="bi bi-arrow-right-circle"></i>
+                  <span>View All</span>
+                </a>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div id="doneReportsContainer" class="p-4">
+                <!-- Content will be dynamically loaded by JavaScript -->
+                <div class="text-center py-6">
+                  <div class="loading-container">
+                    <div class="loading-spinner" aria-hidden="true"></div>
+                    <div>Loading completed reports...</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -697,6 +722,7 @@
       initializeMap();
       loadStatistics();
       loadRecentReports();
+      loadDoneReports(); // Added new function call
       initializeImprovedSearch();
       initializeAnimations();
     });
@@ -751,7 +777,7 @@
             if (issue.location && issue.location.lat && issue.location.lng) {
               const marker = L.marker([issue.location.lat, issue.location.lng])
                 .addTo(map);
-                
+
               window.mapMarkers.push(marker);
 
               const statusClass = getStatusClass(issue.status);
@@ -833,13 +859,18 @@
         });
     }
 
-    // Load recent reports with proper image sizing
+    // Load recent reports with proper image sizing and exclude done reports
     function loadRecentReports() {
       fetch(API.ISSUES)
         .then(response => response.json())
         .then(data => {
           const issues = data.issues || [];
-          const recentIssues = issues
+          // Filter out done/completed reports
+          const activeIssues = issues.filter(issue =>
+            issue.status !== 'done' && issue.status !== 'completed'
+          );
+
+          const recentIssues = activeIssues
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
             .slice(0, 5);
 
@@ -848,15 +879,15 @@
 
           if (recentIssues.length === 0) {
             tbody.innerHTML = `
-              <tr>
-                <td colspan="3" class="text-center py-8 text-muted">
-                  <div class="loading-container">
-                    <i class="bi bi-inbox" style="font-size: 24px; margin-bottom: 8px; opacity: 0.3;"></i>
-                    <div>No reports found</div>
-                  </div>
-                </td>
-              </tr>
-            `;
+          <tr>
+            <td colspan="3" class="text-center py-8 text-muted">
+              <div class="loading-container">
+                <i class="bi bi-inbox" style="font-size: 24px; margin-bottom: 8px; opacity: 0.3;"></i>
+                <div>No active reports found</div>
+              </div>
+            </td>
+          </tr>
+        `;
             return;
           }
 
@@ -868,42 +899,42 @@
             // Properly sized thumbnail with error handling
             const imageHtml = issue.image_file_id ?
               `<img src="/uploads/${issue.image_file_id}" 
-                   alt="Issue thumbnail"
-                   class="report-thumbnail"
-                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-               <div class="report-placeholder" style="display: none;">
-                 <i class="bi bi-image"></i>
-               </div>` :
+               alt="Issue thumbnail"
+               class="report-thumbnail"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="report-placeholder" style="display: none;">
+             <i class="bi bi-image"></i>
+           </div>` :
               `<div class="report-placeholder">
-                 <i class="bi bi-image"></i>
-               </div>`;
+             <i class="bi bi-image"></i>
+           </div>`;
 
             return `
-              <tr>
-                <td class="reports-table-cell">
-                  <div class="report-info-container">
-                    ${imageHtml}
-                    <div class="report-text-content">
-                      <div class="report-title-text">
-                        ${escapeHtml(issue.description.substring(0, 45))}${issue.description.length > 45 ? '...' : ''}
-                      </div>
-                      <div class="report-location-text">
-                        ${escapeHtml(issue.city_street || 'Location not specified')}
-                      </div>
-                    </div>
+          <tr>
+            <td class="reports-table-cell">
+              <div class="report-info-container">
+                ${imageHtml}
+                <div class="report-text-content">
+                  <div class="report-title-text">
+                    ${escapeHtml(issue.description.substring(0, 45))}${issue.description.length > 45 ? '...' : ''}
                   </div>
-                </td>
-                <td class="reports-table-cell">
-                  <span class="status-badge badge-${statusClass}">
-                    <i class="bi bi-${statusIcon}" aria-hidden="true"></i>
-                    ${issue.status || 'pending'}
-                  </span>
-                </td>
-                <td class="reports-table-cell" style="font-size: 12px; color: #6b7280;">
-                  ${formatRelativeTime(date)}
-                </td>
-              </tr>
-            `;
+                  <div class="report-location-text">
+                    ${escapeHtml(issue.city_street || 'Location not specified')}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="reports-table-cell">
+              <span class="status-badge badge-${statusClass}">
+                <i class="bi bi-${statusIcon}" aria-hidden="true"></i>
+                ${issue.status || 'pending'}
+              </span>
+            </td>
+            <td class="reports-table-cell" style="font-size: 12px; color: #6b7280;">
+              ${formatRelativeTime(date)}
+            </td>
+          </tr>
+        `;
           }).join('');
         })
         .catch(error => {
@@ -911,15 +942,160 @@
           const tbody = document.getElementById('recentReports');
           if (tbody) {
             tbody.innerHTML = `
-              <tr>
-                <td colspan="3" class="text-center py-8" style="color: #dc2626;">
-                  <div class="loading-container">
-                    <i class="bi bi-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px;"></i>
-                    <div>Error loading reports</div>
+          <tr>
+            <td colspan="3" class="text-center py-8" style="color: #dc2626;">
+              <div class="loading-container">
+                <i class="bi bi-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px;"></i>
+                <div>Error loading reports</div>
+              </div>
+            </td>
+          </tr>
+        `;
+          }
+        });
+    }
+
+    // Load and display done reports in card format (similar to done_reports.html)
+    function loadDoneReports() {
+      fetch(API.DONE_REPORTS)
+        .then(response => response.json())
+        .then(data => {
+          const doneReports = data.done_reports || [];
+          const doneReportsContainer = document.getElementById('doneReportsContainer');
+
+          if (!doneReportsContainer) return;
+
+          // If no done reports, show empty state
+          if (doneReports.length === 0) {
+            doneReportsContainer.innerHTML = `
+          <div class="empty-state py-8">
+            <i class="bi bi-clipboard-check" style="font-size: 24px; margin-bottom: 8px; opacity: 0.3;"></i>
+            <p>No completed reports yet</p>
+          </div>
+        `;
+            return;
+          }
+
+          // Sort by most recent first and limit to 3 for the home page
+          const recentDoneReports = doneReports
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 3);
+
+          // Create a mini-grid of report cards
+          const reportsHTML = recentDoneReports.map(report => {
+            // Process timestamp
+            const date = new Date(report.timestamp);
+            const formattedDate = date.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            });
+            const formattedTime = date.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+
+            // Generate technician initial for avatar
+            const techInitial = report.technician ? report.technician[0].toUpperCase() : 'T';
+
+            // Create before/after image HTML
+            const beforeImageHTML = report.before_file_id ?
+              `<div class="image-container">
+            <img src="/done_uploads/${report.before_file_id}" alt="Before image" loading="lazy"
+                 onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\\'no-image\\'><i class=\\'bi bi-image\\'></i><span>No Before Image</span></div>';">
+            <div class="image-label before">Before</div>
+          </div>` :
+              `<div class="image-container">
+            <div class="no-image">
+              <i class="bi bi-image"></i>
+              <span>No Before Image</span>
+            </div>
+          </div>`;
+
+            const afterImageHTML = report.after_file_id ?
+              `<div class="image-container">
+            <img src="/done_uploads/${report.after_file_id}" alt="After image" loading="lazy"
+                 onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\\'no-image\\'><i class=\\'bi bi-image\\'></i><span>No After Image</span></div>';">
+            <div class="image-label after">After</div>
+          </div>` :
+              `<div class="image-container">
+            <div class="no-image">
+              <i class="bi bi-image"></i>
+              <span>No After Image</span>
+            </div>
+          </div>`;
+
+            // Create the report card
+            return `
+          <div class="report-card mb-4">
+            <div class="report-header">
+              <div class="report-meta">
+                <div class="technician-info">
+                  <div class="technician-avatar">
+                    ${techInitial}
                   </div>
-                </td>
-              </tr>
-            `;
+                  <div class="technician-details">
+                    <div class="technician-name">${escapeHtml(report.technician || 'Unknown Technician')}</div>
+                    <div class="report-date">
+                      <i class="bi bi-calendar3" aria-hidden="true"></i>
+                      ${formattedDate} at ${formattedTime}
+                    </div>
+                  </div>
+                </div>
+                <span class="status-badge status-approved">
+                  <i class="bi bi-check-circle" aria-hidden="true"></i>
+                  Approved
+                </span>
+              </div>
+              <div class="report-description">
+                ${escapeHtml(report.completion_description || 'No description provided.')}
+              </div>
+            </div>
+            <div class="report-images">
+              <div class="images-grid">
+                ${beforeImageHTML}
+                ${afterImageHTML}
+              </div>
+            </div>
+            <div class="report-actions">
+              <a href="/done_reports_public" class="action-btn btn-details">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+                View All Done Reports
+              </a>
+            </div>
+          </div>
+        `;
+          }).join('');
+
+          // Update the container
+          doneReportsContainer.innerHTML = reportsHTML;
+
+          // Initialize click handlers for images
+          document.querySelectorAll('#doneReportsContainer .image-container img').forEach(img => {
+            img.addEventListener('click', function () {
+              if (typeof showImageModal === 'function') {
+                showImageModal(this.src);
+              }
+            });
+          });
+
+          // Make description expandable
+          document.querySelectorAll('#doneReportsContainer .report-description').forEach(desc => {
+            desc.addEventListener('click', function () {
+              this.classList.toggle('expanded');
+            });
+          });
+        })
+        .catch(error => {
+          console.error('Error loading done reports:', error);
+          const doneReportsContainer = document.getElementById('doneReportsContainer');
+          if (doneReportsContainer) {
+            doneReportsContainer.innerHTML = `
+          <div class="text-center py-6" style="color: #dc2626;">
+            <i class="bi bi-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px;"></i>
+            <div>Error loading completed reports</div>
+          </div>
+        `;
           }
         });
     }
@@ -928,30 +1104,30 @@
     function initializeImprovedSearch() {
       const searchInput = document.getElementById('main-search');
       const filterButtons = document.querySelectorAll('.filter-btn');
-      
+
       // Create search results container if it doesn't exist
       if (!document.getElementById('searchResultsContainer')) {
         const resultsContainer = document.createElement('div');
         resultsContainer.id = 'searchResultsContainer';
         resultsContainer.className = 'search-results-container';
         resultsContainer.setAttribute('aria-live', 'polite');
-        
+
         if (searchInput && searchInput.parentNode) {
           searchInput.parentNode.appendChild(resultsContainer);
         }
       }
-      
+
       // Load all issues data on page load for searching
       fetchIssuesData().then(issues => {
         allIssues = issues;
         console.log(`Loaded ${issues.length} issues for search`);
       });
-      
+
       // Set up search input event listener
       if (searchInput) {
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
           const query = this.value.trim();
-          
+
           // Show/hide results container based on query length
           if (query.length > 0) {
             showSearchLoading();
@@ -959,7 +1135,7 @@
             hideSearchResults();
             return;
           }
-          
+
           // Debounce search to prevent excessive processing
           clearTimeout(searchTimeout);
           searchTimeout = setTimeout(() => {
@@ -967,30 +1143,30 @@
           }, 300);
         });
       }
-      
+
       // Set up filter buttons event listeners
       filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
           filterButtons.forEach(btn => btn.classList.remove('active'));
           this.classList.add('active');
-          
+
           const category = this.dataset.category;
           filterReports(category);
         });
       });
-      
+
       // Handle clicks outside search results to dismiss
-      document.addEventListener('click', function(event) {
+      document.addEventListener('click', function (event) {
         const searchResultsContainer = document.getElementById('searchResultsContainer');
-        if (searchInput && searchResultsContainer && 
-            !searchInput.contains(event.target) && 
-            !searchResultsContainer.contains(event.target)) {
+        if (searchInput && searchResultsContainer &&
+          !searchInput.contains(event.target) &&
+          !searchResultsContainer.contains(event.target)) {
           hideSearchResults();
         }
       });
-      
+
       // Close search results on escape key
-      document.addEventListener('keydown', function(event) {
+      document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
           hideSearchResults();
           if (searchInput) searchInput.blur();
@@ -1005,17 +1181,17 @@
         if (activeSearchRequest) {
           activeSearchRequest.abort();
         }
-        
+
         // Create new request with AbortController
         const controller = new AbortController();
         activeSearchRequest = controller;
-        
+
         const response = await fetch(API.ISSUES, {
           signal: controller.signal
         });
-        
+
         if (!response.ok) throw new Error('Failed to fetch issues');
-        
+
         const data = await response.json();
         activeSearchRequest = null;
         return data.issues || [];
@@ -1031,7 +1207,7 @@
     function showSearchLoading() {
       const searchResultsContainer = document.getElementById('searchResultsContainer');
       if (!searchResultsContainer) return;
-      
+
       searchResultsContainer.innerHTML = `
         <div class="search-loading">
           <div class="search-spinner"></div>
@@ -1066,17 +1242,17 @@
     function executeSearch(query) {
       const searchResultsContainer = document.getElementById('searchResultsContainer');
       if (!searchResultsContainer) return;
-      
+
       // Normalize query for case-insensitive search
       const normalizedQuery = query.toLowerCase();
-      
+
       // Filter issues based on multiple criteria
       const results = allIssues.filter(issue => {
         const description = (issue.description || '').toLowerCase();
         const location = (issue.city_street || '').toLowerCase();
         const category = (issue.category || '').toLowerCase();
         const status = (issue.status || '').toLowerCase();
-        
+
         return (
           description.includes(normalizedQuery) ||
           location.includes(normalizedQuery) ||
@@ -1084,23 +1260,23 @@
           status.includes(normalizedQuery)
         );
       });
-      
+
       // Sort results by relevance
       results.sort((a, b) => {
         // Prioritize items with matches in description
         const aDescriptionMatch = (a.description || '').toLowerCase().includes(normalizedQuery);
         const bDescriptionMatch = (b.description || '').toLowerCase().includes(normalizedQuery);
-        
+
         if (aDescriptionMatch && !bDescriptionMatch) return -1;
         if (!aDescriptionMatch && bDescriptionMatch) return 1;
-        
+
         // Then by recency
         return new Date(b.timestamp) - new Date(a.timestamp);
       });
-      
+
       // Limit to top 10 results for performance
       const limitedResults = results.slice(0, 10);
-      
+
       // Display search results
       displaySearchResults(limitedResults, normalizedQuery);
     }
@@ -1109,7 +1285,7 @@
     function displaySearchResults(results, query) {
       const searchResultsContainer = document.getElementById('searchResultsContainer');
       if (!searchResultsContainer) return;
-      
+
       // Show empty state if no results
       if (results.length === 0) {
         searchResultsContainer.innerHTML = `
@@ -1124,12 +1300,12 @@
         searchResultsContainer.classList.add('active');
         return;
       }
-      
+
       // Generate HTML for search results
       const resultsHTML = results.map(issue => {
         const statusClass = getStatusClass(issue.status);
         const statusIcon = getStatusIcon(issue.status);
-        
+
         // Generate thumbnail HTML
         const imageHtml = issue.image_file_id
           ? `<img src="/uploads/${issue.image_file_id}" 
@@ -1142,12 +1318,12 @@
           : `<div class="search-result-placeholder">
                <i class="bi bi-image"></i>
              </div>`;
-        
+
         // Highlight matching text
         const highlightedDescription = highlightText(issue.description || '', query);
         const highlightedLocation = highlightText(issue.city_street || 'Location not specified', query);
         const highlightedCategory = issue.category ? highlightText(issue.category, query) : '';
-        
+
         return `
           <div class="search-result-item" data-issue-id="${issue._id}" onclick="window.location.href='/report/${issue._id}'">
             <div class="search-result-info">
@@ -1165,11 +1341,11 @@
           </div>
         `;
       }).join('');
-      
+
       // Update container with results
       searchResultsContainer.innerHTML = resultsHTML;
       searchResultsContainer.classList.add('active');
-      
+
       // Add event handlers for keyboard navigation
       setupKeyboardNavigation();
     }
@@ -1177,10 +1353,10 @@
     // Highlight matched text in search results
     function highlightText(text, query) {
       if (!query || !text) return escapeHtml(text);
-      
+
       const escapedText = escapeHtml(text);
       const escapedQuery = escapeHtml(query);
-      
+
       // Case-insensitive replace with regex
       const regex = new RegExp(escapedQuery, 'gi');
       return escapedText.replace(regex, match => `<span class="search-match">${match}</span>`);
@@ -1191,9 +1367,9 @@
       const searchInput = document.getElementById('main-search');
       const resultItems = document.querySelectorAll('.search-result-item');
       let currentFocus = -1;
-      
+
       // Add keyboard event listener
-      searchInput.addEventListener('keydown', function(e) {
+      searchInput.addEventListener('keydown', function (e) {
         // Arrow down
         if (e.key === 'ArrowDown') {
           e.preventDefault();
@@ -1217,32 +1393,32 @@
           }
         }
       });
-      
+
       // Add hover listeners to reset focus
       resultItems.forEach(item => {
-        item.addEventListener('mouseenter', function() {
+        item.addEventListener('mouseenter', function () {
           removeActive(resultItems);
           currentFocus = Array.from(resultItems).indexOf(this);
           this.classList.add('active');
         });
       });
-      
+
       // Helper function to add active class
       function addActive(items, index) {
         if (!items || !items.length) return;
-        
+
         removeActive(items);
-        
+
         // Handle out of bounds
         if (index >= items.length) index = 0;
         if (index < 0) index = items.length - 1;
-        
+
         // Add active class and scroll into view
         items[index].classList.add('active');
         items[index].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         currentFocus = index;
       }
-      
+
       // Helper function to remove active class
       function removeActive(items) {
         items.forEach(item => {
@@ -1259,12 +1435,12 @@
         searchInput.value = '';
         hideSearchResults();
       }
-      
+
       // If category is "all", reset to show all reports
       if (category === 'all') {
         // Reload all reports with default sorting
         loadRecentReports();
-        
+
         // If we have a map, reset it
         const map = window.mainMap;
         if (map) {
@@ -1273,18 +1449,18 @@
         }
         return;
       }
-      
+
       // Otherwise, filter reports by the selected category
       fetch(API.ISSUES)
         .then(response => response.json())
         .then(data => {
-          const filteredIssues = (data.issues || []).filter(issue => 
+          const filteredIssues = (data.issues || []).filter(issue =>
             (issue.category || '').toLowerCase() === category.toLowerCase()
           );
-          
+
           // Update the recent reports table
           updateRecentReportsTable(filteredIssues);
-          
+
           // Update the map if it exists
           updateMapWithFilteredIssues(filteredIssues);
         })
@@ -1297,7 +1473,7 @@
     function updateRecentReportsTable(filteredIssues) {
       const tbody = document.getElementById('recentReports');
       if (!tbody) return;
-      
+
       if (filteredIssues.length === 0) {
         tbody.innerHTML = `
           <tr>
@@ -1311,18 +1487,18 @@
         `;
         return;
       }
-      
+
       // Sort by recency and limit to 5
       const recentFiltered = filteredIssues
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
         .slice(0, 5);
-      
+
       // Generate table rows
       tbody.innerHTML = recentFiltered.map(issue => {
         const date = new Date(issue.timestamp);
         const statusClass = getStatusClass(issue.status);
         const statusIcon = getStatusIcon(issue.status);
-        
+
         const imageHtml = issue.image_file_id ?
           `<img src="/uploads/${issue.image_file_id}" 
                alt="Issue thumbnail"
@@ -1334,7 +1510,7 @@
           `<div class="report-placeholder">
              <i class="bi bi-image"></i>
            </div>`;
-        
+
         return `
           <tr>
             <td class="reports-table-cell">
@@ -1368,36 +1544,36 @@
     function updateMapWithFilteredIssues(filteredIssues) {
       const mapElement = document.getElementById('mainMap');
       if (!mapElement) return;
-      
+
       // Get the map instance
       const map = window.mainMap;
       if (!map) return;
-      
+
       // Clear existing markers
       if (window.mapMarkers) {
         window.mapMarkers.forEach(marker => marker.remove());
       }
-      
+
       window.mapMarkers = [];
       const bounds = [];
-      
+
       // Add new markers for filtered issues
       filteredIssues.forEach(issue => {
         if (issue.location && issue.location.lat && issue.location.lng) {
           const marker = L.marker([issue.location.lat, issue.location.lng])
             .addTo(map);
-            
+
           window.mapMarkers.push(marker);
-          
+
           const statusClass = getStatusClass(issue.status);
           const statusIcon = getStatusIcon(issue.status);
-          
+
           const imageSection = issue.image_file_id ?
             `<img src="/uploads/${issue.image_file_id}" 
                  alt="Issue image" 
                  class="popup-image"
                  onerror="this.style.display='none';">` : '';
-          
+
           marker.bindPopup(`
             <div style="padding: 12px; max-width: 200px;">
                 ${imageSection}
@@ -1415,11 +1591,11 @@
                 </a>
             </div>
           `);
-          
+
           bounds.push([issue.location.lat, issue.location.lng]);
         }
       });
-      
+
       // Fit map to show all markers if there are any
       if (bounds.length > 0) {
         map.fitBounds(L.latLngBounds(bounds).pad(0.1));
@@ -1547,6 +1723,7 @@
         }
       }
     });
+
   </script>
 </body>
 
