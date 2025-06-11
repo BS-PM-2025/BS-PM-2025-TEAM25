@@ -1,7 +1,21 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
+import random
+import string
 
-auth_bp = Blueprint('auth', __name__, template_folder='../templates')
+# Import email utility - updated for your project structure
+from reports.email_utils import send_password_reset_email
+
+auth_bp = Blueprint('auth', __name__, template_folder='../static/templates')
+
+def generate_reset_code():
+    """Generate a random 6-digit code"""
+    return ''.join(random.choices(string.digits, k=6))
+
+def generate_reset_token():
+    """Generate a secure random token"""
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=32))
 
 @auth_bp.route("/")
 def root():
@@ -53,6 +67,178 @@ def register():
     mongo.db.users.insert_one(user_data)
     flash("Registration successful! Please log in.", "success")
     return redirect(url_for("auth.root"))
+
+@auth_bp.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    """Handle forgot password requests"""
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        
+        if not email:
+            flash("Please enter your email address.", "danger")
+            return render_template('forgot_password.html')
+        
+        mongo = current_app.mongo
+        user = mongo.db.users.find_one({"email": email})
+        
+        if not user:
+            # Don't reveal if email exists or not for security
+            flash("If your email is registered, you will receive a password reset code.", "info")
+            return render_template('forgot_password.html')
+        
+        # Generate reset code and token
+        reset_code = generate_reset_code()
+        reset_token = generate_reset_token()
+        expires_at = datetime.utcnow() + timedelta(minutes=15)  # Code expires in 15 minutes
+        
+        # Store reset request in database
+        reset_data = {
+            "email": email,
+            "code": reset_code,
+            "token": reset_token,
+            "expires_at": expires_at,
+            "used": False,
+            "created_at": datetime.utcnow()
+        }
+        
+        # Remove any existing reset requests for this email
+        mongo.db.password_resets.delete_many({"email": email})
+        
+        # Insert new reset request
+        mongo.db.password_resets.insert_one(reset_data)
+        
+        # Send email with reset code
+        try:
+            send_password_reset_email(email, reset_code, 15)
+            flash("A verification code has been sent to your email address.", "success")
+            return redirect(url_for("auth.verify_reset_code", token=reset_token))
+            
+        except Exception as e:
+            current_app.logger.error(f"Failed to send reset email: {e}")
+            flash("Failed to send reset email. Please try again later.", "danger")
+            return render_template('forgot_password.html')
+    
+    return render_template('forgot_password.html')
+
+@auth_bp.route("/verify-reset-code/<token>", methods=["GET", "POST"])
+def verify_reset_code(token):
+    """Verify the reset code and show password reset form"""
+    mongo = current_app.mongo
+    
+    # Find the reset request
+    reset_request = mongo.db.password_resets.find_one({
+        "token": token,
+        "used": False,
+        "expires_at": {"$gt": datetime.utcnow()}
+    })
+    
+    if not reset_request:
+        flash("Invalid or expired reset link. Please request a new password reset.", "danger")
+        return redirect(url_for("auth.forgot_password"))
+    
+    if request.method == "POST":
+        submitted_code = request.form.get("code", "").strip()
+        new_password = request.form.get("password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
+        
+        # Verify the code
+        if submitted_code != reset_request["code"]:
+            flash("Invalid verification code. Please try again.", "danger")
+            return render_template('verify_reset_code.html', token=token, email=reset_request["email"])
+        
+        # Validate passwords
+        if not new_password:
+            flash("Please enter a new password.", "danger")
+            return render_template('verify_reset_code.html', token=token, email=reset_request["email"])
+        
+        if new_password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return render_template('verify_reset_code.html', token=token, email=reset_request["email"])
+        
+        if len(new_password) < 6:
+            flash("Password must be at least 6 characters long.", "danger")
+            return render_template('verify_reset_code.html', token=token, email=reset_request["email"])
+        
+        # Update the user's password
+        hashed_password = generate_password_hash(new_password)
+        mongo.db.users.update_one(
+            {"email": reset_request["email"]},
+            {"$set": {"password": hashed_password}}
+        )
+        
+        # Mark the reset request as used
+        mongo.db.password_resets.update_one(
+            {"_id": reset_request["_id"]},
+            {"$set": {"used": True}}
+        )
+        
+        flash("Your password has been successfully reset! You can now log in with your new password.", "success")
+        return redirect(url_for("auth.root"))
+    
+    return render_template('verify_reset_code.html', token=token, email=reset_request["email"])
+
+@auth_bp.route("/resend-code", methods=["POST"])
+def resend_code():
+    """Resend verification code for password reset"""
+    try:
+        import json
+        data = request.get_json()
+        email = data.get('email', '').strip() if data else request.form.get('email', '').strip()
+        
+        if not email:
+            return {"success": False, "message": "Email is required"}, 400
+        
+        mongo = current_app.mongo
+        user = mongo.db.users.find_one({"email": email})
+        
+        if not user:
+            # Don't reveal if email exists or not for security
+            return {"success": True, "message": "If your email is registered, you will receive a new code."}, 200
+        
+        # Check if there's an existing, non-expired reset request
+        existing_request = mongo.db.password_resets.find_one({
+            "email": email,
+            "used": False,
+            "expires_at": {"$gt": datetime.utcnow()}
+        })
+        
+        if existing_request:
+            # Check if the last request was sent less than 60 seconds ago
+            last_sent = existing_request.get("created_at", datetime.utcnow() - timedelta(minutes=2))
+            if datetime.utcnow() - last_sent < timedelta(seconds=60):
+                return {"success": False, "message": "Please wait before requesting another code."}, 429
+        
+        # Generate new reset code and token
+        reset_code = generate_reset_code()
+        reset_token = generate_reset_token()
+        expires_at = datetime.utcnow() + timedelta(minutes=15)
+        
+        # Remove any existing reset requests for this email
+        mongo.db.password_resets.delete_many({"email": email})
+        
+        # Insert new reset request
+        reset_data = {
+            "email": email,
+            "code": reset_code,
+            "token": reset_token,
+            "expires_at": expires_at,
+            "used": False,
+            "created_at": datetime.utcnow()
+        }
+        mongo.db.password_resets.insert_one(reset_data)
+        
+        # Send email with reset code
+        try:
+            send_password_reset_email(email, reset_code, 15)
+            return {"success": True, "message": "A new verification code has been sent to your email."}, 200
+            
+        except Exception as e:
+            current_app.logger.error(f"Failed to send reset email: {e}")
+            return {"success": False, "message": "Failed to send email. Please try again."}, 500
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in resend_code: {e}")
+        return {"success": False, "message": "An error occurred. Please try again."}, 500
 
 @auth_bp.route("/dashboard")
 def dashboard():
@@ -239,8 +425,6 @@ def logout():
         return redirect(url_for("auth.root"))
 
     return ("", 204)
-
-
 
 @auth_bp.route("/status")
 def status():

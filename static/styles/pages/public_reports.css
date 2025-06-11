@@ -580,3 +580,64 @@
 
 
    
+/* Custom map markers */
+.custom-marker {
+  background: transparent;
+  border: none;
+}
+
+.marker-pin {
+  width: 30px;
+  height: 42px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--primary-500);
+  position: relative;
+  transform: rotate(-45deg);
+  top: -15px;
+  left: -15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.marker-pin::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  margin: -8px 0 0 -8px;
+}
+
+/* Status-specific marker colors */
+.status-resolved .marker-pin,
+.status-done .marker-pin {
+  background: var(--emerald-500);
+}
+
+.status-in-progress .marker-pin {
+  background: var(--orange-500);
+}
+
+.status-approved .marker-pin {
+  background: var(--blue-500);
+}
+
+.status-pending .marker-pin {
+  background: var(--gray-500);
+}
+
+.status-rejected .marker-pin {
+  background: var(--red-500);
+}
+
+/* Add this marker bounce animation */
+@keyframes marker-bounce {
+  0%, 100% { transform: rotate(-45deg) translateY(0); }
+  50% { transform: rotate(-45deg) translateY(-10px); }
+}
+
+.marker-selected .marker-pin {
+  animation: marker-bounce 0.5s ease-out;
+}

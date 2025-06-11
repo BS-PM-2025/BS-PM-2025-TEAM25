@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="icon" href="{{ url_for('static', filename='images/web_icon.png') }}">
+  <title>Reset Password - CityFix</title>
+  <meta name="description" content="Enter your verification code and set a new password for your CityFix account.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages/auth.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/mobile.css') }}">
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#3b82f6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+</head>
+
+<body>
+  <!-- Back Link -->
+  <a href="{{ url_for('auth.forgot_password') }}" class="back-link">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+    <span>Back</span>
+  </a>
+
+  <!-- Floating Background Shapes -->
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <div class="auth-container">
+    <div class="auth-wrapper">
+      <div class="auth-card scale-in">
+        <!-- Header -->
+        <div class="auth-header">
+          <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
+            <div class="circuit-container">
+              <div class="circuit-line"></div>
+              <div class="circuit-dot"></div>
+            </div>
+            CityFix
+          </a>
+          <h1 class="auth-title">Reset Password</h1>
+          <p class="auth-subtitle">
+            Enter the 6-digit code sent to <strong>{{ email }}</strong> and create a new password
+          </p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="px-8">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }} mb-4">
+            <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' if category == 'info' else 'x-circle' }}"
+              aria-hidden="true"></i>
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Body -->
+        <div class="auth-body">
+          <form id="reset-password-form" action="{{ url_for('auth.verify_reset_code', token=token) }}" method="POST">
+            <!-- Verification Code Input -->
+            <div class="form-group">
+              <label for="code" class="form-label">
+                <i class="bi bi-shield-check me-2" aria-hidden="true"></i>
+                Verification Code
+              </label>
+              <div class="code-input-container">
+                <input type="text" id="code" name="code" class="form-control code-input" 
+                       placeholder="Enter 6-digit code" 
+                       required maxlength="6" pattern="[0-9]{6}" 
+                       autocomplete="one-time-code" autofocus>
+              </div>
+              <small class="form-text text-muted mt-2">
+                <i class="bi bi-clock me-1" aria-hidden="true"></i>
+                Code expires in <span id="countdown">15:00</span>
+              </small>
+            </div>
+
+            <div class="auth-divider">
+              <span>New Password</span>
+            </div>
+
+            <!-- New Password Input -->
+            <div class="form-group">
+              <label for="password" class="form-label">
+                <i class="bi bi-lock me-2" aria-hidden="true"></i>
+                New Password
+              </label>
+              <div class="password-input-container">
+                <input type="password" id="password" name="password" class="form-control"
+                       placeholder="Create a strong password" 
+                       required autocomplete="new-password" minlength="6">
+                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="password-strength" id="password-strength">
+                <div class="strength-bar">
+                  <div class="strength-fill" id="strength-fill"></div>
+                </div>
+                <span class="strength-text" id="strength-text">Password strength</span>
+              </div>
+            </div>
+
+            <!-- Confirm Password Input -->
+            <div class="form-group">
+              <label for="confirm_password" class="form-label">
+                <i class="bi bi-lock-fill me-2" aria-hidden="true"></i>
+                Confirm New Password
+              </label>
+              <div class="password-input-container">
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                       placeholder="Confirm your new password" 
+                       required autocomplete="new-password" minlength="6">
+                <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="password-match" id="password-match"></div>
+            </div>
+
+            <button type="submit" class="btn-auth" id="submit-btn">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              Reset Password
+            </button>
+          </form>
+
+          <!-- Resend Code -->
+          <div class="text-center mt-4">
+            <p class="text-muted">Didn't receive the code?</p>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="resend-btn" onclick="resendCode()" disabled>
+              <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>
+              Resend Code <span id="resend-countdown">(60s)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="auth-footer">
+          <p>
+            Remember your password? 
+            <a href="{{ url_for('auth.root') }}">Back to Sign In</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Set proper viewport height for mobile
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+    window.addEventListener('resize', () => {
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    });
+
+    // Countdown timer for code expiration (15 minutes)
+    let timeLeft = 15 * 60; // 15 minutes in seconds
+    let resendTimeLeft = 60; // 60 seconds for resend
+
+    function updateCountdown() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      document.getElementById('countdown').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      
+      if (timeLeft <= 0) {
+        // Code expired
+        document.getElementById('countdown').textContent = 'Expired';
+        document.getElementById('countdown').style.color = 'var(--red-500)';
+        document.getElementById('reset-password-form').style.opacity = '0.5';
+        document.getElementById('submit-btn').disabled = true;
+        
+        // Show expiration message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-danger';
+        alert.innerHTML = '<i class="bi bi-clock-fill me-2" aria-hidden="true"></i> Your verification code has expired. Please request a new one.';
+        document.querySelector('.auth-body').insertBefore(alert, document.getElementById('reset-password-form'));
+        
+        clearInterval(countdownInterval);
+        return;
+      }
+      
+      timeLeft--;
+    }
+
+    function updateResendCountdown() {
+      const resendBtn = document.getElementById('resend-btn');
+      const resendCountdown = document.getElementById('resend-countdown');
+      
+      if (resendTimeLeft <= 0) {
+        resendBtn.disabled = false;
+        resendCountdown.textContent = '';
+        clearInterval(resendCountdownInterval);
+        return;
+      }
+      
+      resendCountdown.textContent = `(${resendTimeLeft}s)`;
+      resendTimeLeft--;
+    }
+
+    // Start countdown timers
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    const resendCountdownInterval = setInterval(updateResendCountdown, 1000);
+    updateCountdown(); // Initial call
+    updateResendCountdown(); // Initial call
+
+    // Password toggle functionality
+    function togglePassword(inputId) {
+      const input = document.getElementById(inputId);
+      const button = input.nextElementSibling;
+      const icon = button.querySelector('i');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+      }
+    }
+
+    // Password strength checker
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      let feedback = [];
+
+      if (password.length >= 8) {
+        strength += 20;
+      } else {
+        feedback.push('At least 8 characters');
+      }
+
+      if (/[a-z]/.test(password)) {
+        strength += 20;
+      } else {
+        feedback.push('Lowercase letter');
+      }
+
+      if (/[A-Z]/.test(password)) {
+        strength += 20;
+      } else {
+        feedback.push('Uppercase letter');
+      }
+
+      if (/[0-9]/.test(password)) {
+        strength += 20;
+      } else {
+        feedback.push('Number');
+      }
+
+      if (/[^A-Za-z0-9]/.test(password)) {
+        strength += 20;
+      } else {
+        feedback.push('Special character');
+      }
+
+      return { strength, feedback };
+    }
+
+    function updatePasswordStrength(password) {
+      const { strength, feedback } = checkPasswordStrength(password);
+      const strengthFill = document.getElementById('strength-fill');
+      const strengthText = document.getElementById('strength-text');
+      
+      if (!strengthFill || !strengthText) return;
+
+      strengthFill.style.width = `${strength}%`;
+      
+      if (strength < 40) {
+        strengthFill.className = 'strength-fill weak';
+        strengthText.textContent = 'Weak password';
+        strengthText.className = 'strength-text weak';
+      } else if (strength < 80) {
+        strengthFill.className = 'strength-fill medium';
+        strengthText.textContent = 'Medium password';
+        strengthText.className = 'strength-text medium';
+      } else {
+        strengthFill.className = 'strength-fill strong';
+        strengthText.textContent = 'Strong password';
+        strengthText.className = 'strength-text strong';
+      }
+    }
+
+    function checkPasswordMatch() {
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm_password').value;
+      const matchDiv = document.getElementById('password-match');
+      
+      if (!confirmPassword) {
+        matchDiv.textContent = '';
+        return;
+      }
+      
+      if (password === confirmPassword) {
+        matchDiv.innerHTML = '<i class="bi bi-check-circle text-success me-1" aria-hidden="true"></i><span class="text-success">Passwords match</span>';
+      } else {
+        matchDiv.innerHTML = '<i class="bi bi-x-circle text-danger me-1" aria-hidden="true"></i><span class="text-danger">Passwords do not match</span>';
+      }
+    }
+
+    // Resend code function
+    function resendCode() {
+      const resendBtn = document.getElementById('resend-btn');
+      resendBtn.disabled = true;
+      resendBtn.innerHTML = '<i class="bi bi-hourglass-split me-1" aria-hidden="true"></i> Sending...';
+      
+      // Simulate resend (you would make an AJAX call here in real implementation)
+      fetch('{{ url_for("auth.forgot_password") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'email={{ email }}'
+      })
+      .then(response => response.text())
+      .then(data => {
+        resendBtn.innerHTML = '<i class="bi bi-check-circle me-1" aria-hidden="true"></i> Code Sent!';
+        setTimeout(() => {
+          resendBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i> Resend Code';
+          resendTimeLeft = 60;
+          updateResendCountdown();
+        }, 2000);
+      })
+      .catch(error => {
+        resendBtn.innerHTML = '<i class="bi bi-x-circle me-1" aria-hidden="true"></i> Failed';
+        setTimeout(() => {
+          resendBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i> Resend Code';
+          resendBtn.disabled = false;
+        }, 2000);
+      });
+    }
+
+    // Auto-dismiss flash messages
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+          alert.style.transition = 'opacity 0.5s ease';
+          alert.style.opacity = '0';
+          setTimeout(() => alert.remove(), 500);
+        });
+      }, 5000);
+
+      // Form elements
+      const codeInput = document.getElementById('code');
+      const passwordInput = document.getElementById('password');
+      const confirmPasswordInput = document.getElementById('confirm_password');
+      const form = document.getElementById('reset-password-form');
+      const submitBtn = document.getElementById('submit-btn');
+
+      // Code input formatting and validation
+      codeInput.addEventListener('input', function () {
+        // Only allow numbers
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // Auto-advance or validate when 6 digits entered
+        if (this.value.length === 6) {
+          this.classList.add('is-valid');
+          passwordInput.focus();
+        } else {
+          this.classList.remove('is-valid', 'is-invalid');
+        }
+      });
+
+      codeInput.addEventListener('blur', function () {
+        if (this.value.length === 6) {
+          this.classList.add('is-valid');
+          this.classList.remove('is-invalid');
+        } else if (this.value.length > 0) {
+          this.classList.add('is-invalid');
+          this.classList.remove('is-valid');
+        }
+      });
+
+      // Password strength checking
+      passwordInput.addEventListener('input', function () {
+        updatePasswordStrength(this.value);
+        checkPasswordMatch();
+      });
+
+      // Password match checking
+      confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+
+      // Form validation
+      form.addEventListener('submit', function (e) {
+        const code = codeInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        let isValid = true;
+
+        // Validate code
+        if (code.length !== 6 || !/^[0-9]{6}$/.test(code)) {
+          e.preventDefault();
+          codeInput.classList.add('is-invalid');
+          codeInput.focus();
+          isValid = false;
+        }
+
+        // Validate password
+        if (password.length < 6) {
+          e.preventDefault();
+          passwordInput.classList.add('is-invalid');
+          if (isValid) passwordInput.focus();
+          isValid = false;
+        }
+
+        // Validate password match
+        if (password !== confirmPassword) {
+          e.preventDefault();
+          confirmPasswordInput.classList.add('is-invalid');
+          if (isValid) confirmPasswordInput.focus();
+          isValid = false;
+        }
+
+        if (isValid) {
+          // Disable submit button and show loading state
+          submitBtn.disabled = true;
+          const originalContent = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2" aria-hidden="true"></i> Resetting...';
+
+          // Re-enable after timeout (fallback)
+          setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+          }, 10000);
+        }
+      });
+
+      // Auto-focus code input
+      setTimeout(() => codeInput.focus(), 100);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function (e) {
+      // Allow paste in code input
+      if (e.ctrlKey && e.key === 'v' && document.activeElement.id === 'code') {
+        setTimeout(() => {
+          const codeInput = document.getElementById('code');
+          codeInput.value = codeInput.value.replace(/[^0-9]/g, '').substring(0, 6);
+          if (codeInput.value.length === 6) {
+            codeInput.classList.add('is-valid');
+          }
+        }, 10);
+      }
+    });
+
+    // Progressive enhancement for touch devices
+    if ('ontouchstart' in window) {
+      document.body.classList.add('touch-device');
+      
+      // Add touch feedback to buttons
+      document.querySelectorAll('.btn-auth, .btn').forEach(button => {
+        button.classList.add('touch-feedback');
+      });
+    }
+
+    // Prevent form resubmission on page refresh
+    if (window.history.replaceState) {
+      window.history.replaceState(null, null, window.location.href);
+    }
+  </script>
+
+  <style>
+    /* Code input styling */
+    .code-input {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.5em;
+      font-family: 'Courier New', monospace;
+    }
+
+    .code-input-container {
+      position: relative;
+    }
+
+    /* Password strength indicators */
+    .password-strength {
+      margin-top: var(--space-2);
+    }
+
+    .strength-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--gray-200);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      transition: all 0.3s ease;
+      border-radius: 2px;
+    }
+
+    .strength-fill.weak {
+      background: var(--red-500);
+    }
+
+    .strength-fill.medium {
+      background: var(--orange-500);
+    }
+
+    .strength-fill.strong {
+      background: var(--emerald-500);
+    }
+
+    .strength-text {
+      display: block;
+      font-size: var(--text-xs);
+      margin-top: var(--space-1);
+      font-weight: 500;
+    }
+
+    .strength-text.weak {
+      color: var(--red-600);
+    }
+
+    .strength-text.medium {
+      color: var(--orange-600);
+    }
+
+    .strength-text.strong {
+      color: var(--emerald-600);
+    }
+
+    /* Password match indicator */
+    .password-match {
+      margin-top: var(--space-2);
+      font-size: var(--text-sm);
+      font-weight: 500;
+    }
+
+    /* Password toggle button */
+    .password-input-container {
+      position: relative;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: var(--space-3);
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: var(--space-2);
+      border-radius: var(--radius-md);
+      transition: var(--mobile-transition);
+    }
+
+    .password-toggle:hover {
+      color: var(--primary-600);
+      background: var(--primary-50);
+    }
+
+    /* Countdown styling */
+    #countdown {
+      font-weight: 600;
+      color: var(--primary-600);
+    }
+
+    /* Resend button styling */
+    #resend-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Form validation styles */
+    .form-control.is-valid {
+      border-color: var(--emerald-500);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2310b981' d='m2.3 6.73.94-.94 1.88 1.88 3.44-3.44.94.94L3.24 7.24 2.3 6.73z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .form-control.is-invalid {
+      border-color: var(--red-500);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc2626'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.5 0.4 3 0.4-3'/%3e%3cpath d='M6 8.2h.01'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 480px) {
+      .code-input {
+        font-size: 1.25rem;
+        letter-spacing: 0.3em;
+      }
+      
+      .auth-title {
+        font-size: 1.5rem;
+      }
+      
+      .auth-subtitle {
+        font-size: 0.875rem;
+      }
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+      .form-control {
+        border-width: 2px;
+      }
+      
+      .btn-auth {
+        border: 2px solid var(--primary-700);
+      }
+      
+      .strength-bar {
+        border: 1px solid var(--gray-400);
+      }
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      .scale-in,
+      .floating-shapes .shape {
+        animation: none;
+      }
+      
+      .strength-fill {
+        transition: none;
+      }
+      
+      * {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</body>
+
+</html>

@@ -113,6 +113,16 @@
               </div>
             </div>
 
+            <!-- Forgot Password Link -->
+            <div class="form-group mb-4">
+              <div class="d-flex justify-content-end">
+                <a href="{{ url_for('auth.forgot_password') }}" class="forgot-password-link">
+                  <i class="bi bi-question-circle me-1" aria-hidden="true"></i>
+                  Forgot Password?
+                </a>
+              </div>
+            </div>
+
             <button type="submit" class="btn-auth">
               <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>
               Sign In
@@ -449,6 +459,29 @@
   </script>
 
   <style>
+    /* Forgot password link styling */
+    .forgot-password-link {
+      color: var(--primary-600);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      transition: var(--transition-colors);
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .forgot-password-link:hover {
+      color: var(--primary-700);
+      text-decoration: underline;
+    }
+
+    /* Mobile responsiveness for forgot password link */
+    @media (max-width: 480px) {
+      .forgot-password-link {
+        font-size: var(--text-xs);
+      }
+    }
+
     /* Mobile-specific auth styles */
     @media (max-width: 768px) {
       .auth-container {

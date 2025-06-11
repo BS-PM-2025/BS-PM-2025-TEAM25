@@ -28,7 +28,7 @@
 </head>
 
 <body>
-   <!-- Back Link -->
+  <!-- Back Link -->
   <a href="{{ url_for('main.home') }}" class="back-link">
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
@@ -37,7 +37,7 @@
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-content">
-         <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
+        <a href="{{ url_for('main.home') }}" class="navbar-brand-v18">
           <div class="circuit-container">
             <div class="circuit-line"></div>
             <div class="circuit-dot"></div>
@@ -56,7 +56,7 @@
               <span>Dashboard</span>
             </a>
           </li>
-           <li class="nav-item">
+          <li class="nav-item">
             <a href="{{ url_for('reports.my_reports') }}"
               class="nav-link {% if request.endpoint == 'reports.my_reports' %}active{% endif %}">
               <i class="bi bi-journal-text" aria-hidden="true"></i>
@@ -398,7 +398,7 @@
             <i class="bi bi-funnel" aria-hidden="true"></i>
             Filter Reports
           </h2>
-          
+
           <div class="filter-group">
             <label class="filter-label">
               <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
@@ -409,10 +409,9 @@
               <select id="statusFilter" class="filter-select">
                 <option value="">All Statuses</option>
                 <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
+                <option value="assigned">Assigned</option>
                 <option value="in progress">In Progress</option>
-                <option value="resolved">Resolved</option>
-                <option value="rejected">Rejected</option>
+                <option value="done">Done</option>
               </select>
               <i class="bi bi-chevron-down filter-chevron" aria-hidden="true"></i>
             </div>
@@ -494,14 +493,14 @@
     // Global variables
     const STATIC_URL = "{{ url_for('static', filename='') }}";
     const UPLOAD_URL = "{{ url_for('reports.serve_upload', file_id='') }}";
-    
+
     let map;
     let allReports = [];
     let filteredReports = [];
     let currentMarkers = [];
 
     // Initialize everything when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       initializeMap();
       loadReports();
       initializeAnimations();
@@ -528,7 +527,7 @@
             ...issue,
             timestamp: new Date(issue.timestamp)
           }));
-          
+
           filteredReports = [...allReports];
           updateStats();
           renderReports();
@@ -548,9 +547,9 @@
 
     function updateStats() {
       document.getElementById('total-count').textContent = allReports.length;
-      document.getElementById('resolved-count').textContent = 
+      document.getElementById('resolved-count').textContent =
         allReports.filter(r => r.status === 'resolved' || r.status === 'done').length;
-      document.getElementById('progress-count').textContent = 
+      document.getElementById('progress-count').textContent =
         allReports.filter(r => r.status === 'in progress').length;
     }
 
@@ -603,12 +602,12 @@
              onclick="selectReport('${report._id}')">
           <div class="report-card-body">
             <div class="report-header">
-              ${report.image_file_id ? 
-                `<img class="report-image" src="${UPLOAD_URL}${report.image_file_id}" alt="Report image">` :
-                `<div class="report-icon">
+              ${report.image_file_id ?
+          `<img class="report-image" src="${UPLOAD_URL}${report.image_file_id}" alt="Report image">` :
+          `<div class="report-icon">
                    <i class="bi bi-${getIconForCategory(report.category)}" aria-hidden="true"></i>
                  </div>`
-              }
+        }
               <div class="report-content">
                 <div class="report-title">${escapeHtml(report.description.substring(0, 80))}${report.description.length > 80 ? '...' : ''}</div>
                 <div class="report-meta">
@@ -628,6 +627,20 @@
       `).join('');
     }
 
+
+    function getMarkerIcon(status) {
+      // Convert status to class-friendly name
+      const statusClass = (status || 'pending').replace(' ', '-');
+
+      return L.divIcon({
+        className: `custom-marker status-${statusClass}`,
+        html: `<div class="marker-pin"></div>`,
+        iconSize: [30, 42],
+        iconAnchor: [15, 42],
+        popupAnchor: [0, -35]
+      });
+    }
+
     function renderMapMarkers() {
       // Clear existing markers
       currentMarkers.forEach(marker => map.removeLayer(marker));
@@ -637,27 +650,32 @@
 
       filteredReports.forEach(report => {
         if (report.location && report.location.lat && report.location.lng) {
-          const marker = L.marker([report.location.lat, report.location.lng])
-            .addTo(map);
+          // Create custom marker based on status
+          const marker = L.marker(
+            [report.location.lat, report.location.lng],
+            { icon: getMarkerIcon(report.status) }
+          ).addTo(map);
 
           const popupContent = `
-            <div class="popup-content">
-              <div class="popup-title">${escapeHtml(report.description.substring(0, 60))}${report.description.length > 60 ? '...' : ''}</div>
-              <div class="popup-status">
-                <span class="status-badge status-${(report.status || 'pending').replace(' ', '-')}">
-                  <i class="bi bi-${getStatusIcon(report.status)}" aria-hidden="true"></i>
-                  ${(report.status || 'pending').charAt(0).toUpperCase() + (report.status || 'pending').slice(1)}
-                </span>
-              </div>
-              <div class="popup-description">${escapeHtml(report.city_street || 'Location not specified')}</div>
-              <a href="/report/${report._id}" class="popup-button">
-                <i class="bi bi-eye" aria-hidden="true"></i>
-                View Details
-              </a>
-            </div>
-          `;
+        <div class="popup-content">
+          <div class="popup-title">${escapeHtml(report.description.substring(0, 60))}${report.description.length > 60 ? '...' : ''}</div>
+          <div class="popup-status">
+            <span class="status-badge status-${(report.status || 'pending').replace(' ', '-')}">
+              <i class="bi bi-${getStatusIcon(report.status)}" aria-hidden="true"></i>
+              ${(report.status || 'pending').charAt(0).toUpperCase() + (report.status || 'pending').slice(1)}
+            </span>
+          </div>
+          <div class="popup-description">${escapeHtml(report.city_street || 'Location not specified')}</div>
+          <a href="/report/${report._id}" class="popup-button">
+            <i class="bi bi-eye" aria-hidden="true"></i>
+            View Details
+          </a>
+        </div>
+      `;
 
           marker.bindPopup(popupContent);
+          // Store the report ID with the marker for easy reference
+          marker._reportId = report._id;
           currentMarkers.push(marker);
           bounds.push([report.location.lat, report.location.lng]);
         }
@@ -675,14 +693,23 @@
       const report = allReports.find(r => r._id === reportId);
       if (report && report.location) {
         map.setView([report.location.lat, report.location.lng], 16);
-        
+
         // Find and open the marker popup
-        const marker = currentMarkers.find(m => 
-          m.getLatLng().lat === report.location.lat && 
-          m.getLatLng().lng === report.location.lng
-        );
+        const marker = currentMarkers.find(m => m._reportId === reportId);
         if (marker) {
-          marker.openPopup();
+          // Remove any previous selected class
+          document.querySelectorAll('.marker-selected').forEach(el => {
+            el.classList.remove('marker-selected');
+          });
+
+          // Add selected class to make it bounce
+          setTimeout(() => {
+            const markerElement = marker.getElement();
+            if (markerElement) {
+              markerElement.classList.add('marker-selected');
+            }
+            marker.openPopup();
+          }, 100);
         }
       }
     }
