@@ -25,16 +25,23 @@
 </head>
 
 <body>
-   <!-- Back Link -->
+  <!-- Back Link -->
   <a href="{{ url_for('main.home') }}" class="back-link">
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
     <span>Back to Home</span>
   </a>
-  <!-- Desktop Navigation -->  <nav class="navbar" role="navigation" aria-label="Main navigation">
+  <!-- Desktop Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="navbar-content">
       <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
 
       <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="{{ url_for('auth.dashboard') }}" class="nav-link">
+            <i class="bi bi-speedometer2" aria-hidden="true"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
         <li class="nav-item">
           <a href="{{ url_for('reports.report_issue') }}" class="nav-link">
             <i class="bi bi-plus-circle" aria-hidden="true"></i>
@@ -42,17 +49,6 @@
           </a>
         </li>
         <li class="nav-item">
-          <a href="{{ url_for('done_reports.done_issue') }}" class="nav-link">
-            <i class="bi bi-check2-all" aria-hidden="true"></i>
-            <span>Done Reports</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="{{ url_for('user_roles.edit_user_roles') }}" class="nav-link">
-            <i class="bi bi-people" aria-hidden="true"></i>
-            <span>Manage Users</span>
-          </a>
-        </li>
         <li class="nav-item">
           <a href="{{ url_for('reports.my_reports') }}" class="nav-link">
             <i class="bi bi-journal-text" aria-hidden="true"></i>
@@ -83,12 +79,12 @@
           <i class="mobile-nav-icon bi bi-journal-text"></i>
           <span>My Reports</span>
         </a>
-      </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('done_reports.done_issue') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-check2-all"></i>
-          <span>Done reports</span>
+        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-speedometer2"></i>
+          <span>Dashboard</span>
         </a>
+      </li>
       </li>
       <li class="mobile-nav-item">
         <a href="{{ url_for('reports.report_issue') }}" class="mobile-nav-link mobile-nav-primary">
@@ -97,15 +93,15 @@
         </a>
       </li>
       <li class="mobile-nav-item">
-        <a href="{{ url_for('user_roles.edit_user_roles') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-people"></i>
-          <span>Users</span>
+        <a href="{{ url_for('main.about') }}" class="mobile-nav-link">
+          <i class="mobile-nav-icon bi bi-info-circle"></i>
+          <span>About</span>
         </a>
       </li>
-      <li class="mobile-nav-item">
-        <a href="{{ url_for('auth.dashboard') }}" class="mobile-nav-link">
-          <i class="mobile-nav-icon bi bi-speedometer2"></i>
-          <span>Dashboard</span>
+      <li class="mobile-nav-item" role="none">
+        <a href="{{ url_for('auth.logout') }}" class="mobile-nav-link" role="menuitem">
+          <i class="mobile-nav-icon bi bi-box-arrow-right" aria-hidden="true"></i>
+          <span>Logout</span>
         </a>
       </li>
     </ul>
@@ -121,7 +117,7 @@
         <h1 class="profile-name">{{ user.name or 'User' }}</h1>
         <p class="profile-email">{{ user.email }}</p>
 
-       
+
       </div>
     </div>
   </section>

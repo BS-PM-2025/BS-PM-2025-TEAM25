@@ -55,15 +55,7 @@
         <!-- Brand -->
         <a href="{{ url_for('main.home') }}" class="navbar-brand-liquid"> <span class="liquid-text">CityFix</span> </a>
 
-        <!-- Mobile Toggle -->
-        <button class="navbar-toggler" type="button" aria-label="Toggle navigation menu" aria-expanded="false"
-          aria-controls="navMenu">
-          <div class="navbar-toggler-icon">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </button>
+      
 
         <!-- Navigation Links -->
         <ul class="navbar-nav" id="navMenu" role="menubar">
@@ -223,6 +215,7 @@
               <i class="bi bi-search search-icon" aria-hidden="true"></i>
               <input type="text" id="main-search" class="search-input"
                 placeholder="Search reports, locations, or issues..." aria-label="Search reports">
+              <!-- Search results container will be dynamically added here -->
             </div>
           </div>
 
@@ -693,13 +686,18 @@
       DONE_REPORTS: '/api/done_reports'
     };
 
+    // Global variables for improved search functionality
+    let allIssues = []; // Store all issues data
+    let searchTimeout; // For debouncing search
+    let activeSearchRequest = null; // Track ongoing search request
+
     // Initialize the application
     document.addEventListener('DOMContentLoaded', function () {
       initializeNavigation();
       initializeMap();
       loadStatistics();
       loadRecentReports();
-      initializeSearch();
+      initializeImprovedSearch();
       initializeAnimations();
     });
 
@@ -734,6 +732,8 @@
 
       // Create map centered on Jerusalem (default location)
       const map = L.map('mainMap').setView([31.7683, 35.2137], 10);
+      window.mainMap = map; // Store map globally
+      window.mapMarkers = []; // Initialize markers array
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
@@ -751,6 +751,8 @@
             if (issue.location && issue.location.lat && issue.location.lng) {
               const marker = L.marker([issue.location.lat, issue.location.lng])
                 .addTo(map);
+                
+              window.mapMarkers.push(marker);
 
               const statusClass = getStatusClass(issue.status);
               const statusIcon = getStatusIcon(issue.status);
@@ -922,30 +924,506 @@
         });
     }
 
-    // Initialize search functionality
-    function initializeSearch() {
+    // Setup enhanced search functionality
+    function initializeImprovedSearch() {
       const searchInput = document.getElementById('main-search');
       const filterButtons = document.querySelectorAll('.filter-btn');
-
+      
+      // Create search results container if it doesn't exist
+      if (!document.getElementById('searchResultsContainer')) {
+        const resultsContainer = document.createElement('div');
+        resultsContainer.id = 'searchResultsContainer';
+        resultsContainer.className = 'search-results-container';
+        resultsContainer.setAttribute('aria-live', 'polite');
+        
+        if (searchInput && searchInput.parentNode) {
+          searchInput.parentNode.appendChild(resultsContainer);
+        }
+      }
+      
+      // Load all issues data on page load for searching
+      fetchIssuesData().then(issues => {
+        allIssues = issues;
+        console.log(`Loaded ${issues.length} issues for search`);
+      });
+      
+      // Set up search input event listener
       if (searchInput) {
-        let searchTimeout;
-        searchInput.addEventListener('input', function () {
+        searchInput.addEventListener('input', function() {
+          const query = this.value.trim();
+          
+          // Show/hide results container based on query length
+          if (query.length > 0) {
+            showSearchLoading();
+          } else {
+            hideSearchResults();
+            return;
+          }
+          
+          // Debounce search to prevent excessive processing
           clearTimeout(searchTimeout);
           searchTimeout = setTimeout(() => {
-            performSearch(this.value);
+            performSearch(query);
           }, 300);
         });
       }
-
+      
+      // Set up filter buttons event listeners
       filterButtons.forEach(button => {
-        button.addEventListener('click', function () {
+        button.addEventListener('click', function() {
           filterButtons.forEach(btn => btn.classList.remove('active'));
           this.classList.add('active');
-
+          
           const category = this.dataset.category;
           filterReports(category);
         });
       });
+      
+      // Handle clicks outside search results to dismiss
+      document.addEventListener('click', function(event) {
+        const searchResultsContainer = document.getElementById('searchResultsContainer');
+        if (searchInput && searchResultsContainer && 
+            !searchInput.contains(event.target) && 
+            !searchResultsContainer.contains(event.target)) {
+          hideSearchResults();
+        }
+      });
+      
+      // Close search results on escape key
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          hideSearchResults();
+          if (searchInput) searchInput.blur();
+        }
+      });
+    }
+
+    // Fetch issues data for search
+    async function fetchIssuesData() {
+      try {
+        // Cancel any ongoing request
+        if (activeSearchRequest) {
+          activeSearchRequest.abort();
+        }
+        
+        // Create new request with AbortController
+        const controller = new AbortController();
+        activeSearchRequest = controller;
+        
+        const response = await fetch(API.ISSUES, {
+          signal: controller.signal
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch issues');
+        
+        const data = await response.json();
+        activeSearchRequest = null;
+        return data.issues || [];
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error fetching issues data:', error);
+        }
+        return [];
+      }
+    }
+
+    // Show loading indicator for search
+    function showSearchLoading() {
+      const searchResultsContainer = document.getElementById('searchResultsContainer');
+      if (!searchResultsContainer) return;
+      
+      searchResultsContainer.innerHTML = `
+        <div class="search-loading">
+          <div class="search-spinner"></div>
+          <div>Searching reports...</div>
+        </div>
+      `;
+      searchResultsContainer.classList.add('active');
+    }
+
+    // Hide search results container
+    function hideSearchResults() {
+      const searchResultsContainer = document.getElementById('searchResultsContainer');
+      if (searchResultsContainer) {
+        searchResultsContainer.classList.remove('active');
+      }
+    }
+
+    // Perform real-time search
+    function performSearch(query) {
+      // If we don't have issues data yet, fetch it
+      if (allIssues.length === 0) {
+        fetchIssuesData().then(issues => {
+          allIssues = issues;
+          executeSearch(query);
+        });
+      } else {
+        executeSearch(query);
+      }
+    }
+
+    // Execute search against cached issues data
+    function executeSearch(query) {
+      const searchResultsContainer = document.getElementById('searchResultsContainer');
+      if (!searchResultsContainer) return;
+      
+      // Normalize query for case-insensitive search
+      const normalizedQuery = query.toLowerCase();
+      
+      // Filter issues based on multiple criteria
+      const results = allIssues.filter(issue => {
+        const description = (issue.description || '').toLowerCase();
+        const location = (issue.city_street || '').toLowerCase();
+        const category = (issue.category || '').toLowerCase();
+        const status = (issue.status || '').toLowerCase();
+        
+        return (
+          description.includes(normalizedQuery) ||
+          location.includes(normalizedQuery) ||
+          category.includes(normalizedQuery) ||
+          status.includes(normalizedQuery)
+        );
+      });
+      
+      // Sort results by relevance
+      results.sort((a, b) => {
+        // Prioritize items with matches in description
+        const aDescriptionMatch = (a.description || '').toLowerCase().includes(normalizedQuery);
+        const bDescriptionMatch = (b.description || '').toLowerCase().includes(normalizedQuery);
+        
+        if (aDescriptionMatch && !bDescriptionMatch) return -1;
+        if (!aDescriptionMatch && bDescriptionMatch) return 1;
+        
+        // Then by recency
+        return new Date(b.timestamp) - new Date(a.timestamp);
+      });
+      
+      // Limit to top 10 results for performance
+      const limitedResults = results.slice(0, 10);
+      
+      // Display search results
+      displaySearchResults(limitedResults, normalizedQuery);
+    }
+
+    // Display search results with highlighting
+    function displaySearchResults(results, query) {
+      const searchResultsContainer = document.getElementById('searchResultsContainer');
+      if (!searchResultsContainer) return;
+      
+      // Show empty state if no results
+      if (results.length === 0) {
+        searchResultsContainer.innerHTML = `
+          <div class="search-empty-results">
+            <div class="search-empty-icon">
+              <i class="bi bi-search"></i>
+            </div>
+            <div>No matching reports found</div>
+            <div style="font-size: 12px; margin-top: 8px;">Try different keywords or browse all reports</div>
+          </div>
+        `;
+        searchResultsContainer.classList.add('active');
+        return;
+      }
+      
+      // Generate HTML for search results
+      const resultsHTML = results.map(issue => {
+        const statusClass = getStatusClass(issue.status);
+        const statusIcon = getStatusIcon(issue.status);
+        
+        // Generate thumbnail HTML
+        const imageHtml = issue.image_file_id
+          ? `<img src="/uploads/${issue.image_file_id}" 
+                 alt="Issue thumbnail"
+                 class="search-result-thumbnail"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+             <div class="search-result-placeholder" style="display: none;">
+               <i class="bi bi-image"></i>
+             </div>`
+          : `<div class="search-result-placeholder">
+               <i class="bi bi-image"></i>
+             </div>`;
+        
+        // Highlight matching text
+        const highlightedDescription = highlightText(issue.description || '', query);
+        const highlightedLocation = highlightText(issue.city_street || 'Location not specified', query);
+        const highlightedCategory = issue.category ? highlightText(issue.category, query) : '';
+        
+        return `
+          <div class="search-result-item" data-issue-id="${issue._id}" onclick="window.location.href='/report/${issue._id}'">
+            <div class="search-result-info">
+              ${imageHtml}
+              <div class="search-result-content">
+                <div class="search-result-title">${highlightedDescription}</div>
+                <div class="search-result-location">${highlightedLocation}</div>
+                ${highlightedCategory ? `<div class="search-result-category">${highlightedCategory}</div>` : ''}
+              </div>
+              <span class="search-status badge-${statusClass}">
+                <i class="bi bi-${statusIcon}" aria-hidden="true"></i>
+                ${issue.status || 'pending'}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Update container with results
+      searchResultsContainer.innerHTML = resultsHTML;
+      searchResultsContainer.classList.add('active');
+      
+      // Add event handlers for keyboard navigation
+      setupKeyboardNavigation();
+    }
+
+    // Highlight matched text in search results
+    function highlightText(text, query) {
+      if (!query || !text) return escapeHtml(text);
+      
+      const escapedText = escapeHtml(text);
+      const escapedQuery = escapeHtml(query);
+      
+      // Case-insensitive replace with regex
+      const regex = new RegExp(escapedQuery, 'gi');
+      return escapedText.replace(regex, match => `<span class="search-match">${match}</span>`);
+    }
+
+    // Setup keyboard navigation for search results
+    function setupKeyboardNavigation() {
+      const searchInput = document.getElementById('main-search');
+      const resultItems = document.querySelectorAll('.search-result-item');
+      let currentFocus = -1;
+      
+      // Add keyboard event listener
+      searchInput.addEventListener('keydown', function(e) {
+        // Arrow down
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          currentFocus++;
+          addActive(resultItems, currentFocus);
+        }
+        // Arrow up
+        else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          currentFocus--;
+          addActive(resultItems, currentFocus);
+        }
+        // Enter key
+        else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (currentFocus > -1) {
+            // Simulate click on focused item
+            if (resultItems[currentFocus]) {
+              resultItems[currentFocus].click();
+            }
+          }
+        }
+      });
+      
+      // Add hover listeners to reset focus
+      resultItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+          removeActive(resultItems);
+          currentFocus = Array.from(resultItems).indexOf(this);
+          this.classList.add('active');
+        });
+      });
+      
+      // Helper function to add active class
+      function addActive(items, index) {
+        if (!items || !items.length) return;
+        
+        removeActive(items);
+        
+        // Handle out of bounds
+        if (index >= items.length) index = 0;
+        if (index < 0) index = items.length - 1;
+        
+        // Add active class and scroll into view
+        items[index].classList.add('active');
+        items[index].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        currentFocus = index;
+      }
+      
+      // Helper function to remove active class
+      function removeActive(items) {
+        items.forEach(item => {
+          item.classList.remove('active');
+        });
+      }
+    }
+
+    // Filter reports by category (enhanced version)
+    function filterReports(category) {
+      // Clear search input when filtering
+      const searchInput = document.getElementById('main-search');
+      if (searchInput) {
+        searchInput.value = '';
+        hideSearchResults();
+      }
+      
+      // If category is "all", reset to show all reports
+      if (category === 'all') {
+        // Reload all reports with default sorting
+        loadRecentReports();
+        
+        // If we have a map, reset it
+        const map = window.mainMap;
+        if (map) {
+          // Reset map view
+          map.setView([31.7683, 35.2137], 10);
+        }
+        return;
+      }
+      
+      // Otherwise, filter reports by the selected category
+      fetch(API.ISSUES)
+        .then(response => response.json())
+        .then(data => {
+          const filteredIssues = (data.issues || []).filter(issue => 
+            (issue.category || '').toLowerCase() === category.toLowerCase()
+          );
+          
+          // Update the recent reports table
+          updateRecentReportsTable(filteredIssues);
+          
+          // Update the map if it exists
+          updateMapWithFilteredIssues(filteredIssues);
+        })
+        .catch(error => {
+          console.error('Error filtering reports:', error);
+        });
+    }
+
+    // Update recent reports table with filtered data
+    function updateRecentReportsTable(filteredIssues) {
+      const tbody = document.getElementById('recentReports');
+      if (!tbody) return;
+      
+      if (filteredIssues.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" class="text-center py-8 text-muted">
+              <div class="loading-container">
+                <i class="bi bi-filter" style="font-size: 24px; margin-bottom: 8px; opacity: 0.3;"></i>
+                <div>No reports match this filter</div>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      // Sort by recency and limit to 5
+      const recentFiltered = filteredIssues
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .slice(0, 5);
+      
+      // Generate table rows
+      tbody.innerHTML = recentFiltered.map(issue => {
+        const date = new Date(issue.timestamp);
+        const statusClass = getStatusClass(issue.status);
+        const statusIcon = getStatusIcon(issue.status);
+        
+        const imageHtml = issue.image_file_id ?
+          `<img src="/uploads/${issue.image_file_id}" 
+               alt="Issue thumbnail"
+               class="report-thumbnail"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="report-placeholder" style="display: none;">
+             <i class="bi bi-image"></i>
+           </div>` :
+          `<div class="report-placeholder">
+             <i class="bi bi-image"></i>
+           </div>`;
+        
+        return `
+          <tr>
+            <td class="reports-table-cell">
+              <div class="report-info-container">
+                ${imageHtml}
+                <div class="report-text-content">
+                  <div class="report-title-text">
+                    ${escapeHtml(issue.description.substring(0, 45))}${issue.description.length > 45 ? '...' : ''}
+                  </div>
+                  <div class="report-location-text">
+                    ${escapeHtml(issue.city_street || 'Location not specified')}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="reports-table-cell">
+              <span class="status-badge badge-${statusClass}">
+                <i class="bi bi-${statusIcon}" aria-hidden="true"></i>
+                ${issue.status || 'pending'}
+              </span>
+            </td>
+            <td class="reports-table-cell" style="font-size: 12px; color: #6b7280;">
+              ${formatRelativeTime(date)}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Update map with filtered issues
+    function updateMapWithFilteredIssues(filteredIssues) {
+      const mapElement = document.getElementById('mainMap');
+      if (!mapElement) return;
+      
+      // Get the map instance
+      const map = window.mainMap;
+      if (!map) return;
+      
+      // Clear existing markers
+      if (window.mapMarkers) {
+        window.mapMarkers.forEach(marker => marker.remove());
+      }
+      
+      window.mapMarkers = [];
+      const bounds = [];
+      
+      // Add new markers for filtered issues
+      filteredIssues.forEach(issue => {
+        if (issue.location && issue.location.lat && issue.location.lng) {
+          const marker = L.marker([issue.location.lat, issue.location.lng])
+            .addTo(map);
+            
+          window.mapMarkers.push(marker);
+          
+          const statusClass = getStatusClass(issue.status);
+          const statusIcon = getStatusIcon(issue.status);
+          
+          const imageSection = issue.image_file_id ?
+            `<img src="/uploads/${issue.image_file_id}" 
+                 alt="Issue image" 
+                 class="popup-image"
+                 onerror="this.style.display='none';">` : '';
+          
+          marker.bindPopup(`
+            <div style="padding: 12px; max-width: 200px;">
+                ${imageSection}
+                <h3 style="font-weight: 600; margin-bottom: 8px; font-size: 14px; line-height: 1.3;">${escapeHtml(issue.description.substring(0, 50))}${issue.description.length > 50 ? '...' : ''}</h3>
+                <div style="margin-bottom: 8px;">
+                    <span class="badge badge-${statusClass}" style="font-size: 11px;">
+                        <i class="bi bi-${statusIcon}" aria-hidden="true"></i>
+                        ${issue.status || 'pending'}
+                    </span>
+                </div>
+                <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">${escapeHtml(issue.city_street || 'Location not specified')}</p>
+                <a href="/report/${issue._id}" style="display: block; width: 100%; padding: 6px 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; text-align: center; font-weight: 500;">
+                    <i class="bi bi-eye" aria-hidden="true"></i>
+                    View Details
+                </a>
+            </div>
+          `);
+          
+          bounds.push([issue.location.lat, issue.location.lng]);
+        }
+      });
+      
+      // Fit map to show all markers if there are any
+      if (bounds.length > 0) {
+        map.fitBounds(L.latLngBounds(bounds).pad(0.1));
+      }
     }
 
     // Initialize animations and intersection observer
@@ -1053,16 +1531,6 @@
         const days = Math.floor(diffInSeconds / 86400);
         return `${days}d ago`;
       }
-    }
-
-    function performSearch(query) {
-      // Implementation for search functionality
-      console.log('Searching for:', query);
-    }
-
-    function filterReports(category) {
-      // Implementation for filtering functionality
-      console.log('Filtering by category:', category);
     }
 
     // Handle keyboard navigation

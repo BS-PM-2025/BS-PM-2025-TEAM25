@@ -367,23 +367,34 @@ def report_issue():
         
         result = mongo.db.issues.insert_one(issue_data)
         
-        # Send priority-based notifications
-        if notification_level == 'immediate':
-            # Send immediate notification to all admins
-            admins = mongo.db.users.find({"role": "admin"})
-            for admin in admins:
-                try:
-                    send_email(
-                        admin["email"],
-                        f"🚨 URGENT: {priority.upper()} Priority Report",
-                        f"A {priority} priority, {severity} severity issue has been reported.\n\n"
-                        f"Description: {description}\n"
-                        f"Location: {city_street}\n"
-                        f"Urgency Score: {urgency_score:.2f}\n\n"
-                        f"View: {url_for('reports.report_detail', issue_id=str(result.inserted_id), _external=True)}"
-                    )
-                except Exception as e:
-                    current_app.logger.error(f"Failed to send urgent notification: {e}")
+        # Send notifications to ALL admins for EVERY report
+        admins = mongo.db.users.find({"role": "admin"})
+        for admin in admins:
+            try:
+                # Create subject and message based on priority
+                if notification_level == 'immediate':
+                    subject = f"🚨 URGENT: {priority.upper()} Priority Report"
+                    intro = f"An URGENT report with {priority} priority, {severity} severity has been reported."
+                elif notification_level == 'urgent':
+                    subject = f"⚡ High Priority Report"
+                    intro = f"A high priority report with {priority} priority, {severity} severity has been reported."
+                else:
+                    subject = f"📋 New Report: {priority.title()} Priority"
+                    intro = f"A new report with {priority} priority, {severity} severity has been reported."
+
+                send_email(
+                    admin["email"],
+                    subject,
+                    f"{intro}\n\n"
+                    f"Description: {description}\n"
+                    f"Category: {category}\n"
+                    f"Location: {city_street}\n"
+                    f"Reported by: {session['user']}\n"
+                    f"Urgency Score: {urgency_score:.2f}\n\n"
+                    f"View report: {url_for('reports.report_detail', issue_id=str(result.inserted_id), _external=True)}"
+                )
+            except Exception as e:
+                current_app.logger.error(f"Failed to send admin notification: {e}")
         
         flash(f"Issue reported successfully with {priority} priority and {severity} severity!", "success")
         return redirect(url_for("reports.report_issue"))
