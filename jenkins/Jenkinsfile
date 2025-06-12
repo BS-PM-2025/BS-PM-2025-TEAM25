@@ -39,7 +39,7 @@ pipeline {
                           --network cityfix-test-network \
                           -e MONGO_URI=${MONGO_TEST_URI} \
                           ${DOCKER_IMAGE} test \
-                          --junitxml=test-results.xml
+                          --junitxml=test-results.xml -v
                     """
                 }
             }
@@ -50,8 +50,14 @@ pipeline {
                     sh "docker rm mongo-test || true"
                     // Remove the test network
                     sh "docker network rm cityfix-test-network || true"
-                    // Archive JUnit results
-                    junit(testResults: 'test-results.xml', allowEmptyResults: true)
+                    // Archive JUnit results if the file exists
+                    script {
+                        if (fileExists('test-results.xml')) {
+                            junit(testResults: 'test-results.xml', allowEmptyResults: true)
+                        } else {
+                            echo "No test results file found"
+                        }
+                    }
                 }
             }
         }
@@ -82,16 +88,40 @@ pipeline {
                     sh "docker rm mongo-cov   || true"
                     sh "docker network rm cityfix-cov-network || true"
 
-                    // Publish the HTML coverage report (requires HTML Publisher Plugin)
+                    // Publish the HTML coverage report (check if plugin is available)
                     script {
-                        publishHTML(target: [
-                            reportDir:             "${WORKSPACE}/coverage_report",
-                            reportFiles:           'index.html',
-                            reportName:            'Coverage Report',
-                            allowMissing:          false,
-                            alwaysLinkToLastBuild: true,
-                            keepAll:               true
-                        ])
+                        try {
+                            // Check if coverage report was generated
+                            if (fileExists("${WORKSPACE}/coverage_report/index.html")) {
+                                // Try to use publishHTML if plugin is available
+                                try {
+                                    publishHTML(target: [
+                                        reportDir:             "${WORKSPACE}/coverage_report",
+                                        reportFiles:           'index.html',
+                                        reportName:            'Coverage Report',
+                                        allowMissing:          false,
+                                        alwaysLinkToLastBuild: true,
+                                        keepAll:               true
+                                    ])
+                                    echo "Coverage report published successfully"
+                                } catch (Exception e) {
+                                    echo "HTML Publisher plugin not available. Coverage report generated but not published."
+                                    echo "Install HTML Publisher plugin to enable coverage report publishing."
+                                    echo "Coverage report available at: ${WORKSPACE}/coverage_report/index.html"
+                                    
+                                    // Archive the coverage report as artifacts instead
+                                    archiveArtifacts(
+                                        artifacts: 'coverage_report/**/*',
+                                        allowEmptyArchive: true,
+                                        fingerprint: true
+                                    )
+                                }
+                            } else {
+                                echo "No coverage report generated"
+                            }
+                        } catch (Exception e) {
+                            echo "Error handling coverage report: ${e.getMessage()}"
+                        }
                     }
                 }
             }
