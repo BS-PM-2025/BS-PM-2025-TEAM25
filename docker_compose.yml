@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    image: cityfix/bs-pm-2025-team25
+    container_name: cityfix-web
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+      - SECRET_KEY=dev-secret-key
+      - MONGO_URI=mongodb://mongo:27017/cityfix
+      - SMTP_SERVER=${SMTP_SERVER:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USE_TLS=${SMTP_USE_TLS:-true}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-cityfix101@gmail.com}
+      - MAIL_DEFAULT_SENDER_NAME=${MAIL_DEFAULT_SENDER_NAME:-"City Fix Team"}
+    depends_on:
+      - mongo
+    command: app
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:5.0
+    container_name: cityfix-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+  test:
+    build: .
+    image: cityfix/bs-pm-2025-team25
+    container_name: cityfix-test
+    volumes:
+      - .:/app
+      - ./coverage_report:/app/coverage_report
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/cityfix_test
+    depends_on:
+      - mongo
+    command: test
+    profiles:
+      - test
+
+  testcov:
+    build: .
+    image: cityfix/bs-pm-2025-team25
+    container_name: cityfix-testcov
+    volumes:
+      - .:/app
+      - ./coverage_report:/app/coverage_report
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/cityfix_test
+    depends_on:
+      - mongo
+    command: testcov
+    profiles:
+      - test
+
+volumes:
+  mongo-data:
