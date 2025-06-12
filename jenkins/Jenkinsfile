@@ -3,10 +3,10 @@ pipeline {
 
     environment {
         // Update with your Docker Hub username/organization
-        DOCKER_IMAGE = "cityfix/bs-pm-2025-team25"
-        APP_PORT = "5000"
+        DOCKER_IMAGE    = "cityfix/bs-pm-2025-team25"
+        APP_PORT        = "5000"
         // MongoDB connection for testing
-        MONGO_TEST_URI = "mongodb://mongo:27017/cityfix_test"
+        MONGO_TEST_URI  = "mongodb://mongo:27017/cityfix_test"
     }
 
     stages {
@@ -31,18 +31,15 @@ pipeline {
                 script {
                     // Create a Docker network for the tests
                     sh "docker network create cityfix-test-network || true"
-                    
                     // Start a MongoDB container for testing
                     sh "docker run -d --name mongo-test --network cityfix-test-network mongo:5.0"
-                    
                     // Run the tests in the application container
                     sh """
                         docker run --rm \
-                        --network cityfix-test-network \
-                        -e MONGO_URI=mongodb://mongo-test:27017/cityfix_test \
-                        ${DOCKER_IMAGE} test \
-                        --junitxml=test-results.xml \
-                        -v
+                          --network cityfix-test-network \
+                          -e MONGO_URI=${MONGO_TEST_URI} \
+                          ${DOCKER_IMAGE} test \
+                          --junitxml=test-results.xml
                     """
                 }
             }
@@ -51,11 +48,9 @@ pipeline {
                     // Stop and remove the MongoDB container
                     sh "docker stop mongo-test || true"
                     sh "docker rm mongo-test || true"
-                    
                     // Remove the test network
                     sh "docker network rm cityfix-test-network || true"
-                    
-                    // Archive test results
+                    // Archive JUnit results
                     junit(testResults: 'test-results.xml', allowEmptyResults: true)
                 }
             }
@@ -64,43 +59,40 @@ pipeline {
         stage('Run Tests with Coverage') {
             steps {
                 script {
-                    // Create a Docker network for the tests
+                    // Create a Docker network for the coverage run
                     sh "docker network create cityfix-cov-network || true"
-                    
                     // Start a MongoDB container for testing
                     sh "docker run -d --name mongo-cov --network cityfix-cov-network mongo:5.0"
-                    
-                    // Create a directory for coverage results
-                    sh "mkdir -p coverage_report"
-                    
+                    // Prepare a coverage_report directory in workspace
+                    sh "mkdir -p ${WORKSPACE}/coverage_report"
                     // Run tests with coverage
                     sh """
                         docker run --rm \
-                        --network cityfix-cov-network \
-                        -e MONGO_URI=mongodb://mongo-cov:27017/cityfix_test \
-                        -v \${PWD}/coverage_report:/app/coverage_report \
-                        ${DOCKER_IMAGE} testcov
+                          --network cityfix-cov-network \
+                          -e MONGO_URI=mongodb://mongo-cov:27017/cityfix_test \
+                          -v ${WORKSPACE}/coverage_report:/app/coverage_report \
+                          ${DOCKER_IMAGE} testcov
                     """
                 }
             }
             post {
                 always {
-                    // Stop and remove the MongoDB container
+                    // Teardown the coverage containers and network
                     sh "docker stop mongo-cov || true"
-                    sh "docker rm mongo-cov || true"
-                    
-                    // Remove the test network
+                    sh "docker rm mongo-cov   || true"
                     sh "docker network rm cityfix-cov-network || true"
-                    
-                    // Publish coverage report
-                    publishHTML(target: [
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'coverage_report',
-                        reportFiles: 'index.html',
-                        reportName: 'Coverage Report'
-                    ])
+
+                    // Publish the HTML coverage report (requires HTML Publisher Plugin)
+                    script {
+                        publishHTML(target: [
+                            reportDir:             "${WORKSPACE}/coverage_report",
+                            reportFiles:           'index.html',
+                            reportName:            'Coverage Report',
+                            allowMissing:          false,
+                            alwaysLinkToLastBuild: true,
+                            keepAll:               true
+                        ])
+                    }
                 }
             }
         }
@@ -125,8 +117,7 @@ pipeline {
             }
             steps {
                 echo "Deploying ${DOCKER_IMAGE}:${env.BUILD_NUMBER} to development..."
-                // Example:
-                // sh 'ssh deploy@dev-server "docker-compose -f docker-compose.dev.yml pull && docker-compose -f docker-compose.dev.yml up -d"'
+                // e.g. sh 'ssh deploy@dev-server "...docker-compose up -d"'
             }
         }
 
@@ -136,18 +127,16 @@ pipeline {
             }
             steps {
                 echo "Deploying ${DOCKER_IMAGE}:latest to production..."
-                // Example:
-                // sh 'ssh deploy@prod-server "docker-compose -f docker-compose.prod.yml pull && docker-compose -f docker-compose.prod.yml up -d"'
+                // e.g. sh 'ssh deploy@prod-server "...docker-compose up -d"'
             }
         }
     }
 
     post {
         always {
-            // Clean up local Docker images to save space
+            // Clean up local Docker images
             sh "docker rmi ${DOCKER_IMAGE}:latest || true"
-            
-            // Clean workspace
+            // Clean the workspace
             cleanWs()
         }
         success {
@@ -155,8 +144,7 @@ pipeline {
         }
         failure {
             echo 'Build or tests failed!'
-            // Optional: Send notification
-            // mail to: 'team@example.com', subject: 'Build Failed', body: 'The build has failed. Please check Jenkins.'
+            // Optional email or Slack notifications could go here
         }
     }
 }
