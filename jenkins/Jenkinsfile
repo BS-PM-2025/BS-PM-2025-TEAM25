@@ -50,14 +50,6 @@ pipeline {
                     sh "docker rm mongo-test || true"
                     // Remove the test network
                     sh "docker network rm cityfix-test-network || true"
-                    // Archive JUnit results if the file exists
-                    script {
-                        if (fileExists('test-results.xml')) {
-                            junit(testResults: 'test-results.xml', allowEmptyResults: true)
-                        } else {
-                            echo "No test results file found"
-                        }
-                    }
                 }
             }
         }
@@ -88,39 +80,18 @@ pipeline {
                     sh "docker rm mongo-cov   || true"
                     sh "docker network rm cityfix-cov-network || true"
 
-                    // Publish the HTML coverage report (check if plugin is available)
+                    // Archive the coverage report as artifacts
                     script {
-                        try {
-                            // Check if coverage report was generated
-                            if (fileExists("${WORKSPACE}/coverage_report/index.html")) {
-                                // Try to use publishHTML if plugin is available
-                                try {
-                                    publishHTML(target: [
-                                        reportDir:             "${WORKSPACE}/coverage_report",
-                                        reportFiles:           'index.html',
-                                        reportName:            'Coverage Report',
-                                        allowMissing:          false,
-                                        alwaysLinkToLastBuild: true,
-                                        keepAll:               true
-                                    ])
-                                    echo "Coverage report published successfully"
-                                } catch (Exception e) {
-                                    echo "HTML Publisher plugin not available. Coverage report generated but not published."
-                                    echo "Install HTML Publisher plugin to enable coverage report publishing."
-                                    echo "Coverage report available at: ${WORKSPACE}/coverage_report/index.html"
-                                    
-                                    // Archive the coverage report as artifacts instead
-                                    archiveArtifacts(
-                                        artifacts: 'coverage_report/**/*',
-                                        allowEmptyArchive: true,
-                                        fingerprint: true
-                                    )
-                                }
-                            } else {
-                                echo "No coverage report generated"
-                            }
-                        } catch (Exception e) {
-                            echo "Error handling coverage report: ${e.getMessage()}"
+                        if (fileExists("${WORKSPACE}/coverage_report/index.html")) {
+                            echo "Coverage report generated successfully"
+                            archiveArtifacts(
+                                artifacts: 'coverage_report/**/*',
+                                allowEmptyArchive: true,
+                                fingerprint: true
+                            )
+                            echo "Coverage report archived as build artifacts"
+                        } else {
+                            echo "No coverage report generated"
                         }
                     }
                 }
