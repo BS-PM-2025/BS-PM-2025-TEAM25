@@ -34,13 +34,12 @@ pipeline {
                     // Start a MongoDB container for testing
                     sh "docker run -d --name mongo-test --network cityfix-test-network mongo:5.0"
                     // Run the tests in the application container
-                    // FIXED: Removed the -v flag that was causing the error
                     sh """
                         docker run --rm \
                           --network cityfix-test-network \
                           -e MONGO_URI=${MONGO_TEST_URI} \
-                          ${DOCKER_IMAGE} test \
-                          --junitxml=test-results.xml
+                          ${DOCKER_IMAGE} \
+                          python -m pytest --junitxml=test-results.xml
                     """
                 }
             }
@@ -64,13 +63,14 @@ pipeline {
                     sh "docker run -d --name mongo-cov --network cityfix-cov-network mongo:5.0"
                     // Prepare a coverage_report directory in workspace
                     sh "mkdir -p ${WORKSPACE}/coverage_report"
-                    // Run tests with coverage
+                    // Run tests with coverage - directly using pytest with coverage flags
                     sh """
                         docker run --rm \
                           --network cityfix-cov-network \
                           -e MONGO_URI=mongodb://mongo-cov:27017/cityfix_test \
                           -v ${WORKSPACE}/coverage_report:/app/coverage_report \
-                          ${DOCKER_IMAGE} testcov
+                          ${DOCKER_IMAGE} \
+                          python -m pytest --cov=. --cov-report=term --cov-report=html:coverage_report
                     """
                 }
             }
