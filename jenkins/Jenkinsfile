@@ -34,12 +34,13 @@ pipeline {
                     // Start a MongoDB container for testing
                     sh "docker run -d --name mongo-test --network cityfix-test-network mongo:5.0"
                     // Run the tests in the application container
+                    // FIXED: Removed the -v flag that was causing the error
                     sh """
                         docker run --rm \
                           --network cityfix-test-network \
                           -e MONGO_URI=${MONGO_TEST_URI} \
                           ${DOCKER_IMAGE} test \
-                          --junitxml=test-results.xml -v
+                          --junitxml=test-results.xml
                     """
                 }
             }
